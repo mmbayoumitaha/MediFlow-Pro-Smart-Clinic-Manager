@@ -1,0 +1,33 @@
+# MediFlow Pro — Implementation Plan
+
+## Phase 1: Foundation
+1. Update `pubspec.yaml` with all dependencies
+2. Create folder structure (core/, features/, shared/, services/, routes/)
+3. Set up theme system (Material 3, dark/light modes)
+4. Set up localization (AR/EN)
+5. Create app entry point with Riverpod
+
+## Phase 2: Core Architecture
+1. Models (User, Appointment, Doctor, Patient, Prescription, Invoice)
+2. Services (Auth, Firestore, Storage, Notifications)
+3. Providers (Riverpod state management)
+4. Router (GoRouter with role-based guards)
+
+## Phase 3: Features
+### Auth
+- Splash → Onboarding → Login/Register → Role Router
+
+### Patient
+- Dashboard, Book Appointment, Doctors List, Medical History, Prescriptions, Profile
+
+### Doctor
+- Dashboard, Schedule, Patient Records, Add Prescription, Availability
+
+### Admin
+- Analytics Dashboard, Manage Doctors/Patients, Appointments, Billing, Revenue
+
+## Phase 4: Shared Components
+- Reusable widgets, animations, form validators, PDF generation
+
+## Phase 5: Polish
+- Demo data seeding, README, Firebase guide
