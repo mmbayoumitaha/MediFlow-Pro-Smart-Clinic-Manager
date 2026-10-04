@@ -50,6 +50,7 @@ class AppSizes {
 
   // ──────── Page Padding ────────
   static const EdgeInsets pagePadding = EdgeInsets.all(md);
-  static const EdgeInsets pagePaddingHorizontal =
-      EdgeInsets.symmetric(horizontal: md);
+  static const EdgeInsets pagePaddingHorizontal = EdgeInsets.symmetric(
+    horizontal: md,
+  );
 }

@@ -50,7 +50,9 @@ void main() {
     });
   }
 
-  testWidgets('disposing the splash cancels pending navigation', (tester) async {
+  testWidgets('disposing the splash cancels pending navigation', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     final router = container.read(routerProvider);
     addTearDown(() {

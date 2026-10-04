@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/widgets/shared_widgets.dart';
@@ -16,7 +17,10 @@ class DoctorScheduleScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('My Schedule')),
       body: apts.isEmpty
-          ? const EmptyState(icon: Icons.calendar_today_outlined, title: 'No Appointments')
+          ? const EmptyState(
+              icon: Icons.calendar_today_outlined,
+              title: 'No Appointments',
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(AppSizes.md),
               itemCount: apts.length,

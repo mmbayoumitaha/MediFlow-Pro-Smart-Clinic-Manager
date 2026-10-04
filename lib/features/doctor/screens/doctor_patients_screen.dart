@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
@@ -29,18 +30,44 @@ class DoctorPatientsScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkCard : AppColors.lightCard,
                     borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                    border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.lightDivider,
+                    ),
                   ),
-                  child: Row(children: [
-                    CircleAvatar(radius: 22, backgroundColor: AppColors.secondaryContainer,
-                      child: Text(p.fullName[0], style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.secondary))),
-                    const SizedBox(width: 12),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(p.fullName, style: theme.textTheme.titleMedium),
-                      Text(p.email, style: theme.textTheme.bodySmall),
-                    ])),
-                    Text(p.gender?.labelEn ?? '', style: theme.textTheme.labelSmall),
-                  ]),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppColors.secondaryContainer,
+                        child: Text(
+                          p.fullName[0],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p.fullName,
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            Text(p.email, style: theme.textTheme.bodySmall),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        p.gender?.labelEn ?? '',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

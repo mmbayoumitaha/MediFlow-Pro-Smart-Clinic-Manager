@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 
@@ -221,7 +222,9 @@ class AppTheme {
       elevation: 0,
       scrolledUnderElevation: 0.5,
       centerTitle: false,
-      backgroundColor: isLight ? AppColors.lightBackground : AppColors.darkBackground,
+      backgroundColor: isLight
+          ? AppColors.lightBackground
+          : AppColors.darkBackground,
       foregroundColor: isLight ? AppColors.lightText : AppColors.darkText,
       titleTextStyle: TextStyle(
         fontSize: 18,
@@ -253,7 +256,8 @@ class AppTheme {
 
   // ──────────────────────── ELEVATED BUTTON ────────────────────────
   static ElevatedButtonThemeData _buildElevatedButtonTheme(
-      ColorScheme colorScheme) {
+    ColorScheme colorScheme,
+  ) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: colorScheme.primary,
@@ -263,17 +267,15 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
-        textStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   // ──────────────────────── OUTLINED BUTTON ────────────────────────
   static OutlinedButtonThemeData _buildOutlinedButtonTheme(
-      ColorScheme colorScheme) {
+    ColorScheme colorScheme,
+  ) {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: colorScheme.primary,
@@ -282,10 +284,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
-        textStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -295,27 +294,25 @@ class AppTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.primary,
-        textStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   // ──────────────────────── INPUT DECORATION ────────────────────────
   static InputDecorationTheme _buildInputDecorationTheme(
-      Brightness brightness) {
+    Brightness brightness,
+  ) {
     final isLight = brightness == Brightness.light;
-    final borderColor =
-        isLight ? AppColors.lightDivider : AppColors.darkDivider;
+    final borderColor = isLight
+        ? AppColors.lightDivider
+        : AppColors.darkDivider;
     final fillColor = isLight ? AppColors.slate50 : AppColors.slate800;
 
     return InputDecorationTheme(
       filled: true,
       fillColor: fillColor,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         borderSide: BorderSide(color: borderColor),
@@ -349,14 +346,13 @@ class AppTheme {
 
   // ──────────────────────── BOTTOM NAV ────────────────────────
   static BottomNavigationBarThemeData _buildBottomNavTheme(
-      Brightness brightness) {
+    Brightness brightness,
+  ) {
     final isLight = brightness == Brightness.light;
     return BottomNavigationBarThemeData(
-      backgroundColor:
-          isLight ? AppColors.lightSurface : AppColors.darkSurface,
+      backgroundColor: isLight ? AppColors.lightSurface : AppColors.darkSurface,
       selectedItemColor: AppColors.primary,
-      unselectedItemColor:
-          isLight ? AppColors.slate400 : AppColors.slate500,
+      unselectedItemColor: isLight ? AppColors.slate400 : AppColors.slate500,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     );
@@ -364,11 +360,11 @@ class AppTheme {
 
   // ──────────────────────── NAVIGATION BAR (M3) ────────────────────────
   static NavigationBarThemeData _buildNavigationBarTheme(
-      Brightness brightness) {
+    Brightness brightness,
+  ) {
     final isLight = brightness == Brightness.light;
     return NavigationBarThemeData(
-      backgroundColor:
-          isLight ? AppColors.lightSurface : AppColors.darkSurface,
+      backgroundColor: isLight ? AppColors.lightSurface : AppColors.darkSurface,
       indicatorColor: AppColors.primaryContainer,
       elevation: 0,
       height: 64,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/widgets/shared_widgets.dart';
@@ -13,7 +14,11 @@ class ManageDoctorsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Doctors')),
-      floatingActionButton: FloatingActionButton.extended(onPressed: () {}, icon: const Icon(Icons.add), label: const Text('Add Doctor')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
+        icon: const Icon(Icons.add),
+        label: const Text('Add Doctor'),
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSizes.md),
         itemCount: doctors.length,

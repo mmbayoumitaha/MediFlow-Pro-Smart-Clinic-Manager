@@ -158,7 +158,8 @@ class DoctorModel {
       experienceYears: map['experienceYears'] as int? ?? 0,
       rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
       totalReviews: map['totalReviews'] as int? ?? 0,
-      availability: (map['availability'] as List<dynamic>?)
+      availability:
+          (map['availability'] as List<dynamic>?)
               ?.map((e) => AvailabilitySlot.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -228,7 +229,7 @@ class DoctorModel {
 class AvailabilitySlot {
   final DayOfWeek day;
   final String startTime; // "09:00"
-  final String endTime;   // "17:00"
+  final String endTime; // "17:00"
   final bool isActive;
 
   const AvailabilitySlot({
