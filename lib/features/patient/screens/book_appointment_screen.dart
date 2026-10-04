@@ -67,7 +67,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: doctors.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
               itemBuilder: (ctx, i) {
                 final doc = doctors[i];
                 final sel = _selectedDoctor?.id == doc.id;

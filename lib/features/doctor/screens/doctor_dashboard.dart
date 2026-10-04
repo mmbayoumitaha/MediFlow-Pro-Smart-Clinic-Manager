@@ -36,7 +36,7 @@ class DoctorDashboard extends ConsumerWidget {
                 Text('Good ${_getGreeting()}!', style: theme.textTheme.bodySmall),
                 Text(user?.fullName ?? 'Doctor', style: theme.textTheme.headlineSmall),
               ])),
-              IconButton(onPressed: () {}, icon: Badge(smallSize: 8, child: const Icon(Icons.notifications_outlined))),
+              IconButton(onPressed: () {}, icon: const Badge(smallSize: 8, child: Icon(Icons.notifications_outlined))),
             ]),
             const SizedBox(height: 24),
 
@@ -54,7 +54,7 @@ class DoctorDashboard extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Today's schedule
-            SectionHeader(title: "Today's Schedule", actionText: 'View All'),
+            const SectionHeader(title: "Today's Schedule", actionText: 'View All'),
             if (todayApts.isEmpty)
               const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: EmptyState(icon: Icons.event_available_rounded, title: 'No appointments today'))
             else
@@ -68,7 +68,7 @@ class DoctorDashboard extends ConsumerWidget {
               )),
 
             const SizedBox(height: 24),
-            SectionHeader(title: 'Upcoming Appointments'),
+            const SectionHeader(title: 'Upcoming Appointments'),
             ...ref.watch(upcomingAppointmentsProvider).take(4).map((apt) => AppointmentCard(
               doctorName: apt.patientName,
               specialty: apt.specialty.labelEn,

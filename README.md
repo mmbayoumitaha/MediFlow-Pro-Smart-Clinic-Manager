@@ -1,234 +1,50 @@
-# 🏥 MediFlow Pro
+# MediFlow Pro — Smart Clinic Manager
 
-**Complete Clinic & Medical Center Management System**
+A personal Flutter project for exploring patient, doctor and administrator clinic workflows. The current app runs with synthetic, in-memory demo data and requires no Firebase account or backend configuration.
 
-> A baseline review found implementation gaps in the feature and architecture claims below. See the [project audit](docs/PROJECT_AUDIT.md) and [repair batches](docs/REPAIR_PLAN.md) for verified current status and planned corrections.
+The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
 
-A production-ready Flutter application for managing clinics, hospitals, and medical centers. Supports **Android, iOS, Web, and Desktop** platforms.
+## Current functionality
 
----
+- Separate patient, doctor and administrator screens with persistent tab navigation using GoRouter.
+- Doctor directory with specialty filters, appointment booking and appointment/prescription lists backed by demo fixtures.
+- Doctor schedule and patient browser.
+- Administrator overview, billing lists and fl_chart visualizations.
+- Material 3 light/dark themes using Flutter's default fonts; the app no longer downloads Inter through Google Fonts.
 
-## ✨ Features
+Some visible actions are still placeholders. Role authorization, per-user data scoping, booking validation and chart calculations remain under repair. The demo contains fictional records; do not enter real patient information.
 
-### 👤 Patient Portal
-- Sign up / Login with role-based access
-- Browse doctors by specialty with search & filtering
-- Book appointments with date/time selection
-- View upcoming & past appointments
-- Prescription history with medication details
-- Profile management with theme toggle (dark/light)
+## Run the demo
 
-### 🩺 Doctor Portal
-- Real-time dashboard with today's stats
-- Appointment schedule management
-- Patient records browser
-- Revenue tracking
-- Profile & availability settings
-
-### 🛡️ Admin Portal
-- Full analytics dashboard with charts
-- Revenue overview (bar chart) & specialty distribution (pie chart)
-- Manage doctors (add/edit/remove)
-- Manage patients
-- Billing & invoices with payment status tracking
-- System-wide notifications
-
-### 🔧 Technical Features
-- **Clean Architecture** + MVVM pattern
-- **Riverpod** state management
-- **GoRouter** with role-based navigation guards
-- **Material 3** with premium medical theme
-- **Dark/Light mode** toggle
-- **Responsive design** for mobile/tablet/web
-- **Offline-first** demo data (Firebase-ready)
-- **StatefulShellRoute** for persistent bottom navigation
-- **Professional charts** (fl_chart)
-- **Form validation** on all inputs
-- **Reusable widget library** (StatCard, DoctorCard, AppointmentCard, etc.)
-
----
-
-## 🏗️ Architecture
-
-```
-lib/
-├── core/
-│   ├── constants/      # Colors, Sizes, Strings
-│   ├── theme/          # Material 3 Light/Dark themes
-│   ├── providers/      # Riverpod state providers
-│   └── widgets/        # Core reusable widgets
-├── features/
-│   ├── auth/           # Splash, Onboarding, Login, Register
-│   ├── patient/        # Dashboard, Doctors, Appointments, Prescriptions, Profile
-│   ├── doctor/         # Dashboard, Schedule, Patients, Profile
-│   └── admin/          # Dashboard, Manage Doctors/Patients, Billing
-├── shared/
-│   ├── enums/          # UserRole, AppointmentStatus, Specialty, etc.
-│   ├── models/         # User, Doctor, Appointment, Prescription, Invoice
-│   └── widgets/        # Shared UI components
-├── services/           # Demo data, future Firebase services
-├── routes/             # GoRouter configuration
-└── main.dart           # App entry point
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Flutter SDK 3.41+ (stable channel)
-- Dart 3.11+
-
-### Installation
+Verified toolchain: **Flutter 3.47.4 stable / Dart 3.13.3**. Use this version to reproduce the development checks. The SDK minimums are declared in `pubspec.yaml`; dependency versions are recorded in `pubspec.lock`.
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd mediflow
-
-# Install dependencies
+git clone https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager.git
+cd MediFlow-Pro-Smart-Clinic-Manager
 flutter pub get
-
-# Run on web
 flutter run -d chrome
-
-# Run on Android
-flutter run -d android
-
-# Run on iOS
-flutter run -d ios
-
-# Build for production
-flutter build web
-flutter build apk
-flutter build ios
 ```
 
-### Demo Credentials
+On the login screen, select Patient, Doctor or Admin. The prefilled `demo@mediflow.com` / `password123` values open the selected demo role. Authentication is simulated; these are not real backend credentials.
 
-The app includes built-in demo data. Use any email/password to login:
+Demo changes last for the current application session and reset when the app restarts. Initial dependency installation requires an Internet connection. The running demo uses local fixtures; a cold offline browser launch and browser caching have not been verified.
 
-| Role    | Email              | Password     |
-|---------|-------------------|--------------|
-| Patient | demo@mediflow.com | password123  |
-| Doctor  | demo@mediflow.com | password123  |
-| Admin   | demo@mediflow.com | password123  |
+## Development checks
 
-Select the desired role on the login screen before signing in.
-
----
-
-## 🔥 Firebase Integration Guide
-
-To connect Firebase services, follow these steps:
-
-### 1. Create Firebase Project
 ```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Login
-firebase login
-
-# Install FlutterFire CLI
-dart pub global activate flutterfire_cli
-
-# Configure Firebase
-flutterfire configure
+flutter analyze --no-pub
+flutter test --no-pub
+flutter build web --no-pub
 ```
 
-### 2. Initialize Firebase in `main.dart`
-```dart
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+Startup tests cover splash timing, onboarding-to-login navigation in both themes, and disposal before delayed navigation. They do not yet verify the complete clinic workflows. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: MediFlowApp()));
-}
-```
+Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
 
-### 3. Firestore Collections Structure
-```
-users/           → UserModel (role, fullName, email, phone...)
-doctors/         → DoctorModel (specialty, fee, availability...)
-appointments/    → AppointmentModel (patientId, doctorId, dateTime, status...)
-prescriptions/   → PrescriptionModel (medications, diagnosis...)
-invoices/        → InvoiceModel (items, total, paymentStatus...)
-medical_reports/ → MedicalReportModel (fileUrl, fileType...)
-```
+## Architecture and roadmap
 
-### 4. Firestore Security Rules
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
-    }
-    match /appointments/{appointmentId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null
-        && (resource.data.patientId == request.auth.uid
-            || resource.data.doctorId == request.auth.uid
-            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-    }
-  }
-}
-```
+The current code uses Flutter, Riverpod, GoRouter, fl_chart, intl and uuid, plus the bundled Cupertino icon font for adaptive Flutter widgets. Screens live under `lib/features`, with shared models, providers and demo fixtures. Clean Architecture/MVVM separation, Mockito business-rule tests and configurable Firebase Auth/Firestore adapters are planned in subsequent [repair batches](docs/REPAIR_PLAN.md).
 
----
+Unused Firebase, storage, upload, PDF and generator dependencies were removed from the startup baseline. Packages will be added alongside their actual implementations and tests. Demo mode will continue to work without backend setup.
 
-## 📦 Key Dependencies
-
-| Package | Purpose |
-|---------|---------|
-| `flutter_riverpod` | State management |
-| `go_router` | Declarative routing |
-| `fl_chart` | Charts & analytics |
-| `google_fonts` | Premium typography |
-| `firebase_core` | Firebase integration |
-| `cloud_firestore` | Database |
-| `firebase_auth` | Authentication |
-| `firebase_storage` | File uploads |
-| `pdf` / `printing` | PDF invoice generation |
-| `table_calendar` | Calendar widget |
-| `intl` | Date formatting & i18n |
-
----
-
-## 🎨 Design System
-
-- **Primary**: Teal (`#0D9488`) — Professional medical feel
-- **Secondary**: Indigo (`#6366F1`) — Modern accent
-- **Accent**: Amber (`#F59E0B`) — Warm highlights
-- **Typography**: Inter (Google Fonts)
-- **Border Radius**: 8–24px with consistent tokens
-- **Cards**: Zero elevation with subtle borders
-- **Gradients**: Premium gradient stat cards
-
----
-
-## 📱 Platform Support
-
-| Platform | Status |
-|----------|--------|
-| Android  | ✅ Ready |
-| iOS      | ✅ Ready |
-| Web      | ✅ Built & Verified |
-| Windows  | ✅ Ready |
-| macOS    | ✅ Ready |
-| Linux    | ✅ Ready |
-
----
-
-## 📄 License
-
-This project is available for commercial use as a template or client product.
-
----
-
-**Built with ❤️ using Flutter 3.41 + Material 3**
+License selection is pending; no commercial-use license is currently declared.

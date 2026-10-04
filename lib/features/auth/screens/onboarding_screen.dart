@@ -13,6 +13,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _currentPage = 0;
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   final _pages = const [
     _OnboardingPage(icon: Icons.calendar_month_rounded, title: 'Book Appointments', subtitle: 'Schedule visits with top doctors in just a few taps. Get reminders so you never miss an appointment.', color: AppColors.primary),
     _OnboardingPage(icon: Icons.medical_information_rounded, title: 'Medical Records', subtitle: 'Access your complete medical history, prescriptions, and test results securely from anywhere.', color: AppColors.secondary),

@@ -32,7 +32,7 @@ class PatientDashboard extends ConsumerWidget {
                       Text(user?.fullName ?? 'Patient', style: theme.textTheme.headlineMedium),
                     ]),
                   ),
-                  IconButton(onPressed: () {}, icon: Badge(smallSize: 8, child: const Icon(Icons.notifications_outlined))),
+                  IconButton(onPressed: () {}, icon: const Badge(smallSize: 8, child: Icon(Icons.notifications_outlined))),
                   const SizedBox(width: 4),
                   CircleAvatar(radius: 22, backgroundColor: AppColors.primaryContainer, child: Text((user?.fullName ?? 'P')[0], style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary))),
                 ],
@@ -86,7 +86,7 @@ class PatientDashboard extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Quick links
-              SectionHeader(title: 'Quick Actions'),
+              const SectionHeader(title: 'Quick Actions'),
               GridView.count(
                 crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.8,
