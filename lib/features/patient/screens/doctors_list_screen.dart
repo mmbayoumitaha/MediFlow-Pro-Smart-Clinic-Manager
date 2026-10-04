@@ -66,7 +66,7 @@ class DoctorsListScreen extends ConsumerWidget {
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSizes.md),
                     itemCount: doctors.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (ctx, i) {
                       final doc = doctors[i];
                       return DoctorCard(

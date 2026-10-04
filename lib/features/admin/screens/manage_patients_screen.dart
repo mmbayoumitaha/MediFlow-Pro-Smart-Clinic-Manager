@@ -18,7 +18,7 @@ class ManagePatientsScreen extends ConsumerWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSizes.md),
         itemCount: patients.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (ctx, i) {
           final p = patients[i];
           return Container(

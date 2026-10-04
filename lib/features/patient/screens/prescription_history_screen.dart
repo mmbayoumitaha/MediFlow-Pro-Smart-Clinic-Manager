@@ -22,7 +22,7 @@ class PrescriptionHistoryScreen extends ConsumerWidget {
           : ListView.separated(
               padding: const EdgeInsets.all(AppSizes.md),
               itemCount: prescriptions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (ctx, i) {
                 final p = prescriptions[i];
                 return Container(

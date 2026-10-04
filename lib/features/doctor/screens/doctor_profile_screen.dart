@@ -30,7 +30,7 @@ class DoctorProfileScreen extends ConsumerWidget {
           ListTile(
             leading: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, color: AppColors.primary),
             title: Text(isDark ? 'Light Mode' : 'Dark Mode'),
-            trailing: Switch(value: isDark, onChanged: (v) => ref.read(themeModeProvider.notifier).state = v ? ThemeMode.dark : ThemeMode.light, activeColor: AppColors.primary),
+            trailing: Switch(value: isDark, onChanged: (v) => ref.read(themeModeProvider.notifier).state = v ? ThemeMode.dark : ThemeMode.light, activeThumbColor: AppColors.primary),
             onTap: () => ref.read(themeModeProvider.notifier).state = isDark ? ThemeMode.light : ThemeMode.dark,
           ),
           const SizedBox(height: 16),

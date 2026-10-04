@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 
@@ -61,15 +60,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-        },
-      ),
+      pageTransitionsTheme: const PageTransitionsTheme(),
     );
   }
 
@@ -128,15 +119,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-        },
-      ),
+      pageTransitionsTheme: const PageTransitionsTheme(),
     );
   }
 
@@ -150,79 +133,79 @@ class AppTheme {
         : AppColors.darkTextSecondary;
 
     return TextTheme(
-      displayLarge: GoogleFonts.inter(
+      displayLarge: TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: color,
         letterSpacing: -0.5,
       ),
-      displayMedium: GoogleFonts.inter(
+      displayMedium: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         color: color,
         letterSpacing: -0.5,
       ),
-      displaySmall: GoogleFonts.inter(
+      displaySmall: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      headlineLarge: GoogleFonts.inter(
+      headlineLarge: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      headlineMedium: GoogleFonts.inter(
+      headlineMedium: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      headlineSmall: GoogleFonts.inter(
+      headlineSmall: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      titleLarge: GoogleFonts.inter(
+      titleLarge: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      titleMedium: GoogleFonts.inter(
+      titleMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      titleSmall: GoogleFonts.inter(
+      titleSmall: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,
         color: secondaryColor,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: color,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: color,
       ),
-      bodySmall: GoogleFonts.inter(
+      bodySmall: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: secondaryColor,
       ),
-      labelLarge: GoogleFonts.inter(
+      labelLarge: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      labelMedium: GoogleFonts.inter(
+      labelMedium: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: secondaryColor,
       ),
-      labelSmall: GoogleFonts.inter(
+      labelSmall: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: secondaryColor,
@@ -240,7 +223,7 @@ class AppTheme {
       centerTitle: false,
       backgroundColor: isLight ? AppColors.lightBackground : AppColors.darkBackground,
       foregroundColor: isLight ? AppColors.lightText : AppColors.darkText,
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: isLight ? AppColors.lightText : AppColors.darkText,
@@ -280,7 +263,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
-        textStyle: GoogleFonts.inter(
+        textStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -299,7 +282,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         ),
-        textStyle: GoogleFonts.inter(
+        textStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -312,7 +295,7 @@ class AppTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.primary,
-        textStyle: GoogleFonts.inter(
+        textStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -353,11 +336,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         borderSide: const BorderSide(color: AppColors.error, width: 2),
       ),
-      hintStyle: GoogleFonts.inter(
+      hintStyle: TextStyle(
         color: isLight ? AppColors.slate400 : AppColors.slate500,
         fontSize: 14,
       ),
-      labelStyle: GoogleFonts.inter(
+      labelStyle: TextStyle(
         color: isLight ? AppColors.slate500 : AppColors.slate400,
         fontSize: 14,
       ),
@@ -403,7 +386,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(AppSizes.radiusFull),
       ),
       side: BorderSide.none,
-      labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+      labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
     );
   }
 }

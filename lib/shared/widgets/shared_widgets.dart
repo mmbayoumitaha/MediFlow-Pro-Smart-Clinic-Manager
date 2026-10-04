@@ -93,7 +93,7 @@ class DoctorCard extends StatelessWidget {
                     const SizedBox(width: 2),
                     Text('$rating ($reviews)', style: theme.textTheme.labelSmall),
                     const Spacer(),
-                    Text('\$${fee.toStringAsFixed(0)}', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    Text('\$${fee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
                   ]),
                 ],
               ),

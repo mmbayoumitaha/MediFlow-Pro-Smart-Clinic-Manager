@@ -20,7 +20,7 @@ class BillingScreen extends ConsumerWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSizes.md),
         itemCount: invoices.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (ctx, i) {
           final inv = invoices[i];
           final isPaid = inv.paymentStatus == PaymentStatus.paid;

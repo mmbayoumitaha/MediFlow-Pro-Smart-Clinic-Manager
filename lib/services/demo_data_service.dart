@@ -1,10 +1,8 @@
-import 'package:uuid/uuid.dart';
 import '../shared/enums/app_enums.dart';
 import '../shared/models/app_models.dart';
 
 /// Provides realistic demo data for offline-first development.
 class DemoDataService {
-  static const _uuid = Uuid();
   
   static final List<DoctorModel> doctors = [
     DoctorModel(id: 'doc-001', userId: 'u-doc-001', fullName: 'Dr. Ahmed Hassan', email: 'ahmed@mediflow.com', phone: '+201001234567', specialty: MedicalSpecialty.cardiology, bio: 'Board-certified cardiologist with 15 years of experience in interventional cardiology and heart failure management.', consultationFee: 350.0, experienceYears: 15, rating: 4.9, totalReviews: 234, isAvailable: true, createdAt: DateTime(2024, 1, 15), availability: [

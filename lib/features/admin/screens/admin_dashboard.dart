@@ -57,7 +57,7 @@ class AdminDashboard extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Revenue chart
-            SectionHeader(title: 'Revenue Overview'),
+            const SectionHeader(title: 'Revenue Overview'),
             Container(
               height: 220,
               padding: const EdgeInsets.all(AppSizes.md),
@@ -97,7 +97,7 @@ class AdminDashboard extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Specialty distribution
-            SectionHeader(title: 'Appointments by Specialty'),
+            const SectionHeader(title: 'Appointments by Specialty'),
             Container(
               height: 200,
               padding: const EdgeInsets.all(AppSizes.md),
@@ -120,7 +120,7 @@ class AdminDashboard extends ConsumerWidget {
                   )),
                 ),
                 const SizedBox(width: 16),
-                Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _Legend(color: AppColors.primary, label: 'Cardiology'),
                   _Legend(color: AppColors.secondary, label: 'Neurology'),
                   _Legend(color: AppColors.accent, label: 'Orthopedics'),
@@ -132,7 +132,7 @@ class AdminDashboard extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Recent appointments
-            SectionHeader(title: 'Recent Activity'),
+            const SectionHeader(title: 'Recent Activity'),
             ...appointments.take(4).map((apt) => AppointmentCard(
               doctorName: '${apt.patientName} → ${apt.doctorName}',
               specialty: apt.specialty.labelEn,
