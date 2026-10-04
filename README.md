@@ -2,6 +2,8 @@
 
 **Complete Clinic & Medical Center Management System**
 
+> A baseline review found implementation gaps in the feature and architecture claims below. See the [project audit](docs/PROJECT_AUDIT.md) and [repair batches](docs/REPAIR_PLAN.md) for verified current status and planned corrections.
+
 A production-ready Flutter application for managing clinics, hospitals, and medical centers. Supports **Android, iOS, Web, and Desktop** platforms.
 
 ---
