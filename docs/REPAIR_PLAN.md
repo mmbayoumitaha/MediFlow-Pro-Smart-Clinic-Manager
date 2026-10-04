@@ -11,7 +11,7 @@ Findings and evidence: [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
 | Batch | Scope / audit IDs | Depends on | Required evidence before completion | Status |
 | --- | --- | --- | --- | --- |
 | B0 | Document source audit, CV gaps, baseline failures and this repair plan | — | Evidence-backed issue inventory; documentation diff checked | Complete in the commit introducing this plan |
-| B1 | Restore compilation; align toolchain/lockfile; repair smoke test, trim unused dependencies and analyzer diagnostics. MF-001, MF-031 baseline, MF-033 | B0 | `flutter analyze`, deterministic startup test, `flutter test`, `flutter build web` pass; record exact SDK | Startup checks passed; formatting baseline in progress |
+| B1 | Restore compilation; align toolchain/lockfile; repair smoke test, trim unused dependencies and analyzer diagnostics. MF-001, MF-031 baseline, MF-033 | B0 | `flutter analyze`, deterministic startup test, `flutter test`, `flutter build web` pass; record exact SDK | Complete; startup `a7ce807`, formatting in the commit closing B1 |
 | B2 | Introduce actual domain/data/presentation boundaries, repository contracts, injected demo repository, use cases and Riverpod view models; immutable state and model mapping. MF-005, MF-016, MF-017, MF-029 | B1 | Domain imports no Flutter/Firebase; screens use view models; isolated repository/unit/Mockito tests for mapping and state interactions | Proposed |
 | B3 | Explicit demo mode, stable router, role guards, patient/doctor data scoping, safe auth state and session/reset behavior. MF-002, MF-003, MF-004, MF-006, MF-008, MF-020, MF-036 | B2 | All role/path combinations, auth failure/logout races and cross-user reads tested; manually exercise login/logout | Proposed |
 | B4 | Correct booking time, availability/conflicts/retries, appointment lifecycle/categories, working search and deep-link return. MF-009–MF-015 | B3 | Booking and status business rules tested, including midnight/AM-PM/time boundaries and conflicts; patient-to-doctor workflow verified | Proposed |
@@ -77,8 +77,9 @@ These are scheduling options, not time estimates or autonomous future jobs. Sess
 
 | Date (Cairo) | Batch | Commit | Verification | Remaining |
 | --- | --- | --- | --- | --- |
-| 2026-10-04 | B0 | See commit introducing these documents | Source review; analyzer/test failures captured; documentation whitespace check | 36 open findings; runtime verification blocked by MF-001; B1–B7 not started |
-| 2026-10-04 | B1 startup | Commit introducing the startup repair | `flutter analyze --no-pub`: no issues; `flutter test --no-pub`: 3 passed; `flutter build web --no-pub`: passed | MF-001 and MF-033 closed; 34 findings open/partial; B1 formatting next |
+| 2026-10-04 | B0 | [50976bb](https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager/commit/50976bb) | Source review; analyzer/test failures captured; documentation whitespace check | 36 open findings; runtime verification blocked by MF-001; B1–B7 not started |
+| 2026-10-04 | B1 startup | [a7ce807](https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager/commit/a7ce807) | `flutter analyze --no-pub`: no issues; `flutter test --no-pub`: 3 passed; `flutter build web --no-pub`: passed | MF-001 and MF-033 closed; 34 findings open/partial; B1 formatting next |
+| 2026-10-04 | B1 formatting / completion | Commit introducing this log entry | Format check: 33 files, zero changes; analysis: no issues; tests: 3 passed; web build: passed; `flutter pub get --enforce-lockfile`: passed without lockfile changes | B1 complete; B2–B7 remain; MF-031 only startup portion completed |
 
 When a finding closes, record its test/manual evidence and commit. Keep the baseline audit intact as a record of the starting point.
 
@@ -90,4 +91,4 @@ When a finding closes, record its test/manual evidence and commit. Keep the base
 - Added three deterministic startup widget tests: splash timing/onboarding/sign-in in light mode and dark mode, plus early disposal without a pending navigation timer.
 - Splash now cancels its timer and onboarding disposes its page controller. First-run persistence remains open under MF-027.
 - README now describes the implemented demo and actual remaining work. Firebase packages will be added when the adapters are implemented in B6. License selection remains with the owner.
-- Formatting is a separate commit so the behavioral repair can be reviewed independently of expanded Dart formatting.
+- Formatting is a separate commit so the behavioral repair can be reviewed independently of expanded Dart formatting. It includes braces around the existing empty-state return to satisfy the lint after line wrapping; no clinic business rules changed.

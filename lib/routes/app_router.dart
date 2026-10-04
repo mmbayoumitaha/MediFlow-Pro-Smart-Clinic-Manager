@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/providers/app_providers.dart';
 import '../shared/enums/app_enums.dart';
 import '../features/auth/screens/splash_screen.dart';
@@ -39,7 +40,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isAuth = authState.isAuthenticated;
-      final isAuthRoute = state.matchedLocation == '/login' ||
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/' ||
           state.matchedLocation == '/onboarding';
@@ -61,29 +63,63 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (ctx, state) => const SplashScreen()),
-      GoRoute(path: '/onboarding', builder: (ctx, state) => const OnboardingScreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (ctx, state) => const OnboardingScreen(),
+      ),
       GoRoute(path: '/login', builder: (ctx, state) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (ctx, state) => const RegisterScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (ctx, state) => const RegisterScreen(),
+      ),
 
       // ── Patient Shell ──
       StatefulShellRoute.indexedStack(
         builder: (ctx, state, shell) => PatientShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(navigatorKey: _patientShellKey, routes: [
-            GoRoute(path: '/patient', builder: (ctx, state) => const PatientDashboard(), routes: [
-              GoRoute(path: 'book', builder: (ctx, state) => const BookAppointmentScreen()),
-              GoRoute(path: 'prescriptions', builder: (ctx, state) => const PrescriptionHistoryScreen()),
-            ]),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/patient/doctors', builder: (ctx, state) => const DoctorsListScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/patient/appointments', builder: (ctx, state) => const AppointmentsScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/patient/profile', builder: (ctx, state) => const PatientProfileScreen()),
-          ]),
+          StatefulShellBranch(
+            navigatorKey: _patientShellKey,
+            routes: [
+              GoRoute(
+                path: '/patient',
+                builder: (ctx, state) => const PatientDashboard(),
+                routes: [
+                  GoRoute(
+                    path: 'book',
+                    builder: (ctx, state) => const BookAppointmentScreen(),
+                  ),
+                  GoRoute(
+                    path: 'prescriptions',
+                    builder: (ctx, state) => const PrescriptionHistoryScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/doctors',
+                builder: (ctx, state) => const DoctorsListScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/appointments',
+                builder: (ctx, state) => const AppointmentsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/profile',
+                builder: (ctx, state) => const PatientProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
@@ -91,18 +127,39 @@ final routerProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (ctx, state, shell) => DoctorShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(navigatorKey: _doctorShellKey, routes: [
-            GoRoute(path: '/doctor', builder: (ctx, state) => const DoctorDashboard()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/doctor/schedule', builder: (ctx, state) => const DoctorScheduleScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/doctor/patients', builder: (ctx, state) => const DoctorPatientsScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/doctor/profile', builder: (ctx, state) => const DoctorProfileScreen()),
-          ]),
+          StatefulShellBranch(
+            navigatorKey: _doctorShellKey,
+            routes: [
+              GoRoute(
+                path: '/doctor',
+                builder: (ctx, state) => const DoctorDashboard(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/schedule',
+                builder: (ctx, state) => const DoctorScheduleScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/patients',
+                builder: (ctx, state) => const DoctorPatientsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/profile',
+                builder: (ctx, state) => const DoctorProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
@@ -110,18 +167,39 @@ final routerProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (ctx, state, shell) => AdminShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(navigatorKey: _adminShellKey, routes: [
-            GoRoute(path: '/admin', builder: (ctx, state) => const AdminDashboard()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/admin/doctors', builder: (ctx, state) => const ManageDoctorsScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/admin/patients', builder: (ctx, state) => const ManagePatientsScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/admin/billing', builder: (ctx, state) => const BillingScreen()),
-          ]),
+          StatefulShellBranch(
+            navigatorKey: _adminShellKey,
+            routes: [
+              GoRoute(
+                path: '/admin',
+                builder: (ctx, state) => const AdminDashboard(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/doctors',
+                builder: (ctx, state) => const ManageDoctorsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/patients',
+                builder: (ctx, state) => const ManagePatientsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/billing',
+                builder: (ctx, state) => const BillingScreen(),
+              ),
+            ],
+          ),
         ],
       ),
     ],

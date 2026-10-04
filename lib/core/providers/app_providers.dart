@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+
 import '../../shared/enums/app_enums.dart';
 import '../../shared/models/app_models.dart';
 import '../../services/demo_data_service.dart';
@@ -20,9 +21,19 @@ class AuthState {
   final String? error;
   final bool isAuthenticated;
 
-  const AuthState({this.currentUser, this.isLoading = false, this.error, this.isAuthenticated = false});
+  const AuthState({
+    this.currentUser,
+    this.isLoading = false,
+    this.error,
+    this.isAuthenticated = false,
+  });
 
-  AuthState copyWith({UserModel? currentUser, bool? isLoading, String? error, bool? isAuthenticated}) {
+  AuthState copyWith({
+    UserModel? currentUser,
+    bool? isLoading,
+    String? error,
+    bool? isAuthenticated,
+  }) {
     return AuthState(
       currentUser: currentUser ?? this.currentUser,
       isLoading: isLoading ?? this.isLoading,
@@ -42,9 +53,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     final now = DateTime.now();
     final user = UserModel(
-      id: role == UserRole.admin ? 'admin-001' : (role == UserRole.doctor ? 'doc-001' : 'pat-001'),
+      id: role == UserRole.admin
+          ? 'admin-001'
+          : (role == UserRole.doctor ? 'doc-001' : 'pat-001'),
       email: email,
-      fullName: role == UserRole.admin ? 'Admin User' : (role == UserRole.doctor ? 'Dr. Ahmed Hassan' : 'Mariam Saeed'),
+      fullName: role == UserRole.admin
+          ? 'Admin User'
+          : (role == UserRole.doctor ? 'Dr. Ahmed Hassan' : 'Mariam Saeed'),
       phone: '+201001234567',
       role: role,
       gender: role == UserRole.doctor ? Gender.male : Gender.female,
@@ -53,10 +68,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       updatedAt: now,
     );
 
-    state = AuthState(currentUser: user, isAuthenticated: true, isLoading: false);
+    state = AuthState(
+      currentUser: user,
+      isAuthenticated: true,
+      isLoading: false,
+    );
   }
 
-  Future<void> register(String fullName, String email, String password, String phone, UserRole role) async {
+  Future<void> register(
+    String fullName,
+    String email,
+    String password,
+    String phone,
+    UserRole role,
+  ) async {
     state = state.copyWith(isLoading: true, error: null);
     await Future.delayed(const Duration(milliseconds: 1000));
 
@@ -72,7 +97,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       updatedAt: now,
     );
 
-    state = AuthState(currentUser: user, isAuthenticated: true, isLoading: false);
+    state = AuthState(
+      currentUser: user,
+      isAuthenticated: true,
+      isLoading: false,
+    );
   }
 
   void logout() {
@@ -80,13 +109,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
+  (ref) => AuthNotifier(),
+);
 
 // ──────────────────────── DOCTORS ────────────────────────
 
-final doctorsProvider = StateProvider<List<DoctorModel>>((ref) => DemoDataService.doctors);
+final doctorsProvider = StateProvider<List<DoctorModel>>(
+  (ref) => DemoDataService.doctors,
+);
 
-final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>((ref) => null);
+final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>(
+  (ref) => null,
+);
 
 final filteredDoctorsProvider = Provider<List<DoctorModel>>((ref) {
   final doctors = ref.watch(doctorsProvider);
@@ -97,13 +132,18 @@ final filteredDoctorsProvider = Provider<List<DoctorModel>>((ref) {
 
 // ──────────────────────── APPOINTMENTS ────────────────────────
 
-final appointmentsProvider = StateProvider<List<AppointmentModel>>((ref) => DemoDataService.generateAppointments());
+final appointmentsProvider = StateProvider<List<AppointmentModel>>(
+  (ref) => DemoDataService.generateAppointments(),
+);
 
 final upcomingAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
   final appointments = ref.watch(appointmentsProvider);
   final now = DateTime.now();
   return appointments
-      .where((a) => a.dateTime.isAfter(now) && a.status != AppointmentStatus.cancelled)
+      .where(
+        (a) =>
+            a.dateTime.isAfter(now) && a.status != AppointmentStatus.cancelled,
+      )
       .toList()
     ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 });
@@ -112,22 +152,31 @@ final pastAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
   final appointments = ref.watch(appointmentsProvider);
   final now = DateTime.now();
   return appointments
-      .where((a) => a.dateTime.isBefore(now) || a.status == AppointmentStatus.completed)
+      .where(
+        (a) =>
+            a.dateTime.isBefore(now) || a.status == AppointmentStatus.completed,
+      )
       .toList()
     ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 });
 
 // ──────────────────────── PRESCRIPTIONS ────────────────────────
 
-final prescriptionsProvider = StateProvider<List<PrescriptionModel>>((ref) => DemoDataService.generatePrescriptions());
+final prescriptionsProvider = StateProvider<List<PrescriptionModel>>(
+  (ref) => DemoDataService.generatePrescriptions(),
+);
 
 // ──────────────────────── INVOICES ────────────────────────
 
-final invoicesProvider = StateProvider<List<InvoiceModel>>((ref) => DemoDataService.generateInvoices());
+final invoicesProvider = StateProvider<List<InvoiceModel>>(
+  (ref) => DemoDataService.generateInvoices(),
+);
 
 // ──────────────────────── PATIENTS ────────────────────────
 
-final patientsProvider = StateProvider<List<UserModel>>((ref) => DemoDataService.generatePatients());
+final patientsProvider = StateProvider<List<UserModel>>(
+  (ref) => DemoDataService.generatePatients(),
+);
 
 // ──────────────────────── SEARCH ────────────────────────
 

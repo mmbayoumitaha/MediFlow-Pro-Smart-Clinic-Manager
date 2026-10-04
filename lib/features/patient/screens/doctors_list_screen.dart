@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
@@ -25,7 +26,9 @@ class DoctorsListScreen extends ConsumerWidget {
               decoration: InputDecoration(
                 hintText: 'Search doctors...',
                 prefixIcon: const Icon(Icons.search_rounded),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.radiusFull)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                ),
               ),
             ),
           ),
@@ -42,19 +45,30 @@ class DoctorsListScreen extends ConsumerWidget {
                   child: FilterChip(
                     label: const Text('All'),
                     selected: selectedSpecialty == null,
-                    onSelected: (_) => ref.read(selectedSpecialtyProvider.notifier).state = null,
+                    onSelected: (_) =>
+                        ref.read(selectedSpecialtyProvider.notifier).state =
+                            null,
                     selectedColor: AppColors.primaryContainer,
                   ),
                 ),
-                ...MedicalSpecialty.values.take(8).map((s) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text('${s.emoji} ${s.labelEn}'),
-                    selected: selectedSpecialty == s,
-                    onSelected: (_) => ref.read(selectedSpecialtyProvider.notifier).state = selectedSpecialty == s ? null : s,
-                    selectedColor: AppColors.primaryContainer,
-                  ),
-                )),
+                ...MedicalSpecialty.values
+                    .take(8)
+                    .map(
+                      (s) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text('${s.emoji} ${s.labelEn}'),
+                          selected: selectedSpecialty == s,
+                          onSelected: (_) =>
+                              ref
+                                  .read(selectedSpecialtyProvider.notifier)
+                                  .state = selectedSpecialty == s
+                              ? null
+                              : s,
+                          selectedColor: AppColors.primaryContainer,
+                        ),
+                      ),
+                    ),
               ],
             ),
           ),
@@ -62,7 +76,10 @@ class DoctorsListScreen extends ConsumerWidget {
           // Doctor list
           Expanded(
             child: doctors.isEmpty
-                ? const EmptyState(icon: Icons.person_search_rounded, title: 'No doctors found')
+                ? const EmptyState(
+                    icon: Icons.person_search_rounded,
+                    title: 'No doctors found',
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSizes.md),
                     itemCount: doctors.length,

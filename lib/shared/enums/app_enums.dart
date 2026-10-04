@@ -19,7 +19,12 @@ enum AppointmentStatus {
   cancelled('cancelled', 'Cancelled', 'ملغي', 0xFFEF4444),
   noShow('no_show', 'No Show', 'لم يحضر', 0xFF64748B);
 
-  const AppointmentStatus(this.value, this.labelEn, this.labelAr, this.colorValue);
+  const AppointmentStatus(
+    this.value,
+    this.labelEn,
+    this.labelAr,
+    this.colorValue,
+  );
   final String value;
   final String labelEn;
   final String labelAr;

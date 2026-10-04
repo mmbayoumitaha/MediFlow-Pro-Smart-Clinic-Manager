@@ -13,7 +13,7 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-Run formatting with `dart format lib test`. Once the formatting baseline is committed, verify it with:
+Run formatting with `dart format lib test`. Verify the committed formatting baseline with:
 
 ```bash
 dart format --output=none --set-exit-if-changed lib test
