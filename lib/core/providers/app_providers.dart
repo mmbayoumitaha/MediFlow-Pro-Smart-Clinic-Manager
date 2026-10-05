@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
-import '../../shared/enums/app_enums.dart';
-import '../../shared/models/app_models.dart';
-import '../../services/demo_data_service.dart';
+import 'package:mediflow/features/clinic/domain/app_enums.dart';
+import 'package:mediflow/features/clinic/domain/entities.dart';
+import 'package:mediflow/features/clinic/data/demo_fixtures.dart';
 
 // ──────────────────────── THEME ────────────────────────
 
@@ -16,7 +16,7 @@ final localeProvider = StateProvider<Locale>((ref) => const Locale('en'));
 // ──────────────────────── AUTH STATE ────────────────────────
 
 class AuthState {
-  final UserModel? currentUser;
+  final ClinicUser? currentUser;
   final bool isLoading;
   final String? error;
   final bool isAuthenticated;
@@ -29,7 +29,7 @@ class AuthState {
   });
 
   AuthState copyWith({
-    UserModel? currentUser,
+    ClinicUser? currentUser,
     bool? isLoading,
     String? error,
     bool? isAuthenticated,
@@ -52,7 +52,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final now = DateTime.now();
-    final user = UserModel(
+    final user = ClinicUser(
       id: role == UserRole.admin
           ? 'admin-001'
           : (role == UserRole.doctor ? 'doc-001' : 'pat-001'),
@@ -86,7 +86,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 1000));
 
     final now = DateTime.now();
-    final user = UserModel(
+    final user = ClinicUser(
       id: 'user-${now.millisecondsSinceEpoch}',
       email: email,
       fullName: fullName,
@@ -115,15 +115,15 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
 
 // ──────────────────────── DOCTORS ────────────────────────
 
-final doctorsProvider = StateProvider<List<DoctorModel>>(
-  (ref) => DemoDataService.doctors,
+final doctorsProvider = StateProvider<List<Doctor>>(
+  (ref) => DemoFixtures.generateDoctors(),
 );
 
 final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>(
   (ref) => null,
 );
 
-final filteredDoctorsProvider = Provider<List<DoctorModel>>((ref) {
+final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   final doctors = ref.watch(doctorsProvider);
   final specialty = ref.watch(selectedSpecialtyProvider);
   if (specialty == null) return doctors;
@@ -132,11 +132,11 @@ final filteredDoctorsProvider = Provider<List<DoctorModel>>((ref) {
 
 // ──────────────────────── APPOINTMENTS ────────────────────────
 
-final appointmentsProvider = StateProvider<List<AppointmentModel>>(
-  (ref) => DemoDataService.generateAppointments(),
+final appointmentsProvider = StateProvider<List<Appointment>>(
+  (ref) => DemoFixtures.generateAppointments(),
 );
 
-final upcomingAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
+final upcomingAppointmentsProvider = Provider<List<Appointment>>((ref) {
   final appointments = ref.watch(appointmentsProvider);
   final now = DateTime.now();
   return appointments
@@ -148,7 +148,7 @@ final upcomingAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
     ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 });
 
-final pastAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
+final pastAppointmentsProvider = Provider<List<Appointment>>((ref) {
   final appointments = ref.watch(appointmentsProvider);
   final now = DateTime.now();
   return appointments
@@ -162,20 +162,20 @@ final pastAppointmentsProvider = Provider<List<AppointmentModel>>((ref) {
 
 // ──────────────────────── PRESCRIPTIONS ────────────────────────
 
-final prescriptionsProvider = StateProvider<List<PrescriptionModel>>(
-  (ref) => DemoDataService.generatePrescriptions(),
+final prescriptionsProvider = StateProvider<List<Prescription>>(
+  (ref) => DemoFixtures.generatePrescriptions(),
 );
 
 // ──────────────────────── INVOICES ────────────────────────
 
-final invoicesProvider = StateProvider<List<InvoiceModel>>(
-  (ref) => DemoDataService.generateInvoices(),
+final invoicesProvider = StateProvider<List<Invoice>>(
+  (ref) => DemoFixtures.generateInvoices(),
 );
 
 // ──────────────────────── PATIENTS ────────────────────────
 
-final patientsProvider = StateProvider<List<UserModel>>(
-  (ref) => DemoDataService.generatePatients(),
+final patientsProvider = StateProvider<List<ClinicUser>>(
+  (ref) => DemoFixtures.generatePatients(),
 );
 
 // ──────────────────────── SEARCH ────────────────────────

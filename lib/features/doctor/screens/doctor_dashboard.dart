@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
-import '../../../shared/enums/app_enums.dart';
+
+import 'package:mediflow/features/clinic/domain/app_enums.dart';
+
 import '../../../shared/widgets/shared_widgets.dart';
 
 class DoctorDashboard extends ConsumerWidget {

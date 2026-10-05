@@ -1,10 +1,10 @@
-import '../shared/enums/app_enums.dart';
-import '../shared/models/app_models.dart';
+import '../domain/app_enums.dart';
+import '../domain/entities.dart';
 
 /// Provides realistic demo data for offline-first development.
-class DemoDataService {
-  static final List<DoctorModel> doctors = [
-    DoctorModel(
+class DemoFixtures {
+  static List<Doctor> generateDoctors() => [
+    Doctor(
       id: 'doc-001',
       userId: 'u-doc-001',
       fullName: 'Dr. Ahmed Hassan',
@@ -36,7 +36,7 @@ class DemoDataService {
         ),
       ],
     ),
-    DoctorModel(
+    Doctor(
       id: 'doc-002',
       userId: 'u-doc-002',
       fullName: 'Dr. Sara Mohamed',
@@ -63,7 +63,7 @@ class DemoDataService {
         ),
       ],
     ),
-    DoctorModel(
+    Doctor(
       id: 'doc-003',
       userId: 'u-doc-003',
       fullName: 'Dr. Omar Khalil',
@@ -90,7 +90,7 @@ class DemoDataService {
         ),
       ],
     ),
-    DoctorModel(
+    Doctor(
       id: 'doc-004',
       userId: 'u-doc-004',
       fullName: 'Dr. Fatima Ali',
@@ -122,7 +122,7 @@ class DemoDataService {
         ),
       ],
     ),
-    DoctorModel(
+    Doctor(
       id: 'doc-005',
       userId: 'u-doc-005',
       fullName: 'Dr. Youssef Nabil',
@@ -149,7 +149,7 @@ class DemoDataService {
         ),
       ],
     ),
-    DoctorModel(
+    Doctor(
       id: 'doc-006',
       userId: 'u-doc-006',
       fullName: 'Dr. Nora Ibrahim',
@@ -183,10 +183,10 @@ class DemoDataService {
     ),
   ];
 
-  static List<AppointmentModel> generateAppointments() {
-    final now = DateTime.now();
+  static List<Appointment> generateAppointments({DateTime? at}) {
+    final now = at ?? DateTime.now();
     return [
-      AppointmentModel(
+      Appointment(
         id: 'apt-001',
         patientId: 'pat-001',
         patientName: 'Mariam Saeed',
@@ -201,7 +201,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 3)),
         updatedAt: now.subtract(const Duration(days: 2)),
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-002',
         patientId: 'pat-002',
         patientName: 'Hassan Tarek',
@@ -216,7 +216,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 1)),
         updatedAt: now.subtract(const Duration(days: 1)),
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-003',
         patientId: 'pat-003',
         patientName: 'Layla Mahmoud',
@@ -231,7 +231,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 5)),
         updatedAt: now.subtract(const Duration(days: 1)),
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-004',
         patientId: 'pat-001',
         patientName: 'Mariam Saeed',
@@ -246,7 +246,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 2)),
         updatedAt: now,
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-005',
         patientId: 'pat-004',
         patientName: 'Khaled Nasser',
@@ -261,7 +261,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 7)),
         updatedAt: now.subtract(const Duration(days: 3)),
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-006',
         patientId: 'pat-005',
         patientName: 'Dina Fathy',
@@ -276,7 +276,7 @@ class DemoDataService {
         createdAt: now,
         updatedAt: now,
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-007',
         patientId: 'pat-002',
         patientName: 'Hassan Tarek',
@@ -291,7 +291,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 14)),
         updatedAt: now.subtract(const Duration(days: 10)),
       ),
-      AppointmentModel(
+      Appointment(
         id: 'apt-008',
         patientId: 'pat-003',
         patientName: 'Layla Mahmoud',
@@ -309,10 +309,10 @@ class DemoDataService {
     ];
   }
 
-  static List<PrescriptionModel> generatePrescriptions() {
-    final now = DateTime.now();
+  static List<Prescription> generatePrescriptions({DateTime? at}) {
+    final now = at ?? DateTime.now();
     return [
-      PrescriptionModel(
+      Prescription(
         id: 'presc-001',
         appointmentId: 'apt-003',
         patientId: 'pat-003',
@@ -340,7 +340,7 @@ class DemoDataService {
         prescribedDate: now.subtract(const Duration(days: 1)),
         createdAt: now.subtract(const Duration(days: 1)),
       ),
-      PrescriptionModel(
+      Prescription(
         id: 'presc-002',
         appointmentId: 'apt-005',
         patientId: 'pat-004',
@@ -371,10 +371,10 @@ class DemoDataService {
     ];
   }
 
-  static List<InvoiceModel> generateInvoices() {
-    final now = DateTime.now();
+  static List<Invoice> generateInvoices({DateTime? at}) {
+    final now = at ?? DateTime.now();
     return [
-      InvoiceModel(
+      Invoice(
         id: 'inv-001',
         patientId: 'pat-001',
         patientName: 'Mariam Saeed',
@@ -400,7 +400,7 @@ class DemoDataService {
         paidDate: now.subtract(const Duration(days: 2)),
         createdAt: now.subtract(const Duration(days: 2)),
       ),
-      InvoiceModel(
+      Invoice(
         id: 'inv-002',
         patientId: 'pat-002',
         patientName: 'Hassan Tarek',
@@ -424,7 +424,7 @@ class DemoDataService {
         issuedDate: now.subtract(const Duration(days: 1)),
         createdAt: now.subtract(const Duration(days: 1)),
       ),
-      InvoiceModel(
+      Invoice(
         id: 'inv-003',
         patientId: 'pat-004',
         patientName: 'Khaled Nasser',
@@ -448,10 +448,10 @@ class DemoDataService {
     ];
   }
 
-  static List<UserModel> generatePatients() {
-    final now = DateTime.now();
+  static List<ClinicUser> generatePatients({DateTime? at}) {
+    final now = at ?? DateTime.now();
     return [
-      UserModel(
+      ClinicUser(
         id: 'pat-001',
         email: 'mariam@email.com',
         fullName: 'Mariam Saeed',
@@ -463,7 +463,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 120)),
         updatedAt: now,
       ),
-      UserModel(
+      ClinicUser(
         id: 'pat-002',
         email: 'hassan@email.com',
         fullName: 'Hassan Tarek',
@@ -475,7 +475,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 90)),
         updatedAt: now,
       ),
-      UserModel(
+      ClinicUser(
         id: 'pat-003',
         email: 'layla@email.com',
         fullName: 'Layla Mahmoud',
@@ -487,7 +487,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 60)),
         updatedAt: now,
       ),
-      UserModel(
+      ClinicUser(
         id: 'pat-004',
         email: 'khaled@email.com',
         fullName: 'Khaled Nasser',
@@ -499,7 +499,7 @@ class DemoDataService {
         createdAt: now.subtract(const Duration(days: 45)),
         updatedAt: now,
       ),
-      UserModel(
+      ClinicUser(
         id: 'pat-005',
         email: 'dina@email.com',
         fullName: 'Dina Fathy',
