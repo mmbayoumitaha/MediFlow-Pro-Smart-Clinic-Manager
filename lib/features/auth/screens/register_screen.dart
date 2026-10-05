@@ -189,6 +189,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         )
                       : const Text('Create Account'),
                 ),
+                if (authState.error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    authState.error!,
+                    style: const TextStyle(color: AppColors.error),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

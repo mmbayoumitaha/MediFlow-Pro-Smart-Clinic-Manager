@@ -7,8 +7,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 
-import 'package:mediflow/features/clinic/domain/app_enums.dart';
-
 import '../../../shared/widgets/shared_widgets.dart';
 
 class AdminDashboard extends ConsumerWidget {
@@ -19,16 +17,12 @@ class AdminDashboard extends ConsumerWidget {
     final doctors = ref.watch(doctorsProvider);
     final patients = ref.watch(patientsProvider);
     final appointments = ref.watch(appointmentsProvider);
-    final invoices = ref.watch(invoicesProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final totalRevenue = invoices
-        .where((i) => i.paymentStatus == PaymentStatus.paid)
-        .fold<double>(0, (s, i) => s + i.total);
-    final pendingCount = appointments
-        .where((a) => a.status == AppointmentStatus.pending)
-        .length;
+    final metrics = ref.watch(clinicMetricsProvider);
+    final totalRevenue = metrics.paidInvoiceRevenue;
+    final pendingCount = metrics.pending.length;
 
     return Scaffold(
       body: SafeArea(

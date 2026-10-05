@@ -1,96 +1,71 @@
-/// All user role types in MediFlow Pro.
 enum UserRole {
-  patient('patient', 'Patient', 'مريض'),
-  doctor('doctor', 'Doctor', 'طبيب'),
-  admin('admin', 'Admin', 'مدير');
+  patient('patient'),
+  doctor('doctor'),
+  admin('admin');
 
-  const UserRole(this.value, this.labelEn, this.labelAr);
+  const UserRole(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
 }
 
-/// Appointment status lifecycle.
 enum AppointmentStatus {
-  pending('pending', 'Pending', 'قيد الانتظار', 0xFFF59E0B),
-  confirmed('confirmed', 'Confirmed', 'مؤكد', 0xFF3B82F6),
-  inProgress('in_progress', 'In Progress', 'جاري', 0xFF8B5CF6),
-  completed('completed', 'Completed', 'مكتمل', 0xFF10B981),
-  cancelled('cancelled', 'Cancelled', 'ملغي', 0xFFEF4444),
-  noShow('no_show', 'No Show', 'لم يحضر', 0xFF64748B);
+  pending('pending'),
+  confirmed('confirmed'),
+  inProgress('in_progress'),
+  completed('completed'),
+  cancelled('cancelled'),
+  noShow('no_show');
 
-  const AppointmentStatus(
-    this.value,
-    this.labelEn,
-    this.labelAr,
-    this.colorValue,
-  );
+  const AppointmentStatus(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
-  final int colorValue;
 }
 
-/// Medical specialties.
 enum MedicalSpecialty {
-  generalPractice('general_practice', 'General Practice', 'طب عام', '🩺'),
-  cardiology('cardiology', 'Cardiology', 'قلب', '❤️'),
-  dermatology('dermatology', 'Dermatology', 'جلدية', '🧴'),
-  neurology('neurology', 'Neurology', 'أعصاب', '🧠'),
-  orthopedics('orthopedics', 'Orthopedics', 'عظام', '🦴'),
-  pediatrics('pediatrics', 'Pediatrics', 'أطفال', '👶'),
-  ophthalmology('ophthalmology', 'Ophthalmology', 'عيون', '👁️'),
-  dentistry('dentistry', 'Dentistry', 'أسنان', '🦷'),
-  gynecology('gynecology', 'Gynecology', 'نساء وتوليد', '🤰'),
-  urology('urology', 'Urology', 'مسالك بولية', '🏥'),
-  ent('ent', 'ENT', 'أنف أذن حنجرة', '👂'),
-  psychiatry('psychiatry', 'Psychiatry', 'نفسية', '🧘'),
-  radiology('radiology', 'Radiology', 'أشعة', '📡'),
-  laboratory('laboratory', 'Laboratory', 'مختبر', '🔬');
+  generalPractice('general_practice'),
+  cardiology('cardiology'),
+  dermatology('dermatology'),
+  neurology('neurology'),
+  orthopedics('orthopedics'),
+  pediatrics('pediatrics'),
+  ophthalmology('ophthalmology'),
+  dentistry('dentistry'),
+  gynecology('gynecology'),
+  urology('urology'),
+  ent('ent'),
+  psychiatry('psychiatry'),
+  radiology('radiology'),
+  laboratory('laboratory');
 
-  const MedicalSpecialty(this.value, this.labelEn, this.labelAr, this.emoji);
+  const MedicalSpecialty(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
-  final String emoji;
 }
 
-/// Gender enum.
 enum Gender {
-  male('male', 'Male', 'ذكر'),
-  female('female', 'Female', 'أنثى');
+  male('male'),
+  female('female');
 
-  const Gender(this.value, this.labelEn, this.labelAr);
+  const Gender(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
 }
 
-/// Payment status.
 enum PaymentStatus {
-  unpaid('unpaid', 'Unpaid', 'غير مدفوع'),
-  paid('paid', 'Paid', 'مدفوع'),
-  partial('partial', 'Partial', 'جزئي'),
-  refunded('refunded', 'Refunded', 'مسترد');
+  unpaid('unpaid'),
+  paid('paid'),
+  partial('partial'),
+  refunded('refunded');
 
-  const PaymentStatus(this.value, this.labelEn, this.labelAr);
+  const PaymentStatus(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
 }
 
-/// Day of week for availability.
 enum DayOfWeek {
-  monday('monday', 'Monday', 'الاثنين'),
-  tuesday('tuesday', 'Tuesday', 'الثلاثاء'),
-  wednesday('wednesday', 'Wednesday', 'الأربعاء'),
-  thursday('thursday', 'Thursday', 'الخميس'),
-  friday('friday', 'Friday', 'الجمعة'),
-  saturday('saturday', 'Saturday', 'السبت'),
-  sunday('sunday', 'Sunday', 'الأحد');
+  monday('monday'),
+  tuesday('tuesday'),
+  wednesday('wednesday'),
+  thursday('thursday'),
+  friday('friday'),
+  saturday('saturday'),
+  sunday('sunday');
 
-  const DayOfWeek(this.value, this.labelEn, this.labelAr);
+  const DayOfWeek(this.value);
   final String value;
-  final String labelEn;
-  final String labelAr;
 }

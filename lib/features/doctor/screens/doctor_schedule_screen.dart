@@ -11,8 +11,7 @@ class DoctorScheduleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final apts = ref.watch(appointmentsProvider);
-    apts.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+    final apts = ref.watch(sortedAppointmentsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Schedule')),

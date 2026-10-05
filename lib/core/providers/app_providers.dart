@@ -1,187 +1,103 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mediflow/features/clinic/domain/app_enums.dart';
-import 'package:mediflow/features/clinic/domain/entities.dart';
-import 'package:mediflow/features/clinic/data/demo_fixtures.dart';
+import '../../features/auth/domain/auth_use_cases.dart';
+import '../../features/auth/presentation/auth_view_model.dart';
+import '../../features/clinic/domain/app_enums.dart';
+import '../../features/clinic/domain/book_appointment.dart';
+import '../../features/clinic/domain/clinic_queries.dart';
+import '../../features/clinic/domain/clinic_snapshot.dart';
+import '../../features/clinic/domain/entities.dart';
+import '../../features/clinic/presentation/booking_view_model.dart';
+import '../../features/clinic/presentation/clinic_view_model.dart';
+import 'app_dependencies.dart';
 
-// ──────────────────────── THEME ────────────────────────
+export '../../features/auth/presentation/auth_view_model.dart' show AuthState;
+export '../../features/clinic/presentation/enum_labels.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
-
-// ──────────────────────── LOCALE ────────────────────────
-
 final localeProvider = StateProvider<Locale>((ref) => const Locale('en'));
 
-// ──────────────────────── AUTH STATE ────────────────────────
+final authProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return AuthViewModel(
+    SignIn(repository),
+    RegisterUser(repository),
+    SignOut(repository),
+  );
+});
 
-class AuthState {
-  final ClinicUser? currentUser;
-  final bool isLoading;
-  final String? error;
-  final bool isAuthenticated;
-
-  const AuthState({
-    this.currentUser,
-    this.isLoading = false,
-    this.error,
-    this.isAuthenticated = false,
-  });
-
-  AuthState copyWith({
-    ClinicUser? currentUser,
-    bool? isLoading,
-    String? error,
-    bool? isAuthenticated,
-  }) {
-    return AuthState(
-      currentUser: currentUser ?? this.currentUser,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-    );
-  }
-}
-
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
-
-  /// Demo login — accepts any of the 3 roles.
-  Future<void> login(String email, String password, UserRole role) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    final now = DateTime.now();
-    final user = ClinicUser(
-      id: role == UserRole.admin
-          ? 'admin-001'
-          : (role == UserRole.doctor ? 'doc-001' : 'pat-001'),
-      email: email,
-      fullName: role == UserRole.admin
-          ? 'Admin User'
-          : (role == UserRole.doctor ? 'Dr. Ahmed Hassan' : 'Mariam Saeed'),
-      phone: '+201001234567',
-      role: role,
-      gender: role == UserRole.doctor ? Gender.male : Gender.female,
-      isActive: true,
-      createdAt: now.subtract(const Duration(days: 120)),
-      updatedAt: now,
+final clinicViewModelProvider =
+    StateNotifierProvider<ClinicViewModel, AsyncValue<ClinicSnapshot>>(
+      (ref) => ClinicViewModel(ref.watch(clinicRepositoryProvider)),
     );
 
-    state = AuthState(
-      currentUser: user,
-      isAuthenticated: true,
-      isLoading: false,
-    );
-  }
-
-  Future<void> register(
-    String fullName,
-    String email,
-    String password,
-    String phone,
-    UserRole role,
-  ) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await Future.delayed(const Duration(milliseconds: 1000));
-
-    final now = DateTime.now();
-    final user = ClinicUser(
-      id: 'user-${now.millisecondsSinceEpoch}',
-      email: email,
-      fullName: fullName,
-      phone: phone,
-      role: role,
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
-    );
-
-    state = AuthState(
-      currentUser: user,
-      isAuthenticated: true,
-      isLoading: false,
-    );
-  }
-
-  void logout() {
-    state = const AuthState();
-  }
-}
-
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(),
+final clinicSnapshotProvider = Provider<ClinicSnapshot>(
+  (ref) => ref.watch(clinicViewModelProvider).valueOrNull ?? ClinicSnapshot(),
 );
-
-// ──────────────────────── DOCTORS ────────────────────────
-
-final doctorsProvider = StateProvider<List<Doctor>>(
-  (ref) => DemoFixtures.generateDoctors(),
+final doctorsProvider = Provider<List<Doctor>>(
+  (ref) => ref.watch(clinicSnapshotProvider).doctors,
+);
+final patientsProvider = Provider<List<ClinicUser>>(
+  (ref) => ref.watch(clinicSnapshotProvider).patients,
+);
+final appointmentsProvider = Provider<List<Appointment>>(
+  (ref) => ref.watch(clinicSnapshotProvider).appointments,
+);
+final prescriptionsProvider = Provider<List<Prescription>>(
+  (ref) => ref.watch(clinicSnapshotProvider).prescriptions,
+);
+final invoicesProvider = Provider<List<Invoice>>(
+  (ref) => ref.watch(clinicSnapshotProvider).invoices,
 );
 
 final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>(
   (ref) => null,
 );
-
-final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
-  final doctors = ref.watch(doctorsProvider);
-  final specialty = ref.watch(selectedSpecialtyProvider);
-  if (specialty == null) return doctors;
-  return doctors.where((d) => d.specialty == specialty).toList();
-});
-
-// ──────────────────────── APPOINTMENTS ────────────────────────
-
-final appointmentsProvider = StateProvider<List<Appointment>>(
-  (ref) => DemoFixtures.generateAppointments(),
-);
-
-final upcomingAppointmentsProvider = Provider<List<Appointment>>((ref) {
-  final appointments = ref.watch(appointmentsProvider);
-  final now = DateTime.now();
-  return appointments
-      .where(
-        (a) =>
-            a.dateTime.isAfter(now) && a.status != AppointmentStatus.cancelled,
-      )
-      .toList()
-    ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
-});
-
-final pastAppointmentsProvider = Provider<List<Appointment>>((ref) {
-  final appointments = ref.watch(appointmentsProvider);
-  final now = DateTime.now();
-  return appointments
-      .where(
-        (a) =>
-            a.dateTime.isBefore(now) || a.status == AppointmentStatus.completed,
-      )
-      .toList()
-    ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
-});
-
-// ──────────────────────── PRESCRIPTIONS ────────────────────────
-
-final prescriptionsProvider = StateProvider<List<Prescription>>(
-  (ref) => DemoFixtures.generatePrescriptions(),
-);
-
-// ──────────────────────── INVOICES ────────────────────────
-
-final invoicesProvider = StateProvider<List<Invoice>>(
-  (ref) => DemoFixtures.generateInvoices(),
-);
-
-// ──────────────────────── PATIENTS ────────────────────────
-
-final patientsProvider = StateProvider<List<ClinicUser>>(
-  (ref) => DemoFixtures.generatePatients(),
-);
-
-// ──────────────────────── SEARCH ────────────────────────
-
 final searchQueryProvider = StateProvider<String>((ref) => '');
+final filteredDoctorsProvider = Provider<List<Doctor>>(
+  (ref) => ClinicQueries.doctors(
+    ref.watch(doctorsProvider),
+    ref.watch(selectedSpecialtyProvider),
+    ref.watch(searchQueryProvider),
+  ),
+);
+final sortedAppointmentsProvider = Provider<List<Appointment>>(
+  (ref) => ClinicQueries.schedule(ref.watch(appointmentsProvider)),
+);
+final upcomingAppointmentsProvider = Provider<List<Appointment>>(
+  (ref) => ClinicQueries.upcoming(
+    ref.watch(appointmentsProvider),
+    ref.watch(clockProvider)(),
+  ),
+);
+final pastAppointmentsProvider = Provider<List<Appointment>>(
+  (ref) => ClinicQueries.past(
+    ref.watch(appointmentsProvider),
+    ref.watch(clockProvider)(),
+  ),
+);
+final clinicMetricsProvider = Provider<ClinicMetrics>(
+  (ref) => ClinicMetrics(
+    ref.watch(clinicSnapshotProvider),
+    ref.watch(clockProvider)(),
+  ),
+);
 
-// ──────────────────────── BOTTOM NAV INDEX ────────────────────────
+final bookingProvider =
+    StateNotifierProvider.autoDispose<BookingViewModel, BookingState>((ref) {
+      // Dispose a pending presentation operation when the signed-in identity changes.
+      ref.watch(authProvider.select((state) => state.currentUser?.id));
+      return BookingViewModel(
+        BookAppointment(
+          ref.watch(clinicRepositoryProvider),
+          now: ref.watch(clockProvider),
+          newId: ref.watch(idGeneratorProvider),
+        ),
+        () => ref.read(authProvider).currentUser,
+      );
+    });
 
-final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
+final bookingDateOptionsProvider = Provider<List<DateTime>>(
+  (ref) => ClinicQueries.dateOptions(ref.watch(clockProvider)()),
+);

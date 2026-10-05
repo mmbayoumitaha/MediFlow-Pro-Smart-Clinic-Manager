@@ -25,6 +25,8 @@ class DoctorsListScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.md),
             child: TextField(
+              onChanged: (query) =>
+                  ref.read(searchQueryProvider.notifier).state = query,
               decoration: InputDecoration(
                 hintText: 'Search doctors...',
                 prefixIcon: const Icon(Icons.search_rounded),
