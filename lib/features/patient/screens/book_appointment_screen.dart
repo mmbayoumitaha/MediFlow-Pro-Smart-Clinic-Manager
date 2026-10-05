@@ -5,10 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 
-import 'package:mediflow/features/clinic/domain/app_enums.dart';
 import 'package:mediflow/features/clinic/domain/entities.dart';
 
-import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 
 class BookAppointmentScreen extends ConsumerStatefulWidget {
@@ -43,7 +41,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     super.dispose();
   }
 
-  void _book() {
+  Future<void> _book() async {
     if (_selectedDoctor == null ||
         _selectedDate == null ||
         _selectedTime == null) {
@@ -52,23 +50,34 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
       ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
-    final user = ref.read(authProvider).currentUser!;
-    final now = DateTime.now();
-    final apt = Appointment(
-      id: const Uuid().v4(),
-      patientId: user.id,
-      patientName: user.fullName,
-      doctorId: _selectedDoctor!.id,
-      doctorName: _selectedDoctor!.fullName,
-      specialty: _selectedDoctor!.specialty,
-      dateTime: _selectedDate!,
-      status: AppointmentStatus.pending,
-      reason: _reasonCtrl.text,
-      fee: _selectedDoctor!.consultationFee,
-      createdAt: now,
-      updatedAt: now,
+    final selected = DateFormat('hh:mm a').parseStrict(_selectedTime!);
+    final date = _selectedDate!;
+    final scheduledAt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      selected.hour,
+      selected.minute,
     );
-    ref.read(appointmentsProvider.notifier).update((s) => [apt, ...s]);
+    final booked = await ref
+        .read(bookingProvider.notifier)
+        .book(
+          doctorId: _selectedDoctor!.id,
+          dateTime: scheduledAt,
+          reason: _reasonCtrl.text,
+        );
+    if (!mounted) return;
+    if (!booked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ref.read(bookingProvider).error ??
+                'Booking is already in progress.',
+          ),
+        ),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Appointment booked successfully!'),
@@ -83,6 +92,8 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     final doctors = ref.watch(doctorsProvider);
+    final booking = ref.watch(bookingProvider);
+    final dates = ref.watch(bookingDateOptionsProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -162,14 +173,15 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               height: 80,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: 14,
+                itemCount: dates.length,
                 itemBuilder: (ctx, i) {
-                  final date = DateTime.now().add(Duration(days: i + 1));
+                  final date = dates[i];
                   final sel =
                       _selectedDate != null &&
                       _selectedDate!.day == date.day &&
                       _selectedDate!.month == date.month;
                   return GestureDetector(
+                    key: ValueKey(date),
                     onTap: () => setState(() => _selectedDate = date),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
@@ -284,9 +296,11 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               const SizedBox(height: 16),
             ],
             FilledButton.icon(
-              onPressed: _book,
+              onPressed: booking.isSubmitting ? null : _book,
               icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Confirm Booking'),
+              label: Text(
+                booking.isSubmitting ? 'Booking...' : 'Confirm Booking',
+              ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 52),
               ),

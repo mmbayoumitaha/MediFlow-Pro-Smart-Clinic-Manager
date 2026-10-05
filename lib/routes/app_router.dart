@@ -28,19 +28,16 @@ import '../features/admin/screens/manage_doctors_screen.dart';
 import '../features/admin/screens/manage_patients_screen.dart';
 import '../features/admin/screens/billing_screen.dart';
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _patientShellKey = GlobalKey<NavigatorState>();
-final _doctorShellKey = GlobalKey<NavigatorState>();
-final _adminShellKey = GlobalKey<NavigatorState>();
-
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
-  return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+  final refresh = ValueNotifier<int>(0);
+  ref.listen<AuthState>(authProvider, (_, _) => refresh.value++);
+  ref.onDispose(refresh.dispose);
+  final router = GoRouter(
+    navigatorKey: GlobalKey<NavigatorState>(),
+    refreshListenable: refresh,
     initialLocation: '/',
-    debugLogDiagnostics: true,
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isAuth = authState.isAuthenticated;
       final isAuthRoute =
           state.matchedLocation == '/login' ||
@@ -80,7 +77,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (ctx, state, shell) => PatientShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
-            navigatorKey: _patientShellKey,
             routes: [
               GoRoute(
                 path: '/patient',
@@ -130,7 +126,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (ctx, state, shell) => DoctorShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
-            navigatorKey: _doctorShellKey,
             routes: [
               GoRoute(
                 path: '/doctor',
@@ -170,7 +165,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (ctx, state, shell) => AdminShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
-            navigatorKey: _adminShellKey,
             routes: [
               GoRoute(
                 path: '/admin',
@@ -206,4 +200,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 });

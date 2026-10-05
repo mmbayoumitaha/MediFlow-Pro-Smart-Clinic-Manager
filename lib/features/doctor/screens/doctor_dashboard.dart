@@ -6,8 +6,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 
-import 'package:mediflow/features/clinic/domain/app_enums.dart';
-
 import '../../../shared/widgets/shared_widgets.dart';
 
 class DoctorDashboard extends ConsumerWidget {
@@ -16,19 +14,10 @@ class DoctorDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).currentUser;
-    final allApts = ref.watch(appointmentsProvider);
-    final todayApts = allApts.where((a) {
-      final now = DateTime.now();
-      return a.dateTime.day == now.day &&
-          a.dateTime.month == now.month &&
-          a.dateTime.year == now.year;
-    }).toList();
-    final pendingApts = allApts
-        .where((a) => a.status == AppointmentStatus.pending)
-        .toList();
-    final completedApts = allApts
-        .where((a) => a.status == AppointmentStatus.completed)
-        .toList();
+    final metrics = ref.watch(clinicMetricsProvider);
+    final todayApts = metrics.today;
+    final pendingApts = metrics.pending;
+    final completedApts = metrics.completed;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -112,7 +101,7 @@ class DoctorDashboard extends ConsumerWidget {
                   StatCard(
                     title: 'Total Revenue',
                     value:
-                        '\$${completedApts.fold<double>(0, (s, a) => s + a.fee).toStringAsFixed(0)}',
+                        '\$${metrics.completedAppointmentFees.toStringAsFixed(0)}',
                     icon: Icons.payments_rounded,
                     gradient: AppColors.accentGradient,
                   ),

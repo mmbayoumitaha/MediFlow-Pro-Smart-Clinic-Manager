@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../clinic/presentation/clinic_data_gate.dart';
+
 class PatientShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
   const PatientShell({super.key, required this.navigationShell});
@@ -8,7 +10,7 @@ class PatientShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: ClinicDataGate(child: navigationShell),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (i) => navigationShell.goBranch(

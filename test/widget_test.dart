@@ -11,9 +11,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [themeModeProvider.overrideWith((ref) => mode)],
       );
-      final router = container.read(routerProvider);
       addTearDown(() {
-        router.dispose();
         container.dispose();
       });
 
@@ -56,7 +54,6 @@ void main() {
     final container = ProviderContainer();
     final router = container.read(routerProvider);
     addTearDown(() {
-      router.dispose();
       container.dispose();
     });
 
