@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
-import '../../../shared/enums/app_enums.dart';
-import '../../../shared/models/app_models.dart';
+
+import 'package:mediflow/features/clinic/domain/app_enums.dart';
+import 'package:mediflow/features/clinic/domain/entities.dart';
 
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
@@ -18,7 +19,7 @@ class BookAppointmentScreen extends ConsumerStatefulWidget {
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
-  DoctorModel? _selectedDoctor;
+  Doctor? _selectedDoctor;
   DateTime? _selectedDate;
   String? _selectedTime;
   final _reasonCtrl = TextEditingController();
@@ -53,7 +54,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     }
     final user = ref.read(authProvider).currentUser!;
     final now = DateTime.now();
-    final apt = AppointmentModel(
+    final apt = Appointment(
       id: const Uuid().v4(),
       patientId: user.id,
       patientName: user.fullName,
