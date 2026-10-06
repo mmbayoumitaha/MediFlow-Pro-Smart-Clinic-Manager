@@ -24,19 +24,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPage(
       icon: Icons.calendar_month_rounded,
       title: 'Book Appointments',
-      subtitle: 'Schedule visits with top doctors in just a few taps. Get reminders so you never miss an appointment.',
+      subtitle: 'Explore appointment booking with fictional doctors and patients in an offline demo.',
       color: AppColors.primary,
     ),
     _OnboardingPage(
       icon: Icons.medical_information_rounded,
       title: 'Medical Records',
-      subtitle: 'Access your complete medical history, prescriptions, and test results securely from anywhere.',
+      subtitle: 'Browse sample prescriptions in the patient portal. Demo changes last until reset or restart.',
       color: AppColors.secondary,
     ),
     _OnboardingPage(
       icon: Icons.analytics_rounded,
       title: 'Smart Analytics',
-      subtitle: 'Doctors and admins get powerful dashboards with real-time insights to make better decisions.',
+      subtitle: 'Explore doctor and admin dashboards with sample clinic data. Chart series are currently illustrative.',
       color: AppColors.accent,
     ),
   ];

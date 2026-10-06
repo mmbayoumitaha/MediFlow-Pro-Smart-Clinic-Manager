@@ -109,3 +109,17 @@ final bookingProvider =
 final bookingDateOptionsProvider = Provider<List<DateTime>>(
   (ref) => ClinicQueries.dateOptions(ref.watch(clockProvider)()),
 );
+
+/// Reset the whole synthetic clinic, including registered identities and pending
+/// view-model operations. Logout alone preserves records for role switching.
+final resetDemoProvider = Provider<void Function()>(
+  (ref) => () {
+    ref.invalidate(authProvider);
+    ref.invalidate(authRepositoryProvider);
+    ref.invalidate(clinicRepositoryProvider);
+    ref.invalidate(clinicViewModelProvider);
+    ref.invalidate(bookingProvider);
+    ref.invalidate(searchQueryProvider);
+    ref.invalidate(selectedSpecialtyProvider);
+  },
+);

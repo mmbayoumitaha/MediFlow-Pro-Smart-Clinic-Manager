@@ -164,4 +164,37 @@ void main() {
     pending.complete(user);
     await login;
   });
+
+  test(
+    'logout failure clears identity and exposes a safe retry message',
+    () async {
+      when(repository.login(any, any, any)).thenAnswer((_) async => user);
+      when(repository.logout()).thenThrow(Exception('internal session token'));
+      final model = createViewModel();
+      addTearDown(model.dispose);
+      await model.login(user.email, 'dummy123', UserRole.patient);
+      await model.logout();
+      expect(model.state.currentUser, isNull);
+      expect(model.state.isAuthenticated, isFalse);
+      expect(
+        model.state.error,
+        'Could not finish signing out. Please try again.',
+      );
+    },
+  );
+
+  test('late logout failure does not clear a newer login', () async {
+    final pending = Completer<void>();
+    when(repository.login(any, any, any)).thenAnswer((_) async => user);
+    when(repository.logout()).thenAnswer((_) => pending.future);
+    final model = createViewModel();
+    addTearDown(model.dispose);
+    final logout = model.logout();
+    await model.login(user.email, 'dummy123', UserRole.patient);
+    pending.completeError(Exception('old session failure'));
+    await logout;
+    expect(model.state.currentUser, user);
+    expect(model.state.isAuthenticated, isTrue);
+    expect(model.state.error, isNull);
+  });
 }

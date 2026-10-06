@@ -6,13 +6,13 @@ The project is being repaired in tested batches. [The repair plan](docs/REPAIR_P
 
 ## Current functionality
 
-- Separate patient, doctor and administrator screens with persistent tab navigation using GoRouter.
+- Patient, doctor and administrator portals with role-checked GoRouter routes and persistent tab navigation.
 - Doctor directory with working name/specialty search and filters, appointment booking and appointment/prescription lists backed by demo fixtures.
-- Doctor schedule and patient browser; new demo registrations add linked patient/doctor profiles.
+- Patient-owned appointment/prescription/invoice reads; doctors see their own schedule and associated patients. New demo registrations add linked patient/doctor profiles.
 - Administrator overview, billing lists and fl_chart visualizations.
 - Material 3 light/dark themes using Flutter's default fonts; the app no longer downloads Inter through Google Fonts.
 
-Some visible actions are still placeholders. Role authorization, per-user data scoping, working-hours/conflict validation and chart calculations remain under repair. The demo contains fictional records; do not enter real patient information.
+Some visible actions are still placeholders. Working-hours/conflict validation, appointment lifecycle and chart calculations remain under repair. Route guards and scoped reads enforce demo visibility; production backend authorization still requires the planned Firebase rules. The demo contains fictional records; do not enter real patient information.
 
 ## Run the demo
 
@@ -25,9 +25,9 @@ flutter pub get
 flutter run -d chrome
 ```
 
-On the login screen, select Patient, Doctor or Admin. The prefilled `demo@mediflow.com` / `password123` values open the selected demo role. Authentication is simulated; these are not real backend credentials.
+On the login screen, select Patient, Doctor or Admin. The prefilled `demo@mediflow.com` / `password123` values open the selected demo role. Authentication is simulated: any dummy password of at least six characters is accepted. Never enter a real password. The role selector applies only to this shared demo email; seeded and newly registered accounts retain their record’s role.
 
-Demo changes last for the current application session and reset when the app restarts. Initial dependency installation requires an Internet connection. The running demo uses local fixtures; a cold offline browser launch and browser caching have not been verified.
+Demo registrations and bookings stay in memory across logout/account switches, so you can explore the same clinic from several roles. Logout clears account reads, search and specialty filters. **Reset demo**, available in each portal and on login, restores fixtures and signs out after confirmation; app restart also resets everything. Theme/locale preferences last for the running app and are not changed by clinic reset. Initial dependency installation requires an Internet connection. The running demo uses local fixtures; a cold offline browser launch and browser caching have not been verified.
 
 ## Development checks
 
@@ -39,7 +39,7 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-The 46 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth and refresh races, registration, role sign-in/logout, selected-time booking and loading/error/retry UI. Complete clinic lifecycle and authorization checks remain in subsequent batches. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
+The 65 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, registration and role retention, all portal role/path combinations, per-account visibility, selected-time booking and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links and cancel/confirm reset. Complete clinic lifecycle and Firebase authorization checks remain in subsequent batches. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
 
 Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
 
