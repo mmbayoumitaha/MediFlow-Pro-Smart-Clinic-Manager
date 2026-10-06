@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../clinic/domain/entities.dart';
 import '../../../shared/widgets/shared_widgets.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -54,7 +55,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
     );
   }
 
-  Widget _buildList(List apts, String emptyMsg) {
+  Widget _buildList(List<Appointment> apts, String emptyMsg) {
     if (apts.isEmpty) {
       return EmptyState(icon: Icons.event_busy_rounded, title: emptyMsg);
     }

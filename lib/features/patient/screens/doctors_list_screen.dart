@@ -55,24 +55,19 @@ class DoctorsListScreen extends ConsumerWidget {
                     selectedColor: AppColors.primaryContainer,
                   ),
                 ),
-                ...MedicalSpecialty.values
-                    .take(8)
-                    .map(
-                      (s) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text('${s.emoji} ${s.labelEn}'),
-                          selected: selectedSpecialty == s,
-                          onSelected: (_) =>
-                              ref
-                                  .read(selectedSpecialtyProvider.notifier)
-                                  .state = selectedSpecialty == s
-                              ? null
-                              : s,
-                          selectedColor: AppColors.primaryContainer,
-                        ),
-                      ),
+                ...MedicalSpecialty.values.map(
+                  (s) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text('${s.emoji} ${s.labelEn}'),
+                      selected: selectedSpecialty == s,
+                      onSelected: (_) =>
+                          ref.read(selectedSpecialtyProvider.notifier).state =
+                              selectedSpecialty == s ? null : s,
+                      selectedColor: AppColors.primaryContainer,
                     ),
+                  ),
+                ),
               ],
             ),
           ),

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/providers/app_providers.dart';
 
-import 'package:mediflow/features/clinic/domain/app_enums.dart';
+import 'route_access.dart';
 
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
@@ -37,28 +37,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     initialLocation: '/',
     redirect: (context, state) {
-      final authState = ref.read(authProvider);
-      final isAuth = authState.isAuthenticated;
-      final isAuthRoute =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register' ||
-          state.matchedLocation == '/' ||
-          state.matchedLocation == '/onboarding';
-
-      if (!isAuth && !isAuthRoute) return '/login';
-      if (isAuth && isAuthRoute) {
-        switch (authState.currentUser?.role) {
-          case UserRole.patient:
-            return '/patient';
-          case UserRole.doctor:
-            return '/doctor';
-          case UserRole.admin:
-            return '/admin';
-          default:
-            return '/login';
-        }
-      }
-      return null;
+      return RouteAccess.redirect(
+        state.uri.path,
+        ref.read(authProvider).currentUser,
+      );
     },
     routes: [
       GoRoute(path: '/', builder: (ctx, state) => const SplashScreen()),
