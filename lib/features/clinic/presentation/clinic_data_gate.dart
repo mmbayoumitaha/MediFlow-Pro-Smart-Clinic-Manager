@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../auth/presentation/demo_notice.dart';
 import '../domain/clinic_failure.dart';
 
 /// All three portals share repository loading, failure and retry behavior.
@@ -38,6 +39,7 @@ class ClinicDataGate extends ConsumerWidget {
     }
     return Column(
       children: [
+        const DemoNotice(),
         if (data.isLoading) const LinearProgressIndicator(),
         if (data.hasError)
           MaterialBanner(

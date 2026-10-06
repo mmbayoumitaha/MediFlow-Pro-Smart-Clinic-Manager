@@ -70,12 +70,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Create Account', style: theme.textTheme.displaySmall),
                 const SizedBox(height: 4),
                 Text(
-                  'Join MediFlow Pro today',
+                  'Create a temporary demo account',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.slate500,
                   ),
                 ),
                 const SizedBox(height: 24),
+                const Text(
+                  'Use fictional details and a dummy password. Passwords are '
+                  'not checked or stored. Accounts last until demo reset or '
+                  'app restart; signing out keeps them.',
+                ),
+                const SizedBox(height: 16),
                 // Role
                 Row(
                   children: [UserRole.patient, UserRole.doctor].map((r) {
@@ -150,7 +156,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _passCtrl,
                   obscureText: _obscure,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Dummy password (6+ characters)',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(

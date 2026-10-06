@@ -52,11 +52,16 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(role.labelEn));
       await tester.pump();
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Sign In'));
       await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
       await tester.pumpAndSettle();
       expect(container.read(routerProvider), same(router));
       expect(router.routeInformationProvider.value.uri.path, '/${role.value}');
       expect(container.read(authProvider).isAuthenticated, isTrue);
+      expect(
+        find.textContaining('Offline demo · Fictional data'),
+        findsOneWidget,
+      );
       expect(
         container.read(doctorsProvider),
         hasLength(role == UserRole.doctor ? 1 : 6),

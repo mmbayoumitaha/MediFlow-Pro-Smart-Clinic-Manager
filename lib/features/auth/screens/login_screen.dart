@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../presentation/demo_notice.dart';
 
 import 'package:mediflow/features/clinic/domain/app_enums.dart';
 
@@ -72,15 +73,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Text('Welcome Back', style: theme.textTheme.displaySmall),
                 const SizedBox(height: 4),
                 Text(
-                  'Sign in to continue to MediFlow Pro',
+                  'Explore MediFlow Pro with fictional clinic data',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.slate500,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                const Text(
+                  'Offline demo: no real authentication. Passwords are not '
+                  'checked or stored. Use dummy details only.',
+                ),
+                const SizedBox(height: 16),
 
                 // Role selector
-                Text('Login as', style: theme.textTheme.titleSmall),
+                Text('Demo role', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 8),
+                const Text(
+                  'Role selection applies to demo@mediflow.com only. '
+                  'Other demo accounts keep their registered role.',
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: UserRole.values.map((role) {
@@ -144,7 +155,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Dummy password (6+ characters)',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -164,8 +175,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
-                    child: const Text('Forgot Password?'),
+                    onPressed: () => confirmDemoReset(context, ref),
+                    child: const Text('Reset demo'),
                   ),
                 ),
                 const SizedBox(height: 16),
