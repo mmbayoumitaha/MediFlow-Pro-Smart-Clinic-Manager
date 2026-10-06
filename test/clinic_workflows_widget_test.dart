@@ -16,6 +16,22 @@ import 'mocks/repositories.mocks.dart';
 
 void main() {
   final now = DateTime(2026, 10, 5, 9);
+  const portalPaths = [
+    '/patient',
+    '/patient/book',
+    '/patient/prescriptions',
+    '/patient/doctors',
+    '/patient/appointments',
+    '/patient/profile',
+    '/doctor',
+    '/doctor/schedule',
+    '/doctor/patients',
+    '/doctor/profile',
+    '/admin',
+    '/admin/doctors',
+    '/admin/patients',
+    '/admin/billing',
+  ];
 
   for (final role in UserRole.values) {
     testWidgets('${role.value} signs in and out using the same owned router', (
@@ -41,10 +57,38 @@ void main() {
       expect(container.read(routerProvider), same(router));
       expect(router.routeInformationProvider.value.uri.path, '/${role.value}');
       expect(container.read(authProvider).isAuthenticated, isTrue);
-      expect(container.read(doctorsProvider), hasLength(6));
+      expect(
+        container.read(doctorsProvider),
+        hasLength(role == UserRole.doctor ? 1 : 6),
+      );
+      for (final path in portalPaths) {
+        router.go('$path?source=direct-link');
+        await tester.pumpAndSettle();
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          path.startsWith('/${role.value}/') || path == '/${role.value}'
+              ? path
+              : '/${role.value}',
+          reason: '${role.value}: $path',
+        );
+        expect(tester.takeException(), isNull);
+      }
+      for (final path in ['/', '/login', '/register', '/onboarding']) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          '/${role.value}',
+        );
+      }
       await container.read(authProvider.notifier).logout();
       await tester.pumpAndSettle();
       expect(find.text('Welcome Back'), findsOneWidget);
+      for (final path in portalPaths) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(router.routeInformationProvider.value.uri.path, '/login');
+      }
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
@@ -87,7 +131,7 @@ void main() {
     expect(booked.dateTime, DateTime(2026, 10, 6, 13, 30));
     expect(booked.patientId, 'pat-001');
     expect(booked.doctorId, 'doc-001');
-    expect(container.read(appointmentsProvider), hasLength(9));
+    expect(container.read(appointmentsProvider), hasLength(3));
     expect(router.routeInformationProvider.value.uri.path, '/patient');
     await tester.pumpWidget(const SizedBox.shrink());
   });

@@ -5,6 +5,7 @@ import '../../features/auth/domain/auth_use_cases.dart';
 import '../../features/auth/presentation/auth_view_model.dart';
 import '../../features/clinic/domain/app_enums.dart';
 import '../../features/clinic/domain/book_appointment.dart';
+import '../../features/clinic/domain/clinic_access.dart';
 import '../../features/clinic/domain/clinic_queries.dart';
 import '../../features/clinic/domain/clinic_snapshot.dart';
 import '../../features/clinic/domain/entities.dart';
@@ -33,7 +34,10 @@ final clinicViewModelProvider =
     );
 
 final clinicSnapshotProvider = Provider<ClinicSnapshot>(
-  (ref) => ref.watch(clinicViewModelProvider).valueOrNull ?? ClinicSnapshot(),
+  (ref) => ClinicAccess.scope(
+    ref.watch(clinicViewModelProvider).valueOrNull ?? ClinicSnapshot(),
+    ref.watch(authProvider).currentUser,
+  ),
 );
 final doctorsProvider = Provider<List<Doctor>>(
   (ref) => ref.watch(clinicSnapshotProvider).doctors,
@@ -51,10 +55,14 @@ final invoicesProvider = Provider<List<Invoice>>(
   (ref) => ref.watch(clinicSnapshotProvider).invoices,
 );
 
-final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>(
-  (ref) => null,
-);
-final searchQueryProvider = StateProvider<String>((ref) => '');
+final selectedSpecialtyProvider = StateProvider<MedicalSpecialty?>((ref) {
+  ref.watch(authProvider.select((state) => state.currentUser?.id));
+  return null;
+});
+final searchQueryProvider = StateProvider<String>((ref) {
+  ref.watch(authProvider.select((state) => state.currentUser?.id));
+  return '';
+});
 final filteredDoctorsProvider = Provider<List<Doctor>>(
   (ref) => ClinicQueries.doctors(
     ref.watch(doctorsProvider),
