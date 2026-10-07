@@ -8,6 +8,7 @@ import 'dart:async' as _i5;
 
 import 'package:mediflow/features/auth/domain/auth_repository.dart' as _i4;
 import 'package:mediflow/features/clinic/domain/app_enums.dart' as _i6;
+import 'package:mediflow/features/clinic/domain/billing_policy.dart' as _i8;
 import 'package:mediflow/features/clinic/domain/clinic_repository.dart' as _i7;
 import 'package:mediflow/features/clinic/domain/clinic_snapshot.dart' as _i3;
 import 'package:mediflow/features/clinic/domain/entities.dart' as _i2;
@@ -42,6 +43,11 @@ class _FakeClinicSnapshot_1 extends _i1.SmartFake
 
 class _FakeAppointment_2 extends _i1.SmartFake implements _i2.Appointment {
   _FakeAppointment_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeInvoice_3 extends _i1.SmartFake implements _i2.Invoice {
+  _FakeInvoice_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -148,4 +154,56 @@ class MockClinicRepository extends _i1.Mock implements _i7.ClinicRepository {
       ),
     ),
   ) as _i5.Future<_i2.Appointment>);
+
+  @override
+  _i5.Future<_i2.Invoice> issueAppointmentInvoice({
+    required _i2.ClinicUser? actor,
+    required String? appointmentId,
+    required String? invoiceId,
+  }) => (super.noSuchMethod(
+    Invocation.method(#issueAppointmentInvoice, [], {
+      #actor: actor,
+      #appointmentId: appointmentId,
+      #invoiceId: invoiceId,
+    }),
+    returnValue: _i5.Future<_i2.Invoice>.value(
+      _FakeInvoice_3(
+        this,
+        Invocation.method(#issueAppointmentInvoice, [], {
+          #actor: actor,
+          #appointmentId: appointmentId,
+          #invoiceId: invoiceId,
+        }),
+      ),
+    ),
+  ) as _i5.Future<_i2.Invoice>);
+
+  @override
+  _i5.Future<_i2.Invoice> recordInvoicePayment({
+    required _i2.ClinicUser? actor,
+    required String? invoiceId,
+    required _i6.PaymentStatus? expected,
+    required _i6.PaymentStatus? target,
+    _i8.DemoPaymentMethod? method,
+  }) => (super.noSuchMethod(
+    Invocation.method(#recordInvoicePayment, [], {
+      #actor: actor,
+      #invoiceId: invoiceId,
+      #expected: expected,
+      #target: target,
+      #method: method,
+    }),
+    returnValue: _i5.Future<_i2.Invoice>.value(
+      _FakeInvoice_3(
+        this,
+        Invocation.method(#recordInvoicePayment, [], {
+          #actor: actor,
+          #invoiceId: invoiceId,
+          #expected: expected,
+          #target: target,
+          #method: method,
+        }),
+      ),
+    ),
+  ) as _i5.Future<_i2.Invoice>);
 }

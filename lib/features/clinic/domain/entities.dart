@@ -311,6 +311,31 @@ class Invoice {
     this.paidDate,
     required this.createdAt,
   }) : items = List.unmodifiable(items);
+
+  Invoice copyWith({
+    PaymentStatus? paymentStatus,
+    Object? paymentMethod = _unchanged,
+    Object? paidDate = _unchanged,
+  }) => Invoice(
+    id: id,
+    patientId: patientId,
+    patientName: patientName,
+    appointmentId: appointmentId,
+    items: items,
+    subtotal: subtotal,
+    tax: tax,
+    discount: discount,
+    total: total,
+    paymentStatus: paymentStatus ?? this.paymentStatus,
+    paymentMethod: identical(paymentMethod, _unchanged)
+        ? this.paymentMethod
+        : paymentMethod as String?,
+    issuedDate: issuedDate,
+    paidDate: identical(paidDate, _unchanged)
+        ? this.paidDate
+        : paidDate as DateTime?,
+    createdAt: createdAt,
+  );
 }
 
 /// Individual line item in an invoice.
