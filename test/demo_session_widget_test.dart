@@ -53,6 +53,8 @@ void main() {
       expect(container.read(routerProvider), same(router));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
     });
   }
 
@@ -120,5 +122,7 @@ void main() {
     );
     expect(container.read(authProvider).currentUser!.role, UserRole.patient);
     await tester.pumpWidget(const SizedBox.shrink());
+    container.dispose();
+    await tester.pump();
   });
 }

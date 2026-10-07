@@ -9,6 +9,40 @@ import 'package:mediflow/features/clinic/domain/clinic_snapshot.dart';
 import 'package:mediflow/features/clinic/domain/entities.dart';
 
 void main() {
+  test('seeded visits follow working periods at every weekday and across midnight/month boundaries', () {
+    final doctors = DemoFixtures.generateDoctors();
+    for (final clock in [
+      for (var day = 5; day <= 11; day++) DateTime(2026, 10, day, 23, 59),
+      DateTime(2026, 12, 31, 23, 59),
+      DateTime(2027, 1, 1),
+    ]) {
+      final visits = DemoFixtures.generateAppointments(at: clock);
+      for (final visit in visits) {
+        final profile = doctors.singleWhere((d) => d.id == visit.doctorId);
+        expect(
+          AppointmentPolicy.workingSlots(profile, visit.dateTime),
+          contains(visit.dateTime),
+        );
+        if (AppointmentPolicy.reservesTime(visit.status)) {
+          expect(visit.dateTime.isAfter(clock), isTrue);
+          expect(
+            AppointmentPolicy.hasConflict(
+              visits.where((a) => a.id != visit.id),
+              doctorId: visit.doctorId,
+              patientId: visit.patientId,
+              at: visit.dateTime,
+            ),
+            isFalse,
+          );
+        } else {
+          expect(
+            visit.dateTime.add(const Duration(minutes: 30)).isBefore(clock),
+            isTrue,
+          );
+        }
+      }
+    }
+  });
   final now = DateTime(2026, 10, 5, 9);
   final doctor = DemoFixtures.generateDoctors().first;
   final tuesday = DateTime(2026, 10, 6);

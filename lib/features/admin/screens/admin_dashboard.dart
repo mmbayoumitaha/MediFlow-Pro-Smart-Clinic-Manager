@@ -298,11 +298,16 @@ class AdminDashboard extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Recent appointments
-              const SectionHeader(title: 'Recent Activity'),
+              SectionHeader(
+                title: 'Appointments',
+                actionText: 'View All',
+                onAction: () => context.go('/admin/appointments'),
+              ),
               ...appointments
                   .take(4)
                   .map(
                     (apt) => AppointmentCard(
+                      onTap: () => context.go('/admin/appointments'),
                       doctorName: '${apt.patientName} → ${apt.doctorName}',
                       specialty: apt.specialty.labelEn,
                       dateStr: '${apt.dateTime.day}/${apt.dateTime.month}',

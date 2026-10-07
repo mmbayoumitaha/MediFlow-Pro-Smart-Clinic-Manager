@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/widgets/shared_widgets.dart';
+import '../../clinic/presentation/appointment_action_card.dart';
 
 class DoctorScheduleScreen extends ConsumerWidget {
   const DoctorScheduleScreen({super.key});
@@ -25,13 +25,9 @@ class DoctorScheduleScreen extends ConsumerWidget {
               itemCount: apts.length,
               itemBuilder: (ctx, i) {
                 final apt = apts[i];
-                return AppointmentCard(
-                  doctorName: apt.patientName,
-                  specialty: apt.specialty.labelEn,
-                  dateStr: DateFormat('MMM dd, yyyy').format(apt.dateTime),
-                  timeStr: DateFormat('hh:mm a').format(apt.dateTime),
-                  status: apt.status.labelEn,
-                  statusColor: Color(apt.status.colorValue),
+                return AppointmentActionCard(
+                  appointment: apt,
+                  title: apt.patientName,
                 );
               },
             ),

@@ -135,7 +135,8 @@ class PatientDashboard extends ConsumerWidget {
                     child: _MiniStat(
                       icon: Icons.check_circle_outline,
                       label: 'Completed',
-                      value: '${ref.watch(pastAppointmentsProvider).length}',
+                      value:
+                          '${ref.watch(clinicMetricsProvider).completed.length}',
                       color: AppColors.success,
                     ),
                   ),

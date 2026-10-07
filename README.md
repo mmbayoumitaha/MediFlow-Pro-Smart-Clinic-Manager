@@ -7,12 +7,12 @@ The project is being repaired in tested batches. [The repair plan](docs/REPAIR_P
 ## Current functionality
 
 - Patient, doctor and administrator portals with role-checked GoRouter routes and persistent tab navigation.
-- Doctor directory with working name/specialty search and filters, appointment booking and appointment/prescription lists backed by demo fixtures.
+- Doctor directory with search/specialty filters and doctor links into booking. Future 30-minute slots follow active working periods and exclude doctor/patient conflicts; repeated booking requests are idempotent within the demo session.
 - Patient-owned appointment/prescription/invoice reads; doctors see their own schedule and associated patients. New demo registrations add linked patient/doctor profiles.
-- Administrator overview, billing lists and fl_chart visualizations.
+- Appointment cancellation, confirmation, check-in, completion and no-show actions with role/time validation; administrator appointment management, overview, billing lists and fl_chart visualizations.
 - Material 3 light/dark themes using Flutter's default fonts; the app no longer downloads Inter through Google Fonts.
 
-Some visible actions are still placeholders. Working-hours/conflict validation, appointment lifecycle and chart calculations remain under repair. Route guards and scoped reads enforce demo visibility; production backend authorization still requires the planned Firebase rules. The demo contains fictional records; do not enter real patient information.
+Some visible actions are still placeholders. Management/profile/availability editing, payment flows and chart calculations remain under repair. Route guards and scoped reads enforce demo visibility; production backend authorization still requires the planned Firebase rules. The demo contains fictional records; do not enter real patient information.
 
 ## Run the demo
 
@@ -39,7 +39,7 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-The 65 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, registration and role retention, all portal role/path combinations, per-account visibility, selected-time booking and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links and cancel/confirm reset. Complete clinic lifecycle and Firebase authorization checks remain in subsequent batches. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
+The 94 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, registration and role retention, all 15 portal role/path combinations, per-account visibility, working periods/conflicts/retries, lifecycle/time/category boundaries, live-clock rollover and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links, cancel/confirm reset, doctor-linked booking, slot contention and patient-to-doctor status workflows. Lifecycle changes keep invoice/payment values unchanged; payment/refund behavior and Firebase authorization remain in subsequent batches. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
 
 Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
 
@@ -47,7 +47,7 @@ Web is the current build-verification target. Platform folders exist for Android
 
 The current code uses Flutter, Riverpod, GoRouter, fl_chart, intl and uuid, plus the bundled Cupertino icon font for adaptive Flutter widgets. Auth and clinic features now separate framework-independent domain entities/use cases/repository contracts, demo data adapters and Riverpod presentation view models. Core providers inject repositories, clocks and ID generators; screens render immutable state and invoke view-model actions. Mockito unit tests verify repository interactions. See [the architecture guide](docs/ARCHITECTURE.md) for responsibilities and dependency boundaries.
 
-Configurable Firebase Auth/Firestore adapters remain planned in subsequent [repair batches](docs/REPAIR_PLAN.md).
+The demo uses local device wall-clock times and updates visible time-dependent state every 30 seconds. New slots are revalidated at write time. The horizon is the next 14 dates; overnight working periods are currently unavailable. Configurable Firebase Auth/Firestore adapters with authoritative timezone handling and reservation transactions remain planned in subsequent [repair batches](docs/REPAIR_PLAN.md).
 
 Unused Firebase, storage, upload and PDF dependencies were removed from the startup baseline. Mockito and build_runner are now used to generate test mocks; regenerate them with `dart run build_runner build` after changing a repository signature. Packages will be added alongside their actual implementations and tests. Demo mode will continue to work without backend setup.
 
