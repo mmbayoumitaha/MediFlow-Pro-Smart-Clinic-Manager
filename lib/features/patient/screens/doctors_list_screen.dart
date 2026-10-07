@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
@@ -86,6 +87,11 @@ class DoctorsListScreen extends ConsumerWidget {
                     itemBuilder: (ctx, i) {
                       final doc = doctors[i];
                       return DoctorCard(
+                        onTap: doc.isAvailable
+                            ? () => context.go(
+                                '/patient/book?doctorId=${Uri.encodeComponent(doc.id)}',
+                              )
+                            : null,
                         name: doc.fullName,
                         specialty: doc.specialty.labelEn,
                         emoji: doc.specialty.emoji,

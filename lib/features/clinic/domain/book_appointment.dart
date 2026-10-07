@@ -1,4 +1,5 @@
 import 'app_enums.dart';
+import 'appointment_policy.dart';
 import 'clinic_failure.dart';
 import 'clinic_repository.dart';
 import 'entities.dart';
@@ -16,6 +17,7 @@ class BookAppointment {
     required String doctorId,
     required DateTime dateTime,
     String? reason,
+    String? requestId,
   }) async {
     if (patient == null ||
         !patient.isActive ||
@@ -26,6 +28,25 @@ class BookAppointment {
       );
     }
     final snapshot = await _repository.load();
+    final normalizedReason = reason?.trim();
+    final cleanReason = normalizedReason == '' ? null : normalizedReason;
+    final prior = snapshot.appointments.where((a) => a.id == requestId);
+    if (requestId != null && prior.isNotEmpty) {
+      final existing = prior.single;
+      if (existing.patientId != patient.id ||
+          existing.doctorId != doctorId ||
+          existing.dateTime != dateTime ||
+          existing.reason != cleanReason) {
+        throw const ClinicFailure(
+          FailureCode.conflict,
+          'This request ID already belongs to another booking.',
+        );
+      }
+      await _repository.bookAppointment(
+        existing.copyWith(status: AppointmentStatus.pending),
+      );
+      return existing;
+    }
     Doctor? doctor;
     for (final candidate in snapshot.doctors) {
       if (candidate.id == doctorId) doctor = candidate;
@@ -50,7 +71,7 @@ class BookAppointment {
       );
     }
     final appointment = Appointment(
-      id: newId(),
+      id: requestId ?? newId(),
       patientId: patient.id,
       patientName: patient.fullName,
       doctorId: doctor.id,
@@ -58,11 +79,12 @@ class BookAppointment {
       specialty: doctor.specialty,
       dateTime: dateTime,
       status: AppointmentStatus.pending,
-      reason: reason?.trim().isEmpty == true ? null : reason?.trim(),
+      reason: cleanReason,
       fee: doctor.consultationFee,
       createdAt: now,
       updatedAt: now,
     );
+    AppointmentPolicy.validate(snapshot, appointment, now);
     await _repository.bookAppointment(appointment);
     return appointment;
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../domain/app_enums.dart';
+import '../domain/appointment_policy.dart';
 import '../domain/clinic_failure.dart';
 import '../domain/clinic_repository.dart';
 import '../domain/clinic_snapshot.dart';
@@ -12,8 +13,10 @@ class DemoClinicRepository implements ClinicRepository {
   final _changes = StreamController<ClinicSnapshot>.broadcast(sync: true);
   late ClinicSnapshot _snapshot;
   bool _disposed = false;
+  final DateTime Function() _now;
 
-  DemoClinicRepository({required DateTime at}) {
+  DemoClinicRepository({required DateTime at, DateTime Function()? now})
+    : _now = now ?? (() => at) {
     _snapshot = ClinicSnapshot(
       doctors: DemoFixtures.generateDoctors(),
       patients: DemoFixtures.generatePatients(at: at),
@@ -95,22 +98,32 @@ class DemoClinicRepository implements ClinicRepository {
   @override
   Future<void> bookAppointment(Appointment appointment) async {
     _ensureOpen();
-    if (_snapshot.appointments.any((a) => a.id == appointment.id)) {
+    final existing = _snapshot.appointments.where(
+      (a) => a.id == appointment.id,
+    );
+    if (existing.isNotEmpty) {
+      if (AppointmentPolicy.sameRequest(existing.single, appointment)) return;
       throw const ClinicFailure(
         FailureCode.conflict,
         'This appointment already exists.',
       );
     }
-    if (!_snapshot.patients.any((p) => p.id == appointment.patientId) ||
-        !_snapshot.doctors.any((d) => d.id == appointment.doctorId)) {
-      throw const ClinicFailure(
-        FailureCode.notFound,
-        'Patient or doctor no longer exists.',
-      );
-    }
+    // No await between validation and publication: competing demo reservations
+    // are serialized against the latest snapshot. Firebase must use a transaction.
+    AppointmentPolicy.validate(_snapshot, appointment, _now());
     _publish(
       _snapshot.copyWith(
-        appointments: [appointment, ..._snapshot.appointments],
+        appointments: [
+          appointment.copyWith(
+            patientName: _snapshot.patients
+                .singleWhere((p) => p.id == appointment.patientId)
+                .fullName,
+            doctorName: _snapshot.doctors
+                .singleWhere((d) => d.id == appointment.doctorId)
+                .fullName,
+          ),
+          ..._snapshot.appointments,
+        ],
       ),
     );
   }

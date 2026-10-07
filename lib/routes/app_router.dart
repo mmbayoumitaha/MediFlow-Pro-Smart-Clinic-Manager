@@ -66,7 +66,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'book',
-                    builder: (ctx, state) => const BookAppointmentScreen(),
+                    builder: (ctx, state) => BookAppointmentScreen(
+                      doctorId: state.uri.queryParameters['doctorId'],
+                    ),
                   ),
                   GoRoute(
                     path: 'prescriptions',

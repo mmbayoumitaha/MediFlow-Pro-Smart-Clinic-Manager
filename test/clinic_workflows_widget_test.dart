@@ -121,10 +121,13 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Hassan'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(ValueKey(DateTime(2026, 10, 6))));
+    await tester.pumpAndSettle();
     final time = find.widgetWithText(ChoiceChip, '01:30 PM');
     await tester.ensureVisible(time);
     await tester.tap(time);
+    await tester.pumpAndSettle();
     final submit = find.widgetWithText(FilledButton, 'Confirm Booking');
     await tester.ensureVisible(submit);
     await tester.tap(submit);
@@ -137,7 +140,10 @@ void main() {
     expect(booked.patientId, 'pat-001');
     expect(booked.doctorId, 'doc-001');
     expect(container.read(appointmentsProvider), hasLength(3));
-    expect(router.routeInformationProvider.value.uri.path, '/patient');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/patient/appointments',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

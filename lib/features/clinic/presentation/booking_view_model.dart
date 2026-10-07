@@ -15,6 +15,8 @@ class BookingState {
 class BookingViewModel extends StateNotifier<BookingState> {
   final BookAppointment _book;
   final ClinicUser? Function() _currentUser;
+  String? _requestId;
+  (String, DateTime, String?)? _selection;
 
   BookingViewModel(this._book, this._currentUser) : super(const BookingState());
 
@@ -24,6 +26,17 @@ class BookingViewModel extends StateNotifier<BookingState> {
     String? reason,
   }) async {
     if (!mounted || state.isSubmitting) return false;
+    final normalizedReason = reason?.trim();
+    final selection = (
+      doctorId,
+      dateTime,
+      normalizedReason == '' ? null : normalizedReason,
+    );
+    if (_selection == selection && state.appointment != null) return true;
+    if (_selection != selection) {
+      _selection = selection;
+      _requestId = _book.newId();
+    }
     state = const BookingState(isSubmitting: true);
     try {
       final appointment = await _book(
@@ -31,6 +44,7 @@ class BookingViewModel extends StateNotifier<BookingState> {
         doctorId: doctorId,
         dateTime: dateTime,
         reason: reason,
+        requestId: _requestId,
       );
       if (!mounted) return false;
       state = BookingState(appointment: appointment);
