@@ -1,3 +1,5 @@
+import '../../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -75,7 +77,7 @@ class BillingScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '\$${inv.total.toStringAsFixed(2)}',
+                          ClinicFormatters.money(inv.total),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -124,7 +126,7 @@ class BillingScreen extends ConsumerWidget {
                           style: theme.textTheme.bodySmall,
                         ),
                         Text(
-                          '\$${item.total.toStringAsFixed(2)}',
+                          ClinicFormatters.money(item.total),
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -138,7 +140,7 @@ class BillingScreen extends ConsumerWidget {
                   children: [
                     Text('Tax', style: theme.textTheme.bodySmall),
                     Text(
-                      '\$${inv.tax.toStringAsFixed(2)}',
+                      ClinicFormatters.money(inv.tax),
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

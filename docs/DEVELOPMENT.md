@@ -34,9 +34,9 @@ Fonts use Flutter's platform defaults. Typography sizes, weights and colors rema
 
 ## Verification limits
 
-- The 94 tests include startup in light/dark modes, immutable entities/storage validation, demo repository behavior, Mockito use-case/view-model tests, auth/logout/refresh/reset races, all 15 portal role/path combinations, cross-account visibility, actual UI registration and role retention, sign-in/logout, reset confirmation/cancellation, working-period/conflict/idempotency checks, lifecycle/category boundaries, doctor-linked booking, patient/doctor/admin status UI, live-clock midnight rollover and loading/error/retry UI. See [the architecture guide](ARCHITECTURE.md) for mock generation and boundary checks.
+- The 102 tests include startup in light/dark modes, immutable entities/storage validation, demo repository behavior, Mockito use-case/view-model tests, auth/logout/refresh/reset races, all 15 portal role/path combinations, cross-account visibility, actual UI registration and role retention, sign-in/logout, reset confirmation/cancellation, working-period/conflict/idempotency checks, lifecycle/category boundaries, doctor-linked booking, patient/doctor/admin status UI, live-clock midnight rollover loading/error/retry UI, source-derived analytics, reactive/empty charts, safe initials/currency and narrow large-text statistics. See [the architecture guide](ARCHITECTURE.md) for mock generation and boundary checks.
 - Web builds verify compilation; they do not establish browser interaction, cold offline caching or production readiness.
-- Backend authorization, management/payment and analytics tests arrive with the corresponding repair batches.
+- Backend authorization and management/payment tests arrive with the corresponding repair batches.
 - Android, iOS and desktop build/runtime checks have not been run for this baseline. Generated desktop plugin registrants are refreshed by `flutter pub get` when dependencies change.
 
 See [the repair plan](REPAIR_PLAN.md) for batch progress and [the baseline audit](PROJECT_AUDIT.md) for starting-state evidence.

@@ -1,3 +1,5 @@
+import '../../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -318,7 +320,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Consultation fee: \$${selectedDoctor.consultationFee.toStringAsFixed(0)}',
+                        'Consultation fee: ${ClinicFormatters.money(selectedDoctor.consultationFee)}',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: AppColors.primary,
                         ),

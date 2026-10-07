@@ -9,6 +9,7 @@ import '../../features/clinic/domain/appointment_policy.dart';
 import '../../features/clinic/domain/change_appointment_status.dart';
 import '../../features/clinic/domain/clinic_access.dart';
 import '../../features/clinic/domain/clinic_queries.dart';
+import '../../features/clinic/domain/clinic_analytics.dart';
 import '../../features/clinic/domain/clinic_snapshot.dart';
 import '../../features/clinic/domain/entities.dart';
 import '../../features/clinic/presentation/booking_view_model.dart';
@@ -90,6 +91,13 @@ final pastAppointmentsProvider = Provider<List<Appointment>>(
 );
 final clinicMetricsProvider = Provider<ClinicMetrics>(
   (ref) => ClinicMetrics(
+    ref.watch(clinicSnapshotProvider),
+    ref.watch(clinicTimeProvider),
+  ),
+);
+
+final clinicAnalyticsProvider = Provider<ClinicAnalytics>(
+  (ref) => ClinicAnalytics(
     ref.watch(clinicSnapshotProvider),
     ref.watch(clinicTimeProvider),
   ),

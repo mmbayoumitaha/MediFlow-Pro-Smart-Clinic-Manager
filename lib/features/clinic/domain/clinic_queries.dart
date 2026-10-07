@@ -1,6 +1,7 @@
 import 'app_enums.dart';
 import 'clinic_snapshot.dart';
 import 'entities.dart';
+import 'clinic_analytics.dart';
 
 abstract final class ClinicQueries {
   static List<DateTime> dateOptions(DateTime now) => List.unmodifiable(
@@ -74,9 +75,7 @@ class ClinicMetrics {
           (a) => a.status == AppointmentStatus.completed,
         ),
       ),
-      paidInvoiceRevenue = snapshot.invoices
-          .where((i) => i.paymentStatus == PaymentStatus.paid)
-          .fold(0, (sum, invoice) => sum + invoice.total),
+      paidInvoiceRevenue = ClinicAnalytics(snapshot, now).paidInvoiceTotal,
       completedAppointmentFees = snapshot.appointments
           .where((a) => a.status == AppointmentStatus.completed)
           .fold(0, (sum, appointment) => sum + appointment.fee);

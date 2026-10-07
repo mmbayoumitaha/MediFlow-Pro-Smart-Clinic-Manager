@@ -85,3 +85,7 @@ Tests cover storage round trips/validation, immutable copies, repository isolati
 B5 replaces hardcoded chart series and completes management/payment flows. Localization, profile/availability controls, browser offline startup and responsive sign-off remain in their corresponding batches. Firebase adapters and security rules remain B6.
 
 This architecture establishes dependency boundaries and tested state handling; it does not mark these remaining clinic workflows as complete.
+
+## Analytics and display conventions
+
+`ClinicAnalytics` derives six payment-month buckets in integer cents, all-time fully paid invoice totals, complete specialty counts and the four most recently updated appointments from the scoped snapshot. Partial/refunded invoices are excluded, and malformed or future-dated paid records are flagged. This is a snapshot of settled invoices, not a transaction ledger. The doctor portal exposes completed-visit fees without implying collection. `AnalyticsCharts` renders these immutable series with dynamic axes and explicit empty states. `ClinicFormatters` supplies USD values and grapheme-safe avatar initials.

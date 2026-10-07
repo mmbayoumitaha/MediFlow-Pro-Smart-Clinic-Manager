@@ -1,3 +1,5 @@
+import '../../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,7 +58,7 @@ class PatientDashboard extends ConsumerWidget {
                     radius: 22,
                     backgroundColor: AppColors.primaryContainer,
                     child: Text(
-                      (user?.fullName ?? 'P')[0],
+                      ClinicFormatters.initial(user?.fullName),
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,

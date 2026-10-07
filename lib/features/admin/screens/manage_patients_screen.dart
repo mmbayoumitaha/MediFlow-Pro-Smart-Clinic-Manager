@@ -1,3 +1,5 @@
+import '../../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,7 +39,7 @@ class ManagePatientsScreen extends ConsumerWidget {
                   radius: 22,
                   backgroundColor: AppColors.primaryContainer,
                   child: Text(
-                    p.fullName[0],
+                    ClinicFormatters.initial(p.fullName),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
