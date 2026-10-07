@@ -2,6 +2,7 @@ import 'clinic_snapshot.dart';
 import 'app_enums.dart';
 import 'entities.dart';
 import 'billing_policy.dart';
+import 'profile_policy.dart';
 
 abstract interface class ClinicRepository {
   Future<ClinicSnapshot> load();
@@ -37,5 +38,26 @@ abstract interface class ClinicRepository {
     required PaymentStatus expected,
     required PaymentStatus target,
     DemoPaymentMethod? method,
+  });
+
+  Future<ClinicUser> savePatient({
+    required ClinicUser actor,
+    required ClinicUser expected,
+    required ContactInput input,
+  });
+  Future<Doctor> saveDoctor({
+    required ClinicUser actor,
+    Doctor? expected,
+    required DoctorInput input,
+    String? newDoctorId,
+    String? newUserId,
+  });
+  Future<void> removePatient({
+    required ClinicUser actor,
+    required ClinicUser expected,
+  });
+  Future<void> removeDoctor({
+    required ClinicUser actor,
+    required Doctor expected,
   });
 }

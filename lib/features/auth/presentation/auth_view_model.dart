@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../clinic/domain/app_enums.dart';
 import '../../clinic/domain/clinic_failure.dart';
 import '../../clinic/domain/entities.dart';
+import '../../clinic/domain/clinic_snapshot.dart';
 import '../domain/auth_repository.dart';
 import '../domain/auth_use_cases.dart';
 
@@ -81,6 +82,45 @@ class AuthViewModel extends StateNotifier<AuthState> {
           error: 'Could not finish signing out. Please try again.',
         );
       }
+    }
+  }
+
+  /// Demo identity follows the authoritative profile; removed/inactive accounts
+  /// lose the running session. Firebase will use trusted auth/record events.
+  void syncProfile(ClinicSnapshot snapshot) {
+    final user = state.currentUser;
+    if (!mounted || user == null || user.role == UserRole.admin) return;
+    ClinicUser? updated;
+    if (user.role == UserRole.patient) {
+      final patients = snapshot.patients.where(
+        (p) => p.id == user.id && p.role == UserRole.patient,
+      );
+      if (patients.length == 1) updated = patients.single;
+    } else {
+      final doctors = snapshot.doctors.where((d) => d.userId == user.id);
+      if (doctors.length == 1) {
+        final doctor = doctors.single;
+        if (doctor.fullName == user.fullName &&
+            doctor.phone == user.phone &&
+            doctor.email == user.email) {
+          return;
+        }
+        updated = user.copyWith(
+          fullName: doctor.fullName,
+          phone: doctor.phone,
+          email: doctor.email,
+        );
+      }
+    }
+    if (updated == null || !updated.isActive) {
+      _operation++;
+      state = const AuthState(error: 'This demo account is unavailable.');
+    } else if (!identical(updated, user)) {
+      state = AuthState(
+        currentUser: updated,
+        isLoading: state.isLoading,
+        error: state.error,
+      );
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../clinic/presentation/profile_forms.dart';
 
 class PatientProfileScreen extends ConsumerWidget {
   const PatientProfileScreen({super.key});
@@ -46,17 +47,9 @@ class PatientProfileScreen extends ConsumerWidget {
             _ProfileTile(
               icon: Icons.person_outline,
               title: 'Edit Profile',
-              onTap: () {},
-            ),
-            _ProfileTile(
-              icon: Icons.lock_outline,
-              title: 'Change Password',
-              onTap: () {},
-            ),
-            _ProfileTile(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
-              onTap: () {},
+              onTap: user == null
+                  ? null
+                  : () => editPatientProfile(context, user),
             ),
             _ProfileTile(
               icon: isDark
@@ -75,15 +68,18 @@ class PatientProfileScreen extends ConsumerWidget {
                   : ThemeMode.dark,
             ),
             _ProfileTile(
-              icon: Icons.language_outlined,
-              title: 'Language',
-              subtitle: 'English',
-              onTap: () {},
-            ),
-            _ProfileTile(
               icon: Icons.info_outline,
               title: 'About',
-              onTap: () {},
+              onTap: () => showAboutDialog(
+                context: context,
+                applicationName: 'MediFlow Pro',
+                applicationVersion: '1.0.0',
+                children: [
+                  const Text(
+                    'A personal project with fictional, session-only clinic data. Demo payments never charge money.',
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -114,13 +110,11 @@ class PatientProfileScreen extends ConsumerWidget {
 class _ProfileTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget? trailing;
   const _ProfileTile({
     required this.icon,
     required this.title,
-    this.subtitle,
     required this.onTap,
     this.trailing,
   });
@@ -130,7 +124,6 @@ class _ProfileTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppColors.primary),
       title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
       trailing:
           trailing ??
           const Icon(Icons.chevron_right_rounded, color: AppColors.slate400),

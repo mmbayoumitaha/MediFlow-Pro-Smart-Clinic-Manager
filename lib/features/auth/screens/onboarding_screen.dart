@@ -29,14 +29,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _OnboardingPage(
       icon: Icons.medical_information_rounded,
-      title: 'Medical Records',
+      title: 'Sample Prescriptions',
       subtitle: 'Browse sample prescriptions in the patient portal. Demo changes last until reset or restart.',
       color: AppColors.secondary,
     ),
     _OnboardingPage(
       icon: Icons.analytics_rounded,
       title: 'Smart Analytics',
-      subtitle: 'Explore doctor and admin dashboards with sample clinic data. Chart series are currently illustrative.',
+      subtitle: 'Explore clinic dashboards with fictional data. Charts reflect recorded invoices and appointments.',
       color: AppColors.accent,
     ),
   ];

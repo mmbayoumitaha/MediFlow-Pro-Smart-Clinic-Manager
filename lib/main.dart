@@ -35,7 +35,6 @@ class MediFlowApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final locale = ref.watch(localeProvider);
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
@@ -44,8 +43,8 @@ class MediFlowApp extends ConsumerWidget {
       themeMode: themeMode,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      locale: locale,
-      supportedLocales: const [Locale('en'), Locale('ar')],
+      locale: const Locale('en'),
+      supportedLocales: const [Locale('en')],
       routerConfig: router,
     );
   }

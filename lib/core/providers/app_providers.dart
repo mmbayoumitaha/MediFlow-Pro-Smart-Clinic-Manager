@@ -12,6 +12,8 @@ import '../../features/clinic/domain/clinic_queries.dart';
 import '../../features/clinic/domain/clinic_analytics.dart';
 import '../../features/clinic/domain/billing_use_cases.dart';
 import '../../features/clinic/presentation/billing_view_model.dart';
+import '../../features/clinic/domain/manage_profiles.dart';
+import '../../features/clinic/presentation/profile_view_model.dart';
 import '../../features/clinic/domain/clinic_snapshot.dart';
 import '../../features/clinic/domain/entities.dart';
 import '../../features/clinic/presentation/booking_view_model.dart';
@@ -23,15 +25,20 @@ export '../../features/auth/presentation/auth_view_model.dart' show AuthState;
 export '../../features/clinic/presentation/enum_labels.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
-final localeProvider = StateProvider<Locale>((ref) => const Locale('en'));
 
 final authProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthViewModel(
+  final model = AuthViewModel(
     SignIn(repository),
     RegisterUser(repository),
     SignOut(repository),
   );
+  ref.listen(clinicViewModelProvider, (previous, next) {
+    if (!next.isLoading && !next.hasError && next.valueOrNull != null) {
+      model.syncProfile(next.valueOrNull!);
+    }
+  });
+  return model;
 });
 
 final clinicViewModelProvider =
@@ -136,6 +143,20 @@ final billingActionsProvider =
       );
     });
 
+final profileActionsProvider =
+    StateNotifierProvider.autoDispose<ProfileViewModel, ProfileActionState>((
+      ref,
+    ) {
+      ref.watch(authProvider.select((s) => s.currentUser?.id));
+      return ProfileViewModel(
+        ManageProfiles(
+          ref.watch(clinicRepositoryProvider),
+          ref.watch(idGeneratorProvider),
+        ),
+        () => ref.read(authProvider).currentUser,
+      );
+    });
+
 final appointmentActionsProvider =
     StateNotifierProvider.autoDispose<
       AppointmentActionsViewModel,
@@ -185,6 +206,7 @@ final resetDemoProvider = Provider<void Function()>(
     ref.invalidate(bookingProvider);
     ref.invalidate(appointmentActionsProvider);
     ref.invalidate(billingActionsProvider);
+    ref.invalidate(profileActionsProvider);
     ref.invalidate(searchQueryProvider);
     ref.invalidate(selectedSpecialtyProvider);
   },

@@ -1,10 +1,10 @@
-# Architecture after batch B4
+# Architecture after batch B5
 
 The application uses a domain/data/presentation split with Riverpod view models. Each domain is independent of Flutter, Riverpod, storage formats and Firebase. Display labels, emoji and colors are presentation extensions on domain enums.
 
 ```mermaid
 flowchart LR
-  View[Role screens] --> VM[Auth / clinic / booking / appointment action view models]
+  View[Role screens] --> VM[Auth / clinic / booking / appointment / billing / profile view models]
   VM --> UC[Domain use cases and queries]
   UC --> Contract[Repository contracts]
   Adapter[Demo repositories] --> Contract
@@ -36,7 +36,7 @@ Clinic repository reads and writes are asynchronous, so a future Firebase implem
 - Each demo repository owns a separate fixture snapshot and uses one injected seed time. Registration publishes a new snapshot; a patient appears in patient lists, and a doctor profile uses the new auth user's ID as `userId`.
 - Doctor demo sign-in uses the profile's `userId`, rather than the appointment/profile `id`. Newly registered doctors are unavailable until their availability is configured.
 - Demo credentials are simulated. Registered account identity/role is recovered from the demo record; selecting another role does not rewrite that record. `demo@mediflow.com` selects a seeded role account. No passwords are persisted by the demo adapter.
-- Riverpod owns view-model, repository and router disposal. Auth view models ignore late completions after logout/disposal; booking models ignore late responses after disposal. Demo records persist within the container/session, including logout. Identity changes clear account search/specialty state and immediately rescope collection/metric providers. A confirmed demo reset invalidates auth identities, repositories and pending view models, restoring fixtures from one current clock; application restart does the same. Theme/locale are independent session preferences.
+- Riverpod owns view-model, repository and router disposal. Auth view models ignore late completions after logout/disposal; booking models ignore late responses after disposal. Demo records persist within the container/session, including logout. Identity changes clear account search/specialty state and immediately rescope collection/metric providers. A confirmed demo reset invalidates auth identities, repositories and pending view models, restoring fixtures from one current clock; application restart does the same. Theme is an independent session preference; the UI language is English.
 
 ## Demo access policy
 
@@ -63,7 +63,7 @@ The login/registration screens explicitly describe simulated passwords and tempo
 - Patients may cancel their own pending/confirmed visit strictly before its start. Associated doctors and admins may confirm pending visits up to the start, start confirmed visits at or after the start, and complete in-progress visits. Staff may cancel pending/confirmed visits, including overdue ones; no-show is available for pending/confirmed visits at or after the scheduled end. A late confirmed visit may still be started by staff. Terminal states cannot be reopened.
 - The repository checks ownership and expected current status before applying a transition. Concurrent stale commands fail with a refresh message. UI actions ask for confirmation and publish through the stream; view models lock duplicate submissions and discard results after disposal/account reset. Admin can manage all appointments at `/admin/appointments`.
 - Upcoming means in-progress visits or pending/confirmed visits starting at/after now. History is the complement, including future terminal records and overdue pending/confirmed visits. The categories are exhaustive/disjoint, and completed counters count the completed status only.
-- Status changes do not create/refund/pay invoices. Billing workflows remain B5. Seed fixtures choose valid working periods on every weekday and retain consistent relative future/past direction; tests cover midnight and year rollover.
+- Status changes do not create/refund/pay invoices. Billing is handled through separate explicit commands. Seed fixtures choose valid working periods on every weekday and retain consistent relative future/past direction; tests cover midnight and year rollover.
 
 ## Tests and boundary checks
 
@@ -82,7 +82,7 @@ Tests cover storage round trips/validation, immutable copies, repository isolati
 
 ## Remaining work
 
-B5 replaces hardcoded chart series and completes management/payment flows. Localization, profile/availability controls, browser offline startup and responsive sign-off remain in their corresponding batches. Firebase adapters and security rules remain B6.
+B5 implements source-derived charts, demo billing and profile/availability management. Browser offline startup, responsive/platform sign-off, onboarding policy and CI remain B7. Firebase adapters and security rules remain B6. The interface is intentionally English-only; no real payment gateway or medical-record upload flow is claimed.
 
 This architecture establishes dependency boundaries and tested state handling; it does not mark these remaining clinic workflows as complete.
 
@@ -93,3 +93,9 @@ This architecture establishes dependency boundaries and tested state handling; i
 ## Demo billing commands
 
 `IssueAppointmentInvoice` and `RecordInvoicePayment` require an active admin. The repository revalidates them against its latest snapshot and clock, issues at most one consultation-only invoice per completed visit, and atomically publishes invoice/linked-appointment payment changes. `BillingPolicy` checks cent precision, item/tax/discount arithmetic, dates and allowed full-settlement/full-refund transitions; an expected-status check protects competing writes. `BillingViewModel` owns submission/error state and ignores disposed completions. Billing is a fictional status-recording workflow; partial balances and a cash-flow ledger are not implemented.
+
+## Profile management
+
+`ManageProfiles` supplies patient/doctor save and safe-delete use cases. `ProfilePolicy` validates contacts, cent-precision fees, experience and non-overlapping same-day working periods. Owners edit their profile; active admins add doctors, edit/deactivate patients, and delete only profiles with no clinic record references. Edits compare the original editable fields against current values, protecting concurrent forms even with a fixed clock. Identity/email and stored appointment/invoice names/fees stay unchanged. Availability edits must retain future reserved slots; disabling new bookings does not cancel visits.
+
+`ProfileViewModel` owns submission/error/disposal handling; forms only collect input and invoke it. The demo auth adapter reads current clinic records rather than cached registrations. The composition root listens to successful clinic snapshots to update a running identity or remove a deleted/inactive account session. A Firebase implementation must supply equivalent trusted, scoped auth/profile events.

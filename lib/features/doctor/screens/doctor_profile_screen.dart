@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../clinic/presentation/profile_forms.dart';
 
 class DoctorProfileScreen extends ConsumerWidget {
   const DoctorProfileScreen({super.key});
@@ -14,6 +15,11 @@ class DoctorProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).currentUser;
+    final profiles = ref
+        .watch(doctorsProvider)
+        .where((d) => d.userId == user?.id)
+        .toList();
+    final doctor = profiles.length == 1 ? profiles.single : null;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -46,7 +52,9 @@ class DoctorProfileScreen extends ConsumerWidget {
               ),
               title: const Text('Edit Profile'),
               trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {},
+              onTap: doctor == null
+                  ? null
+                  : () => editDoctorProfile(context, doctor),
             ),
             ListTile(
               leading: const Icon(
@@ -55,7 +63,9 @@ class DoctorProfileScreen extends ConsumerWidget {
               ),
               title: const Text('Availability'),
               trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {},
+              onTap: doctor == null
+                  ? null
+                  : () => editDoctorProfile(context, doctor),
             ),
             ListTile(
               leading: Icon(
