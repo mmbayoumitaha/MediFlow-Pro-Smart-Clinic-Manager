@@ -12,6 +12,7 @@ import 'package:mediflow/features/clinic/domain/billing_policy.dart' as _i8;
 import 'package:mediflow/features/clinic/domain/clinic_repository.dart' as _i7;
 import 'package:mediflow/features/clinic/domain/clinic_snapshot.dart' as _i3;
 import 'package:mediflow/features/clinic/domain/entities.dart' as _i2;
+import 'package:mediflow/features/clinic/domain/profile_policy.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -48,6 +49,11 @@ class _FakeAppointment_2 extends _i1.SmartFake implements _i2.Appointment {
 
 class _FakeInvoice_3 extends _i1.SmartFake implements _i2.Invoice {
   _FakeInvoice_3(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeDoctor_4 extends _i1.SmartFake implements _i2.Doctor {
+  _FakeDoctor_4(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -206,4 +212,76 @@ class MockClinicRepository extends _i1.Mock implements _i7.ClinicRepository {
       ),
     ),
   ) as _i5.Future<_i2.Invoice>);
+
+  @override
+  _i5.Future<_i2.ClinicUser> savePatient({
+    required _i2.ClinicUser? actor,
+    required _i2.ClinicUser? expected,
+    required _i9.ContactInput? input,
+  }) => (super.noSuchMethod(
+    Invocation.method(#savePatient, [], {
+      #actor: actor,
+      #expected: expected,
+      #input: input,
+    }),
+    returnValue: _i5.Future<_i2.ClinicUser>.value(
+      _FakeClinicUser_0(
+        this,
+        Invocation.method(#savePatient, [], {
+          #actor: actor,
+          #expected: expected,
+          #input: input,
+        }),
+      ),
+    ),
+  ) as _i5.Future<_i2.ClinicUser>);
+
+  @override
+  _i5.Future<_i2.Doctor> saveDoctor({
+    required _i2.ClinicUser? actor,
+    _i2.Doctor? expected,
+    required _i9.DoctorInput? input,
+    String? newDoctorId,
+    String? newUserId,
+  }) => (super.noSuchMethod(
+    Invocation.method(#saveDoctor, [], {
+      #actor: actor,
+      #expected: expected,
+      #input: input,
+      #newDoctorId: newDoctorId,
+      #newUserId: newUserId,
+    }),
+    returnValue: _i5.Future<_i2.Doctor>.value(
+      _FakeDoctor_4(
+        this,
+        Invocation.method(#saveDoctor, [], {
+          #actor: actor,
+          #expected: expected,
+          #input: input,
+          #newDoctorId: newDoctorId,
+          #newUserId: newUserId,
+        }),
+      ),
+    ),
+  ) as _i5.Future<_i2.Doctor>);
+
+  @override
+  _i5.Future<void> removePatient({
+    required _i2.ClinicUser? actor,
+    required _i2.ClinicUser? expected,
+  }) => (super.noSuchMethod(
+    Invocation.method(#removePatient, [], {#actor: actor, #expected: expected}),
+    returnValue: _i5.Future<void>.value(),
+    returnValueForMissingStub: _i5.Future<void>.value(),
+  ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> removeDoctor({
+    required _i2.ClinicUser? actor,
+    required _i2.Doctor? expected,
+  }) => (super.noSuchMethod(
+    Invocation.method(#removeDoctor, [], {#actor: actor, #expected: expected}),
+    returnValue: _i5.Future<void>.value(),
+    returnValueForMissingStub: _i5.Future<void>.value(),
+  ) as _i5.Future<void>);
 }

@@ -31,7 +31,6 @@ class DoctorDashboard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
                   CircleAvatar(
@@ -62,13 +61,6 @@ class DoctorDashboard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Badge(
-                      smallSize: 8,
-                      child: Icon(Icons.notifications_outlined),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -77,7 +69,7 @@ class DoctorDashboard extends ConsumerWidget {
               StatsGrid(
                 children: [
                   StatCard(
-                    title: "Today's Patients",
+                    title: "Today's appointments",
                     value: '${todayApts.length}',
                     icon: Icons.people_rounded,
                     gradient: AppColors.primaryGradient,

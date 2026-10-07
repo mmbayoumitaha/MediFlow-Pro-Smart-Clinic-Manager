@@ -46,13 +46,6 @@ class PatientDashboard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Badge(
-                      smallSize: 8,
-                      child: Icon(Icons.notifications_outlined),
-                    ),
-                  ),
                   const SizedBox(width: 4),
                   CircleAvatar(
                     radius: 22,
@@ -205,15 +198,15 @@ class PatientDashboard extends ConsumerWidget {
                   ),
                   _QuickAction(
                     icon: Icons.folder_outlined,
-                    label: 'Medical Records',
+                    label: 'Appointment History',
                     color: AppColors.accent,
-                    onTap: () {},
+                    onTap: () => context.go('/patient/appointments'),
                   ),
                   _QuickAction(
                     icon: Icons.settings_outlined,
                     label: 'Settings',
                     color: AppColors.slate600,
-                    onTap: () {},
+                    onTap: () => context.go('/patient/profile'),
                   ),
                 ],
               ),

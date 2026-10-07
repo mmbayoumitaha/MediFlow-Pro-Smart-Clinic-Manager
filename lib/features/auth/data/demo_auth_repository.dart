@@ -20,8 +20,7 @@ class DemoAuthRepository implements AuthRepository {
     UserRole demoRole,
   ) async {
     final normalized = email.trim().toLowerCase();
-    final registered = _registered[normalized];
-    if (registered != null) return registered;
+    // Clinic records are authoritative after profile edits/deactivation/deletion.
     final snapshot = await _clinic.load();
     if (normalized == 'demo@mediflow.com') {
       switch (demoRole) {
