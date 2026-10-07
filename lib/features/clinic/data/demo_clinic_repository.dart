@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../domain/app_enums.dart';
 import '../domain/appointment_policy.dart';
+import '../domain/appointment_lifecycle.dart';
 import '../domain/clinic_failure.dart';
 import '../domain/clinic_repository.dart';
 import '../domain/clinic_snapshot.dart';
@@ -131,6 +132,42 @@ class DemoClinicRepository implements ClinicRepository {
   void _publish(ClinicSnapshot snapshot) {
     _snapshot = snapshot;
     _changes.add(snapshot);
+  }
+
+  @override
+  Future<Appointment> changeAppointmentStatus({
+    required ClinicUser actor,
+    required String appointmentId,
+    required AppointmentStatus expected,
+    required AppointmentStatus target,
+  }) async {
+    _ensureOpen();
+    final visits = _snapshot.appointments.where((a) => a.id == appointmentId);
+    if (visits.length != 1) {
+      throw const ClinicFailure(
+        FailureCode.notFound,
+        'Appointment is unavailable.',
+      );
+    }
+    final now = _now();
+    final current = visits.single;
+    AppointmentLifecycle.validate(
+      _snapshot,
+      actor,
+      current,
+      expected,
+      target,
+      now,
+    );
+    final updated = current.copyWith(status: target, updatedAt: now);
+    _publish(
+      _snapshot.copyWith(
+        appointments: _snapshot.appointments
+            .map((a) => a.id == appointmentId ? updated : a)
+            .toList(),
+      ),
+    );
+    return updated;
   }
 
   void dispose() {

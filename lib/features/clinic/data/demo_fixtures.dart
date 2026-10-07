@@ -1,8 +1,39 @@
 import '../domain/app_enums.dart';
+import '../domain/appointment_policy.dart';
 import '../domain/entities.dart';
 
 /// Provides realistic demo data for offline-first development.
 class DemoFixtures {
+  static DateTime _visit(
+    DateTime now,
+    String doctorId, {
+    required int days,
+    required int hour,
+    required bool future,
+  }) {
+    final doctor = generateDoctors().singleWhere((d) => d.id == doctorId);
+    for (var offset = days; offset < days + 14; offset++) {
+      final date = DateTime(
+        now.year,
+        now.month,
+        now.day + (future ? offset : -offset),
+      );
+      final slots = AppointmentPolicy.workingSlots(doctor, date);
+      final preferred = DateTime(date.year, date.month, date.day, hour);
+      final candidates = slots.contains(preferred)
+          ? [preferred, ...slots]
+          : slots;
+      for (final candidate in candidates) {
+        if (future
+            ? candidate.isAfter(now)
+            : candidate.add(const Duration(minutes: 30)).isBefore(now)) {
+          return candidate;
+        }
+      }
+    }
+    throw StateError('Demo doctor has no fixture visit within 14 days.');
+  }
+
   static List<Doctor> generateDoctors() => [
     Doctor(
       id: 'doc-001',
@@ -193,7 +224,7 @@ class DemoFixtures {
         doctorId: 'doc-001',
         doctorName: 'Dr. Ahmed Hassan',
         specialty: MedicalSpecialty.cardiology,
-        dateTime: now.add(const Duration(days: 1, hours: 2)),
+        dateTime: _visit(now, 'doc-001', days: 1, hour: 11, future: true),
         status: AppointmentStatus.confirmed,
         reason: 'Routine heart checkup',
         fee: 350.0,
@@ -208,7 +239,7 @@ class DemoFixtures {
         doctorId: 'doc-003',
         doctorName: 'Dr. Omar Khalil',
         specialty: MedicalSpecialty.orthopedics,
-        dateTime: now.add(const Duration(days: 2, hours: 4)),
+        dateTime: _visit(now, 'doc-003', days: 2, hour: 13, future: true),
         status: AppointmentStatus.pending,
         reason: 'Knee pain follow-up',
         fee: 400.0,
@@ -223,7 +254,7 @@ class DemoFixtures {
         doctorId: 'doc-004',
         doctorName: 'Dr. Fatima Ali',
         specialty: MedicalSpecialty.pediatrics,
-        dateTime: now.subtract(const Duration(days: 1, hours: 3)),
+        dateTime: _visit(now, 'doc-004', days: 1, hour: 11, future: false),
         status: AppointmentStatus.completed,
         reason: 'Child vaccination',
         fee: 250.0,
@@ -238,7 +269,7 @@ class DemoFixtures {
         doctorId: 'doc-002',
         doctorName: 'Dr. Sara Mohamed',
         specialty: MedicalSpecialty.dermatology,
-        dateTime: now.add(const Duration(days: 3, hours: 1)),
+        dateTime: _visit(now, 'doc-002', days: 3, hour: 10, future: true),
         status: AppointmentStatus.confirmed,
         reason: 'Skin allergy treatment',
         fee: 300.0,
@@ -253,7 +284,7 @@ class DemoFixtures {
         doctorId: 'doc-005',
         doctorName: 'Dr. Youssef Nabil',
         specialty: MedicalSpecialty.neurology,
-        dateTime: now.subtract(const Duration(days: 3, hours: 5)),
+        dateTime: _visit(now, 'doc-005', days: 3, hour: 11, future: false),
         status: AppointmentStatus.completed,
         reason: 'Migraine assessment',
         fee: 450.0,
@@ -268,7 +299,7 @@ class DemoFixtures {
         doctorId: 'doc-006',
         doctorName: 'Dr. Nora Ibrahim',
         specialty: MedicalSpecialty.gynecology,
-        dateTime: now.add(const Duration(days: 5)),
+        dateTime: _visit(now, 'doc-006', days: 5, hour: 10, future: true),
         status: AppointmentStatus.pending,
         reason: 'Regular checkup',
         fee: 350.0,
@@ -283,7 +314,7 @@ class DemoFixtures {
         doctorId: 'doc-001',
         doctorName: 'Dr. Ahmed Hassan',
         specialty: MedicalSpecialty.cardiology,
-        dateTime: now.subtract(const Duration(days: 10)),
+        dateTime: _visit(now, 'doc-001', days: 10, hour: 11, future: false),
         status: AppointmentStatus.completed,
         reason: 'ECG Follow-up',
         fee: 350.0,
@@ -298,7 +329,7 @@ class DemoFixtures {
         doctorId: 'doc-002',
         doctorName: 'Dr. Sara Mohamed',
         specialty: MedicalSpecialty.dermatology,
-        dateTime: now.add(const Duration(hours: 5)),
+        dateTime: _visit(now, 'doc-002', days: 0, hour: 14, future: true),
         status: AppointmentStatus.confirmed,
         reason: 'Acne treatment session',
         fee: 300.0,

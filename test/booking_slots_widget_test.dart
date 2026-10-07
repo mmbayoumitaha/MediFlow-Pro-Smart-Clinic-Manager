@@ -70,6 +70,8 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
     },
   );
 
@@ -115,6 +117,8 @@ void main() {
       expect((await repository.load()).appointments, hasLength(10));
       expect(container.read(appointmentsProvider), hasLength(3));
       await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
     },
   );
 }

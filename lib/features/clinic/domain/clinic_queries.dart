@@ -32,27 +32,17 @@ abstract final class ClinicQueries {
           ..sort((a, b) => a.dateTime.compareTo(b.dateTime)),
       );
 
-  // Lifecycle category refinements are scheduled for B4.
+  static bool isUpcoming(Appointment a, DateTime now) =>
+      a.status == AppointmentStatus.inProgress ||
+      ((a.status == AppointmentStatus.pending ||
+              a.status == AppointmentStatus.confirmed) &&
+          !a.dateTime.isBefore(now));
   static List<Appointment> upcoming(List<Appointment> input, DateTime now) =>
-      schedule(
-        input
-            .where(
-              (a) =>
-                  a.dateTime.isAfter(now) &&
-                  a.status != AppointmentStatus.cancelled,
-            )
-            .toList(),
-      );
+      schedule(input.where((a) => isUpcoming(a, now)).toList());
 
   static List<Appointment> past(List<Appointment> input, DateTime now) =>
       List.unmodifiable(
-        input
-            .where(
-              (a) =>
-                  a.dateTime.isBefore(now) ||
-                  a.status == AppointmentStatus.completed,
-            )
-            .toList()
+        input.where((a) => !isUpcoming(a, now)).toList()
           ..sort((a, b) => b.dateTime.compareTo(a.dateTime)),
       );
 }

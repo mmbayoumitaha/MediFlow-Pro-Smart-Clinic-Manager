@@ -40,6 +40,11 @@ class _FakeClinicSnapshot_1 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakeAppointment_2 extends _i1.SmartFake implements _i2.Appointment {
+  _FakeAppointment_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [AuthRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -117,4 +122,30 @@ class MockClinicRepository extends _i1.Mock implements _i7.ClinicRepository {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i2.Appointment> changeAppointmentStatus({
+    required _i2.ClinicUser? actor,
+    required String? appointmentId,
+    required _i6.AppointmentStatus? expected,
+    required _i6.AppointmentStatus? target,
+  }) => (super.noSuchMethod(
+    Invocation.method(#changeAppointmentStatus, [], {
+      #actor: actor,
+      #appointmentId: appointmentId,
+      #expected: expected,
+      #target: target,
+    }),
+    returnValue: _i5.Future<_i2.Appointment>.value(
+      _FakeAppointment_2(
+        this,
+        Invocation.method(#changeAppointmentStatus, [], {
+          #actor: actor,
+          #appointmentId: appointmentId,
+          #expected: expected,
+          #target: target,
+        }),
+      ),
+    ),
+  ) as _i5.Future<_i2.Appointment>);
 }

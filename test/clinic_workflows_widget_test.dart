@@ -28,6 +28,7 @@ void main() {
     '/doctor/patients',
     '/doctor/profile',
     '/admin',
+    '/admin/appointments',
     '/admin/doctors',
     '/admin/patients',
     '/admin/billing',
@@ -95,6 +96,8 @@ void main() {
         expect(router.routeInformationProvider.value.uri.path, '/login');
       }
       await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await tester.pump();
     });
   }
 
@@ -145,6 +148,8 @@ void main() {
       '/patient/appointments',
     );
     await tester.pumpWidget(const SizedBox.shrink());
+    container.dispose();
+    await tester.pump();
   });
 
   testWidgets('repository loading and failures render with a working retry', (
@@ -181,5 +186,7 @@ void main() {
     expect(find.text('Ready'), findsOneWidget);
     verify(repository.load()).called(1);
     await tester.pumpWidget(const SizedBox.shrink());
+    container.dispose();
+    await tester.pump();
   });
 }

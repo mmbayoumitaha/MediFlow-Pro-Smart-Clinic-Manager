@@ -20,6 +20,7 @@ const portalPaths = {
   ],
   UserRole.admin: [
     '/admin',
+    '/admin/appointments',
     '/admin/doctors',
     '/admin/patients',
     '/admin/billing',

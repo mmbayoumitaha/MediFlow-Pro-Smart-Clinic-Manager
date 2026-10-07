@@ -28,13 +28,15 @@ The splash shows for three seconds, then opens onboarding. Skip opens the login 
 
 The splash owns and cancels its navigation timer, and onboarding disposes its page controller. Riverpod owns router/container disposal. The router now keeps one instance through auth loading/login/logout changes; role guards and scoped read providers are implemented in B3. Demo sessions intentionally require login after restart; confirmed reset drops registrations/writes and cancels pending view-model results, while logout keeps synthetic clinic data and clears per-account reads/filters.
 
+Time-dependent providers watch a shared presentation clock that ticks every 30 seconds. It never reseeds the clinic; repositories validate mutations against the injected clock at write time. The provider owns/cancels its timer. Widget tests with an externally owned container dispose that container before test invariants run, as well as using teardown for failure cleanup.
+
 Fonts use Flutter's platform defaults. Typography sizes, weights and colors remain defined in `AppTheme`; Inter is no longer downloaded at runtime. Page transitions use the SDK's platform defaults.
 
 ## Verification limits
 
-- The 65 tests include startup in light/dark modes, immutable entities/storage validation, demo repository behavior, Mockito use-case/view-model tests, auth/logout/refresh/reset races, all portal role/path combinations, cross-account visibility, actual UI registration and role retention, sign-in/logout, reset confirmation/cancellation, selected-time booking and loading/error/retry UI. See [the architecture guide](ARCHITECTURE.md) for mock generation and boundary checks.
+- The 94 tests include startup in light/dark modes, immutable entities/storage validation, demo repository behavior, Mockito use-case/view-model tests, auth/logout/refresh/reset races, all 15 portal role/path combinations, cross-account visibility, actual UI registration and role retention, sign-in/logout, reset confirmation/cancellation, working-period/conflict/idempotency checks, lifecycle/category boundaries, doctor-linked booking, patient/doctor/admin status UI, live-clock midnight rollover and loading/error/retry UI. See [the architecture guide](ARCHITECTURE.md) for mock generation and boundary checks.
 - Web builds verify compilation; they do not establish browser interaction, cold offline caching or production readiness.
-- Complete appointment, backend authorization, management and analytics tests arrive with the corresponding repair batches.
+- Backend authorization, management/payment and analytics tests arrive with the corresponding repair batches.
 - Android, iOS and desktop build/runtime checks have not been run for this baseline. Generated desktop plugin registrants are refreshed by `flutter pub get` when dependencies change.
 
 See [the repair plan](REPAIR_PLAN.md) for batch progress and [the baseline audit](PROJECT_AUDIT.md) for starting-state evidence.

@@ -1,4 +1,5 @@
 import 'clinic_snapshot.dart';
+import 'app_enums.dart';
 import 'entities.dart';
 
 abstract interface class ClinicRepository {
@@ -10,6 +11,14 @@ abstract interface class ClinicRepository {
   /// Register a patient or a user with a matching doctor profile atomically.
   Future<void> registerUser(ClinicUser user, {Doctor? doctor});
 
-  /// Persist a new appointment and publish the updated snapshot.
+  /// Atomically validate/persist a reservation; acknowledge identical ID retries.
   Future<void> bookAppointment(Appointment appointment);
+
+  /// Apply an authorized transition against the current status and repository clock.
+  Future<Appointment> changeAppointmentStatus({
+    required ClinicUser actor,
+    required String appointmentId,
+    required AppointmentStatus expected,
+    required AppointmentStatus target,
+  });
 }

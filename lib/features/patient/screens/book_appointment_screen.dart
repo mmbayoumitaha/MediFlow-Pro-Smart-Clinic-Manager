@@ -84,7 +84,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final dates = ref.watch(bookingDateOptionsProvider);
     final matches = doctors.where((d) => d.id == _doctorId);
     final selectedDoctor = matches.length == 1 ? matches.single : null;
-    final times = selectedDoctor != null && _selectedDate != null
+    final times = selectedDoctor != null && dates.contains(_selectedDate)
         ? ref.watch(
             bookingSlotsProvider((
               doctorId: selectedDoctor.id,
@@ -198,10 +198,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                 itemCount: dates.length,
                 itemBuilder: (ctx, i) {
                   final date = dates[i];
-                  final sel =
-                      _selectedDate != null &&
-                      _selectedDate!.day == date.day &&
-                      _selectedDate!.month == date.month;
+                  final sel = _selectedDate == date;
                   return GestureDetector(
                     key: ValueKey(date),
                     onTap: booking.isSubmitting
@@ -298,6 +295,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             Text('Reason (optional)', style: theme.textTheme.titleLarge),
             const SizedBox(height: 10),
             TextField(
+              enabled: !booking.isSubmitting,
               controller: _reasonCtrl,
               maxLines: 3,
               decoration: const InputDecoration(

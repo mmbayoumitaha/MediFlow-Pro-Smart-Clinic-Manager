@@ -24,6 +24,7 @@ import '../features/doctor/screens/doctor_patients_screen.dart';
 import '../features/doctor/screens/doctor_profile_screen.dart';
 import '../features/admin/screens/admin_shell.dart';
 import '../features/admin/screens/admin_dashboard.dart';
+import '../features/admin/screens/admin_appointments_screen.dart';
 import '../features/admin/screens/manage_doctors_screen.dart';
 import '../features/admin/screens/manage_patients_screen.dart';
 import '../features/admin/screens/billing_screen.dart';
@@ -153,6 +154,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/admin',
                 builder: (ctx, state) => const AdminDashboard(),
+                routes: [
+                  GoRoute(
+                    path: 'appointments',
+                    builder: (ctx, state) => const AdminAppointmentsScreen(),
+                  ),
+                ],
               ),
             ],
           ),

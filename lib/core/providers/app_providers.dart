@@ -6,11 +6,13 @@ import '../../features/auth/presentation/auth_view_model.dart';
 import '../../features/clinic/domain/app_enums.dart';
 import '../../features/clinic/domain/book_appointment.dart';
 import '../../features/clinic/domain/appointment_policy.dart';
+import '../../features/clinic/domain/change_appointment_status.dart';
 import '../../features/clinic/domain/clinic_access.dart';
 import '../../features/clinic/domain/clinic_queries.dart';
 import '../../features/clinic/domain/clinic_snapshot.dart';
 import '../../features/clinic/domain/entities.dart';
 import '../../features/clinic/presentation/booking_view_model.dart';
+import '../../features/clinic/presentation/appointment_actions_view_model.dart';
 import '../../features/clinic/presentation/clinic_view_model.dart';
 import 'app_dependencies.dart';
 
@@ -77,19 +79,19 @@ final sortedAppointmentsProvider = Provider<List<Appointment>>(
 final upcomingAppointmentsProvider = Provider<List<Appointment>>(
   (ref) => ClinicQueries.upcoming(
     ref.watch(appointmentsProvider),
-    ref.watch(clockProvider)(),
+    ref.watch(clinicTimeProvider),
   ),
 );
 final pastAppointmentsProvider = Provider<List<Appointment>>(
   (ref) => ClinicQueries.past(
     ref.watch(appointmentsProvider),
-    ref.watch(clockProvider)(),
+    ref.watch(clinicTimeProvider),
   ),
 );
 final clinicMetricsProvider = Provider<ClinicMetrics>(
   (ref) => ClinicMetrics(
     ref.watch(clinicSnapshotProvider),
-    ref.watch(clockProvider)(),
+    ref.watch(clinicTimeProvider),
   ),
 );
 
@@ -108,8 +110,20 @@ final bookingProvider =
     });
 
 final bookingDateOptionsProvider = Provider<List<DateTime>>(
-  (ref) => ClinicQueries.dateOptions(ref.watch(clockProvider)()),
+  (ref) => ClinicQueries.dateOptions(ref.watch(clinicTimeProvider)),
 );
+
+final appointmentActionsProvider =
+    StateNotifierProvider.autoDispose<
+      AppointmentActionsViewModel,
+      AppointmentActionState
+    >((ref) {
+      ref.watch(authProvider.select((s) => s.currentUser?.id));
+      return AppointmentActionsViewModel(
+        ChangeAppointmentStatus(ref.watch(clinicRepositoryProvider)),
+        () => ref.read(authProvider).currentUser,
+      );
+    });
 
 final bookingSlotsProvider =
     Provider.family<List<DateTime>, ({String doctorId, DateTime date})>((
@@ -133,7 +147,7 @@ final bookingSlotsProvider =
         doctor: doctors.single,
         patientId: patient.id,
         date: selection.date,
-        now: ref.watch(clockProvider)(),
+        now: ref.watch(clinicTimeProvider),
       );
     });
 
@@ -146,6 +160,7 @@ final resetDemoProvider = Provider<void Function()>(
     ref.invalidate(clinicRepositoryProvider);
     ref.invalidate(clinicViewModelProvider);
     ref.invalidate(bookingProvider);
+    ref.invalidate(appointmentActionsProvider);
     ref.invalidate(searchQueryProvider);
     ref.invalidate(selectedSpecialtyProvider);
   },

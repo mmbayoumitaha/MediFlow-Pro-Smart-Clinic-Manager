@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../clinic/domain/entities.dart';
+import '../../clinic/presentation/appointment_action_card.dart';
 import '../../../shared/widgets/shared_widgets.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -41,7 +41,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           controller: _tabCtrl,
           tabs: const [
             Tab(text: 'Upcoming'),
-            Tab(text: 'Past'),
+            Tab(text: 'History'),
           ],
         ),
       ),
@@ -49,7 +49,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
         controller: _tabCtrl,
         children: [
           _buildList(upcoming, 'No upcoming appointments'),
-          _buildList(past, 'No past appointments'),
+          _buildList(past, 'No appointment history'),
         ],
       ),
     );
@@ -64,14 +64,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
       itemCount: apts.length,
       itemBuilder: (ctx, i) {
         final apt = apts[i];
-        return AppointmentCard(
-          doctorName: apt.doctorName,
-          specialty: apt.specialty.labelEn,
-          dateStr: DateFormat('MMM dd, yyyy').format(apt.dateTime),
-          timeStr: DateFormat('hh:mm a').format(apt.dateTime),
-          status: apt.status.labelEn,
-          statusColor: Color(apt.status.colorValue),
-        );
+        return AppointmentActionCard(appointment: apt, title: apt.doctorName);
       },
     );
   }
