@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mediflow/features/clinic/data/demo_fixtures.dart';
+import 'package:mediflow/features/clinic/data/demo_clinic_repository.dart';
 import 'package:mediflow/features/clinic/domain/app_enums.dart';
 import 'package:mediflow/features/clinic/domain/book_appointment.dart';
 import 'package:mediflow/features/clinic/domain/clinic_failure.dart';
@@ -194,6 +195,46 @@ void main() {
     model.dispose();
     pending.complete();
     expect(await request, isFalse);
+  });
+
+  test('ambiguous write failure retries the same request and changed selection gets a new ID', () async {
+    final real = DemoClinicRepository(at: now);
+    addTearDown(real.dispose);
+    when(repository.load()).thenAnswer((_) => real.load());
+    var writes = 0;
+    when(repository.bookAppointment(any)).thenAnswer((invocation) async {
+      await real.bookAppointment(
+        invocation.positionalArguments.single as Appointment,
+      );
+      if (++writes == 1) throw Exception('acknowledgement lost');
+    });
+    var ids = 0;
+    final model = BookingViewModel(
+      BookAppointment(
+        repository,
+        now: () => now,
+        newId: () => 'attempt-${++ids}',
+      ),
+      () => snapshot.patients.first,
+    );
+    addTearDown(model.dispose);
+    final at = DateTime(2026, 10, 6, 13, 30);
+    expect(await model.book(doctorId: 'doc-001', dateTime: at), isFalse);
+    expect((await real.load()).appointments, hasLength(9));
+    expect(await model.book(doctorId: 'doc-001', dateTime: at), isTrue);
+    expect(ids, 1);
+    expect((await real.load()).appointments, hasLength(9));
+    expect(await model.book(doctorId: 'doc-001', dateTime: at), isTrue);
+    expect(writes, 2);
+    expect(
+      await model.book(
+        doctorId: 'doc-001',
+        dateTime: at.add(const Duration(minutes: 30)),
+      ),
+      isTrue,
+    );
+    expect(ids, 2);
+    expect((await real.load()).appointments, hasLength(10));
   });
 
   test('clinic view model handles loading, stream errors and retry', () async {

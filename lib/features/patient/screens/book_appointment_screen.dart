@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
 
-import 'package:mediflow/features/clinic/domain/entities.dart';
-
 import 'package:intl/intl.dart';
 
 class BookAppointmentScreen extends ConsumerStatefulWidget {
-  const BookAppointmentScreen({super.key});
+  final String? doctorId;
+  const BookAppointmentScreen({super.key, this.doctorId});
   @override
   ConsumerState<BookAppointmentScreen> createState() =>
       _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
-  Doctor? _selectedDoctor;
+  String? _doctorId;
   DateTime? _selectedDate;
-  String? _selectedTime;
+  DateTime? _selectedTime;
   final _reasonCtrl = TextEditingController();
-  final _times = [
-    '09:00 AM',
-    '09:30 AM',
-    '10:00 AM',
-    '10:30 AM',
-    '11:00 AM',
-    '11:30 AM',
-    '01:00 PM',
-    '01:30 PM',
-    '02:00 PM',
-    '02:30 PM',
-    '03:00 PM',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _doctorId = widget.doctorId;
+  }
+
+  @override
+  void didUpdateWidget(covariant BookAppointmentScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.doctorId != widget.doctorId) {
+      _doctorId = widget.doctorId;
+      _selectedTime = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -42,39 +43,26 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
   }
 
   Future<void> _book() async {
-    if (_selectedDoctor == null ||
-        _selectedDate == null ||
-        _selectedTime == null) {
+    if (_doctorId == null || _selectedDate == null || _selectedTime == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
-    final selected = DateFormat('hh:mm a').parseStrict(_selectedTime!);
-    final date = _selectedDate!;
-    final scheduledAt = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      selected.hour,
-      selected.minute,
-    );
     final booked = await ref
         .read(bookingProvider.notifier)
         .book(
-          doctorId: _selectedDoctor!.id,
-          dateTime: scheduledAt,
+          doctorId: _doctorId!,
+          dateTime: _selectedTime!,
           reason: _reasonCtrl.text,
         );
     if (!mounted) return;
     if (!booked) {
+      final error = ref.read(bookingProvider).error;
+      await ref.read(clinicViewModelProvider.notifier).refresh();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            ref.read(bookingProvider).error ??
-                'Booking is already in progress.',
-          ),
-        ),
+        SnackBar(content: Text(error ?? 'Booking is already in progress.')),
       );
       return;
     }
@@ -86,7 +74,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
-    Navigator.of(context).pop();
+    context.go('/patient/appointments');
   }
 
   @override
@@ -94,11 +82,34 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final doctors = ref.watch(doctorsProvider);
     final booking = ref.watch(bookingProvider);
     final dates = ref.watch(bookingDateOptionsProvider);
+    final matches = doctors.where((d) => d.id == _doctorId);
+    final selectedDoctor = matches.length == 1 ? matches.single : null;
+    final times = selectedDoctor != null && _selectedDate != null
+        ? ref.watch(
+            bookingSlotsProvider((
+              doctorId: selectedDoctor.id,
+              date: _selectedDate!,
+            )),
+          )
+        : const <DateTime>[];
+    final validTime = times.contains(_selectedTime);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Book Appointment')),
+      appBar: AppBar(
+        title: const Text('Book Appointment'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/patient/doctors');
+            }
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.md),
         child: Column(
@@ -106,6 +117,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
           children: [
             // Step 1: Choose Doctor
             Text('Select Doctor', style: theme.textTheme.titleLarge),
+            if (_doctorId != null && selectedDoctor == null)
+              const Text(
+                'This doctor no longer exists. Choose another doctor.',
+              ),
             const SizedBox(height: 10),
             SizedBox(
               height: 110,
@@ -115,9 +130,14 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (ctx, i) {
                   final doc = doctors[i];
-                  final sel = _selectedDoctor?.id == doc.id;
+                  final sel = _doctorId == doc.id;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedDoctor = doc),
+                    onTap: booking.isSubmitting || !doc.isAvailable
+                        ? null
+                        : () => setState(() {
+                            _doctorId = doc.id;
+                            _selectedTime = null;
+                          }),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: 100,
@@ -153,7 +173,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            doc.specialty.labelEn,
+                            doc.isAvailable
+                                ? doc.specialty.labelEn
+                                : 'Unavailable',
                             style: theme.textTheme.labelSmall,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -182,7 +204,12 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                       _selectedDate!.month == date.month;
                   return GestureDetector(
                     key: ValueKey(date),
-                    onTap: () => setState(() => _selectedDate = date),
+                    onTap: booking.isSubmitting
+                        ? null
+                        : () => setState(() {
+                            _selectedDate = date;
+                            _selectedTime = null;
+                          }),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: 60,
@@ -239,15 +266,24 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             // Step 3: Select Time
             Text('Select Time', style: theme.textTheme.titleLarge),
             const SizedBox(height: 10),
+            if (selectedDoctor == null || _selectedDate == null)
+              const Text('Select a doctor and date to see available times.')
+            else if (times.isEmpty)
+              const Text(
+                'No available times on this date. Choose another date or doctor.',
+              ),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _times.map((t) {
+              children: times.map((t) {
                 final sel = _selectedTime == t;
                 return ChoiceChip(
-                  label: Text(t),
+                  key: ValueKey(t),
+                  label: Text(DateFormat('hh:mm a').format(t)),
                   selected: sel,
-                  onSelected: (_) => setState(() => _selectedTime = t),
+                  onSelected: booking.isSubmitting
+                      ? null
+                      : (_) => setState(() => _selectedTime = t),
                   selectedColor: AppColors.primaryContainer,
                   labelStyle: TextStyle(
                     fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
@@ -271,7 +307,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             const SizedBox(height: 32),
 
             // Summary & Book
-            if (_selectedDoctor != null) ...[
+            if (selectedDoctor != null) ...[
               Container(
                 padding: const EdgeInsets.all(AppSizes.md),
                 decoration: BoxDecoration(
@@ -284,7 +320,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Consultation fee: \$${_selectedDoctor!.consultationFee.toStringAsFixed(0)}',
+                        'Consultation fee: \$${selectedDoctor.consultationFee.toStringAsFixed(0)}',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: AppColors.primary,
                         ),
@@ -296,7 +332,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               const SizedBox(height: 16),
             ],
             FilledButton.icon(
-              onPressed: booking.isSubmitting ? null : _book,
+              onPressed: booking.isSubmitting || !validTime ? null : _book,
               icon: const Icon(Icons.check_circle_outline),
               label: Text(
                 booking.isSubmitting ? 'Booking...' : 'Confirm Booking',

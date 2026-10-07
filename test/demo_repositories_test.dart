@@ -33,7 +33,11 @@ void main() {
       expect(() => initial.doctors.clear(), throwsUnsupportedError);
       expect(initial.patients.first.updatedAt, now);
       await clinic.bookAppointment(
-        initial.appointments.first.copyWith(id: 'new-booking'),
+        initial.appointments.first.copyWith(
+          id: 'new-booking',
+          dateTime: DateTime(2026, 10, 6, 13, 30),
+          status: AppointmentStatus.pending,
+        ),
       );
       expect((await clinic.load()).appointments, hasLength(9));
       expect(initial.appointments, hasLength(8));
@@ -47,7 +51,11 @@ void main() {
       final first = await clinic.load();
       final snapshots = clinic.watch().take(2).toList();
       await clinic.bookAppointment(
-        first.appointments.first.copyWith(id: 'new-booking'),
+        first.appointments.first.copyWith(
+          id: 'new-booking',
+          dateTime: DateTime(2026, 10, 6, 13, 30),
+          status: AppointmentStatus.pending,
+        ),
       );
       final events = await snapshots;
       expect(events.first.appointments, hasLength(8));

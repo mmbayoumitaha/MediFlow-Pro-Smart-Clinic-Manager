@@ -13,7 +13,8 @@ final idGeneratorProvider = Provider<String Function()>(
 );
 
 final clinicRepositoryProvider = Provider<ClinicRepository>((ref) {
-  final repository = DemoClinicRepository(at: ref.watch(clockProvider)());
+  final clock = ref.watch(clockProvider);
+  final repository = DemoClinicRepository(at: clock(), now: clock);
   ref.onDispose(repository.dispose);
   return repository;
 });

@@ -79,10 +79,7 @@ void main() {
     expect(
       await container
           .read(bookingProvider.notifier)
-          .book(
-            doctorId: 'doc-001',
-            dateTime: now.add(const Duration(days: 1)),
-          ),
+          .book(doctorId: 'doc-001', dateTime: DateTime(2026, 10, 8, 9)),
       isTrue,
     );
     await auth.logout();
