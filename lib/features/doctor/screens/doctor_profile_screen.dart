@@ -1,3 +1,5 @@
+import '../../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +27,7 @@ class DoctorProfileScreen extends ConsumerWidget {
               radius: 48,
               backgroundColor: AppColors.secondaryContainer,
               child: Text(
-                (user?.fullName ?? 'D')[0],
+                ClinicFormatters.initial(user?.fullName),
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w700,

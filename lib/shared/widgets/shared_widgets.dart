@@ -1,3 +1,5 @@
+import '../../core/formatters/clinic_formatters.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -51,7 +53,7 @@ class StatCard extends StatelessWidget {
               ),
               child: Icon(icon, color: Colors.white, size: 20),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             Text(
               value,
               style: const TextStyle(
@@ -59,8 +61,6 @@ class StatCard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             Text(
               title,
@@ -69,8 +69,6 @@ class StatCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: Colors.white.withValues(alpha: 0.85),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             if (subtitle != null)
               Text(
@@ -85,6 +83,30 @@ class StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Let text determine card height instead of fitting it into a fixed grid cell.
+class StatsGrid extends StatelessWidget {
+  final List<Widget> children;
+  const StatsGrid({super.key, required this.children});
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final columns =
+          constraints.maxWidth < 400 ||
+              MediaQuery.textScalerOf(context).scale(16) > 24
+          ? 1
+          : 2;
+      final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: children
+            .map((child) => SizedBox(width: width, child: child))
+            .toList(),
+      );
+    },
+  );
 }
 
 /// Doctor card for patient view.
@@ -161,7 +183,7 @@ class DoctorCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '\$${fee.toStringAsFixed(0)}',
+                        ClinicFormatters.money(fee),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

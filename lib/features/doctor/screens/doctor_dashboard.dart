@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/providers/app_dependencies.dart';
+import '../../../core/formatters/clinic_formatters.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
@@ -34,7 +38,7 @@ class DoctorDashboard extends ConsumerWidget {
                     radius: 24,
                     backgroundColor: AppColors.secondaryContainer,
                     child: Text(
-                      (user?.fullName ?? 'D')[0],
+                      ClinicFormatters.initial(user?.fullName),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.secondary,
@@ -48,7 +52,7 @@ class DoctorDashboard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good ${_getGreeting()}!',
+                          'Good ${_getGreeting(ref.watch(clinicTimeProvider))}!',
                           style: theme.textTheme.bodySmall,
                         ),
                         Text(
@@ -70,13 +74,7 @@ class DoctorDashboard extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Stats
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.3,
+              StatsGrid(
                 children: [
                   StatCard(
                     title: "Today's Patients",
@@ -99,9 +97,11 @@ class DoctorDashboard extends ConsumerWidget {
                     ),
                   ),
                   StatCard(
-                    title: 'Total Revenue',
-                    value:
-                        '\$${metrics.completedAppointmentFees.toStringAsFixed(0)}',
+                    title: 'Completed visit fees',
+                    value: ClinicFormatters.money(
+                      metrics.completedAppointmentFees,
+                    ),
+                    subtitle: 'Visit fees; not collected payments',
                     icon: Icons.payments_rounded,
                     gradient: AppColors.accentGradient,
                   ),
@@ -110,9 +110,10 @@ class DoctorDashboard extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Today's schedule
-              const SectionHeader(
+              SectionHeader(
                 title: "Today's Schedule",
                 actionText: 'View All',
+                onAction: () => context.go('/doctor/schedule'),
               ),
               if (todayApts.isEmpty)
                 const Padding(
@@ -156,8 +157,8 @@ class DoctorDashboard extends ConsumerWidget {
     );
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
+  String _getGreeting(DateTime now) {
+    final hour = now.hour;
     if (hour < 12) return 'Morning';
     if (hour < 17) return 'Afternoon';
     return 'Evening';
