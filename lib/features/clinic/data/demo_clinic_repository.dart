@@ -7,6 +7,7 @@ import '../domain/clinic_failure.dart';
 import '../domain/clinic_repository.dart';
 import '../domain/clinic_snapshot.dart';
 import '../domain/entities.dart';
+import '../domain/billing_policy.dart';
 import 'demo_fixtures.dart';
 
 /// Isolated, session-only data. The entire fixture set shares one seed clock.
@@ -164,6 +165,129 @@ class DemoClinicRepository implements ClinicRepository {
       _snapshot.copyWith(
         appointments: _snapshot.appointments
             .map((a) => a.id == appointmentId ? updated : a)
+            .toList(),
+      ),
+    );
+    return updated;
+  }
+
+  @override
+  Future<Invoice> issueAppointmentInvoice({
+    required ClinicUser actor,
+    required String appointmentId,
+    required String invoiceId,
+  }) async {
+    _ensureOpen();
+    BillingPolicy.requireAdmin(actor);
+    final existing = _snapshot.invoices.where(
+      (i) => i.appointmentId == appointmentId,
+    );
+    if (existing.length == 1) return existing.single;
+    if (existing.length > 1) {
+      throw const ClinicFailure(
+        FailureCode.conflict,
+        'This visit has multiple invoices.',
+      );
+    }
+    final visits = _snapshot.appointments.where((a) => a.id == appointmentId);
+    if (visits.length != 1) {
+      throw const ClinicFailure(
+        FailureCode.notFound,
+        'Appointment is unavailable.',
+      );
+    }
+    final visit = visits.single;
+    if (visit.status != AppointmentStatus.completed ||
+        visit.paymentStatus != PaymentStatus.unpaid) {
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Only an unpaid completed visit can receive a new invoice.',
+      );
+    }
+    if (invoiceId.trim().isEmpty ||
+        _snapshot.invoices.any((i) => i.id == invoiceId)) {
+      throw const ClinicFailure(
+        FailureCode.conflict,
+        'Invoice ID is unavailable.',
+      );
+    }
+    final now = _now();
+    final invoice = Invoice(
+      id: invoiceId,
+      patientId: visit.patientId,
+      patientName: visit.patientName,
+      appointmentId: visit.id,
+      items: [
+        InvoiceItem(
+          description: 'Consultation with ${visit.doctorName}',
+          unitPrice: visit.fee,
+          total: visit.fee,
+        ),
+      ],
+      subtotal: visit.fee,
+      total: visit.fee,
+      issuedDate: now,
+      createdAt: now,
+    );
+    BillingPolicy.validateInvoice(invoice, now);
+    _publish(_snapshot.copyWith(invoices: [invoice, ..._snapshot.invoices]));
+    return invoice;
+  }
+
+  @override
+  Future<Invoice> recordInvoicePayment({
+    required ClinicUser actor,
+    required String invoiceId,
+    required PaymentStatus expected,
+    required PaymentStatus target,
+    DemoPaymentMethod? method,
+  }) async {
+    _ensureOpen();
+    BillingPolicy.requireAdmin(actor);
+    final invoices = _snapshot.invoices.where((i) => i.id == invoiceId);
+    if (invoices.length != 1) {
+      throw const ClinicFailure(
+        FailureCode.notFound,
+        'Invoice is unavailable.',
+      );
+    }
+    final invoice = invoices.single;
+    final now = _now();
+    BillingPolicy.validateTransition(invoice, expected, target, method, now);
+    if (invoice.appointmentId != null) {
+      final visits = _snapshot.appointments.where(
+        (a) => a.id == invoice.appointmentId,
+      );
+      final linkedInvoices = _snapshot.invoices.where(
+        (i) => i.appointmentId == invoice.appointmentId,
+      );
+      if (visits.length != 1 ||
+          visits.single.patientId != invoice.patientId ||
+          linkedInvoices.length != 1) {
+        throw const ClinicFailure(
+          FailureCode.conflict,
+          'Invoice appointment linkage is invalid.',
+        );
+      }
+    }
+    final updated = invoice.copyWith(
+      paymentStatus: target,
+      paymentMethod: target == PaymentStatus.paid
+          ? method!.name
+          : invoice.paymentMethod,
+      paidDate: target == PaymentStatus.paid ? now : invoice.paidDate,
+    );
+    _publish(
+      _snapshot.copyWith(
+        invoices: _snapshot.invoices
+            .map((i) => i.id == invoiceId ? updated : i)
+            .toList(),
+        appointments: _snapshot.appointments
+            .map(
+              (a) => a.id == invoice.appointmentId
+                  ? a.copyWith(paymentStatus: target, updatedAt: now)
+                  : a,
+            )
             .toList(),
       ),
     );

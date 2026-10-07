@@ -89,3 +89,7 @@ This architecture establishes dependency boundaries and tested state handling; i
 ## Analytics and display conventions
 
 `ClinicAnalytics` derives six payment-month buckets in integer cents, all-time fully paid invoice totals, complete specialty counts and the four most recently updated appointments from the scoped snapshot. Partial/refunded invoices are excluded, and malformed or future-dated paid records are flagged. This is a snapshot of settled invoices, not a transaction ledger. The doctor portal exposes completed-visit fees without implying collection. `AnalyticsCharts` renders these immutable series with dynamic axes and explicit empty states. `ClinicFormatters` supplies USD values and grapheme-safe avatar initials.
+
+## Demo billing commands
+
+`IssueAppointmentInvoice` and `RecordInvoicePayment` require an active admin. The repository revalidates them against its latest snapshot and clock, issues at most one consultation-only invoice per completed visit, and atomically publishes invoice/linked-appointment payment changes. `BillingPolicy` checks cent precision, item/tax/discount arithmetic, dates and allowed full-settlement/full-refund transitions; an expected-status check protects competing writes. `BillingViewModel` owns submission/error state and ignores disposed completions. Billing is a fictional status-recording workflow; partial balances and a cash-flow ledger are not implemented.

@@ -14,7 +14,9 @@ The project is being repaired in tested batches. [The repair plan](docs/REPAIR_P
 
 All demo amounts use **USD**, displayed consistently without currency conversion. Paid-invoice totals count only fully paid, non-refunded invoices with valid dates and amounts. The six-month chart groups by payment date; the dashboard card covers all time. These snapshot totals are not a cash-flow ledger. Doctor completed-visit fees are explicitly separate from collected payments. Specialty distribution includes every recorded appointment status.
 
-Some visible actions are still placeholders. Management/profile/availability editing, payment flows remain under repair. Charts now derive from source records. Route guards and scoped reads enforce demo visibility; production backend authorization still requires the planned Firebase rules. The demo contains fictional records; do not enter real patient information.
+Administrators can issue one consultation-only invoice for an unpaid completed visit, record a full demo settlement, and record a full refund. Invoice and appointment payment status update together. These actions never charge or refund real money; partial balances and a transaction ledger are outside the current demo scope.
+
+Some visible actions are still placeholders. Management/profile/availability editing remains under repair. Charts derive from source records. Route guards and scoped reads enforce demo visibility; production backend authorization still requires the planned Firebase rules. The demo contains fictional records; do not enter real patient information.
 
 ## Run the demo
 
@@ -41,7 +43,7 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-The 102 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, registration and role retention, all 15 portal role/path combinations, per-account visibility, working periods/conflicts/retries, lifecycle/time/category boundaries, live-clock rollover and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links, cancel/confirm reset, doctor-linked booking, slot contention and patient-to-doctor status workflows. Analytics tests cover payment-month boundaries, invalid/empty data, all specialties, recent-change ordering and reactive charts. Lifecycle changes keep invoice/payment values unchanged; payment/refund behavior and Firebase authorization remain in subsequent batches. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
+The 114 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, registration and role retention, all 15 portal role/path combinations, per-account visibility, working periods/conflicts/retries, lifecycle/time/category boundaries, live-clock rollover and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links, cancel/confirm reset, doctor-linked booking, slot contention and patient-to-doctor status workflows. Analytics tests cover payment-month boundaries, invalid/empty data, all specialties, recent-change ordering and reactive charts. Lifecycle changes keep invoice/payment values unchanged; manual billing actions have separate permission/concurrency/UI tests; Firebase authorization remains in a subsequent batch. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
 
 Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
 

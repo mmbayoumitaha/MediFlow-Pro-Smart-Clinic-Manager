@@ -1,6 +1,7 @@
 import 'clinic_snapshot.dart';
 import 'app_enums.dart';
 import 'entities.dart';
+import 'billing_policy.dart';
 
 abstract interface class ClinicRepository {
   Future<ClinicSnapshot> load();
@@ -20,5 +21,21 @@ abstract interface class ClinicRepository {
     required String appointmentId,
     required AppointmentStatus expected,
     required AppointmentStatus target,
+  });
+
+  /// One consultation-only invoice per completed visit; identical retries return it.
+  Future<Invoice> issueAppointmentInvoice({
+    required ClinicUser actor,
+    required String appointmentId,
+    required String invoiceId,
+  });
+
+  /// Atomic demo settlement/refund with an expected-status concurrency check.
+  Future<Invoice> recordInvoicePayment({
+    required ClinicUser actor,
+    required String invoiceId,
+    required PaymentStatus expected,
+    required PaymentStatus target,
+    DemoPaymentMethod? method,
   });
 }

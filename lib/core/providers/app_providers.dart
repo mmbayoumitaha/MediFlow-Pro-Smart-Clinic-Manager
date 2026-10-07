@@ -10,6 +10,8 @@ import '../../features/clinic/domain/change_appointment_status.dart';
 import '../../features/clinic/domain/clinic_access.dart';
 import '../../features/clinic/domain/clinic_queries.dart';
 import '../../features/clinic/domain/clinic_analytics.dart';
+import '../../features/clinic/domain/billing_use_cases.dart';
+import '../../features/clinic/presentation/billing_view_model.dart';
 import '../../features/clinic/domain/clinic_snapshot.dart';
 import '../../features/clinic/domain/entities.dart';
 import '../../features/clinic/presentation/booking_view_model.dart';
@@ -121,6 +123,19 @@ final bookingDateOptionsProvider = Provider<List<DateTime>>(
   (ref) => ClinicQueries.dateOptions(ref.watch(clinicTimeProvider)),
 );
 
+final billingActionsProvider =
+    StateNotifierProvider.autoDispose<BillingViewModel, BillingActionState>((
+      ref,
+    ) {
+      ref.watch(authProvider.select((s) => s.currentUser?.id));
+      final repository = ref.watch(clinicRepositoryProvider);
+      return BillingViewModel(
+        IssueAppointmentInvoice(repository, ref.watch(idGeneratorProvider)),
+        RecordInvoicePayment(repository),
+        () => ref.read(authProvider).currentUser,
+      );
+    });
+
 final appointmentActionsProvider =
     StateNotifierProvider.autoDispose<
       AppointmentActionsViewModel,
@@ -169,6 +184,7 @@ final resetDemoProvider = Provider<void Function()>(
     ref.invalidate(clinicViewModelProvider);
     ref.invalidate(bookingProvider);
     ref.invalidate(appointmentActionsProvider);
+    ref.invalidate(billingActionsProvider);
     ref.invalidate(searchQueryProvider);
     ref.invalidate(selectedSpecialtyProvider);
   },
