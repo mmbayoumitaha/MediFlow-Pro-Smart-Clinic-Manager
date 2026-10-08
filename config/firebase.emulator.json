@@ -1,0 +1,10 @@
+{
+  "BACKEND_MODE": "firebase",
+  "FIREBASE_EMULATORS": "true",
+  "FIREBASE_PROJECT_ID": "demo-mediflow",
+  "FIREBASE_API_KEY": "fake-emulator-key",
+  "FIREBASE_APP_ID": "1:1234567890:web:mediflow",
+  "FIREBASE_MESSAGING_SENDER_ID": "1234567890",
+  "FIREBASE_AUTH_DOMAIN": "demo-mediflow.firebaseapp.com",
+  "FIREBASE_EMULATOR_HOST": "127.0.0.1"
+}

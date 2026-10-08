@@ -76,3 +76,13 @@ node functions/tool/provision_admin.js --project YOUR_PROJECT_ID --uid AUTH_UID 
 This command has not been run against a live project. It participates in the same revision transaction and refuses patient/doctor/removed identity promotion. Emulator usage requires both Auth and Firestore emulator environment variables and a `demo-` project. Never commit Admin SDK credentials. See [Firebase Admin setup](https://firebase.google.com/docs/admin/setup) for operator authentication.
 
 Remaining B6 work: optional Flutter Firebase configuration/adapters, Auth session/profile events, role-scoped streams, Timestamp/clinic-time mapping, asynchronous free-slot/reset-password UI, platform networking and an actual Flutter-to-emulator workflow. B6 remains open until those behaviors and the no-configuration demo are verified.
+
+## Flutter configuration and mapping foundation
+
+The Flutter SDK packages and typed initialization/configuration helpers are now present, with a separate Firestore/callable mapper. They are not wired into `main` or the app's repositories yet: running the app still opens the demo, regardless of these proposed backend flags. App-mode activation is the next slice.
+
+`BACKEND_MODE` defaults to `demo`; Firebase options alone cannot enable a backend. Explicit Firebase configuration requires complete client options. `FIREBASE_EMULATORS=true` requires a `demo-` project; live mode rejects demo project IDs. `config/firebase.emulator.json` contains synthetic localhost options; `config/firebase.example.json` contains placeholders that validation rejects. Real platform-specific options belong in ignored `config/firebase.local.json`. Initialization never silently selects the demo on an invalid Firebase configuration. It disables Firestore disk persistence and uses session-only Auth persistence on web.
+
+The backend mapper handles actual Firestore `Timestamp` values and callable UTC strings, uses trusted document IDs and rejects unknown roles/statuses/specialties and ambiguous naive timestamp strings. Domain instants become `TZDateTime` values in Africa/Cairo, retaining their epoch, offset and comparisons. Calendar-date selections remain separate from instants. Tests cover both Cairo DST changes, midnight/year boundaries, all five clinic storage entity types and malformed values.
+
+Verification: seven new Flutter tests passed; the full suite passed **135** tests. Analysis and the 18-file domain architecture check passed; formatting passed. The demo web release build passed after adding the SDK dependencies. Native registrants were updated by dependency resolution; native builds/runtime, actual SDK initialization and Flutter-to-emulator operation remain unverified in this slice.
