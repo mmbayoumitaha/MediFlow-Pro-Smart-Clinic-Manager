@@ -1,0 +1,30 @@
+{
+  "name": "mediflow-clinic-functions",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node test/policy.test.js",
+    "test:emulator": "node test/rules.test.js && node test/emulator.test.js",
+    "check": "node --check src/index.js && node --check src/service.js && node --check src/policy.js",
+    "format:check": "prettier --check src test package.json ../firebase.json ../firestore.indexes.json"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "firebase-functions": "^7.4.0",
+    "luxon": "^3.7.2"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0",
+    "prettier": "^3.9.9"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.6",
+    "@firebase/app": "0.16.2",
+    "@firebase/app-compat": "0.5.18"
+  }
+}
