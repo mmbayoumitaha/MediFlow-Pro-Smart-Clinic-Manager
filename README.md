@@ -4,7 +4,7 @@ A personal Flutter project for exploring patient, doctor and administrator clini
 
 The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
 
-The Firebase backend now includes tested Firestore rules and server-side registration, reservations, lifecycle, billing and profile management. It is not yet connected to Flutter. [Backend setup and verification](docs/FIREBASE.md) describes the emulator checks and remaining B6 work.
+The Firebase backend now includes tested Firestore rules and server-side registration, reservations, lifecycle, billing and profile management. Flutter configuration, initialization and Timestamp/clinic-time mapping helpers are present; the backend is not yet connected to the app. [Backend setup and verification](docs/FIREBASE.md) describes the checks and remaining B6 work.
 
 ## Current functionality
 
@@ -48,7 +48,7 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-The 128 tests cover startup, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, profile edits/deactivation/deletion and management conflicts, registration and role retention, all 15 portal role/path combinations, per-account visibility, working periods/conflicts/retries, lifecycle/time/category boundaries, live-clock rollover and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links, cancel/confirm reset, doctor-linked booking, slot contention and patient-to-doctor status workflows. Analytics tests cover payment-month boundaries, invalid/empty data, all specialties, recent-change ordering and reactive charts. Lifecycle changes keep invoice/payment values unchanged; manual billing actions have separate permission/concurrency/UI tests; Firebase authorization remains in a subsequent batch. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
+The 135 tests cover startup, explicit backend configuration and Timestamp/clinic-time mapping, immutable entities/storage mapping, demo repositories, Mockito use-case/view-model interactions, auth/refresh/reset races, profile edits/deactivation/deletion and management conflicts, registration and role retention, all 15 portal role/path combinations, per-account visibility, working periods/conflicts/retries, lifecycle/time/category boundaries, live-clock rollover and loading/error/retry UI. Widget tests exercise registration, sign-in/logout, cross-role links, cancel/confirm reset, doctor-linked booking, slot contention and patient-to-doctor status workflows. Analytics tests cover payment-month boundaries, invalid/empty data, all specialties, recent-change ordering and reactive charts. Lifecycle changes keep invoice/payment values unchanged; manual billing actions have separate permission/concurrency/UI tests; Firebase authorization remains in a subsequent batch. See [development notes](docs/DEVELOPMENT.md) for toolchain details and the formatting check.
 
 Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
 
