@@ -169,6 +169,21 @@ test("callables authenticate the token and deny missing/inactive/nonpatient acco
     await fails(call("availableSlots", { doctorId: "d1", date }), code);
   }
   assert.equal((await db.collection("appointments").get()).size, 0);
+  const p1 = await client("p1");
+  await fails(
+    p1("availableSlots", { doctorId: "d1", date, expectedActorUid: "p2" }),
+    "permission-denied",
+  );
+  assert.equal(
+    (
+      await p1("availableSlots", {
+        doctorId: "d1",
+        date,
+        expectedActorUid: "p1",
+      })
+    ).zone,
+    CLINIC_ZONE,
+  );
 });
 test("registration derives email/UID from Auth and provisions only a patient, with safe retry", async () => {
   const call = await client("new-patient");

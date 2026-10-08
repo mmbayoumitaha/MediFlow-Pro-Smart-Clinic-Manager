@@ -3,7 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { ClinicError } from "./policy.js";
+import { ClinicError, requireThat } from "./policy.js";
 import { createClinicService } from "./service.js";
 
 initializeApp();
@@ -11,7 +11,21 @@ const service = createClinicService(getFirestore(), getAuth());
 function command(name) {
   return onCall({ region: "us-central1", maxInstances: 5 }, async (request) => {
     try {
-      return await service[name](request.auth?.uid, request.data);
+      let data = request.data;
+      if (
+        data &&
+        typeof data === "object" &&
+        Object.hasOwn(data, "expectedActorUid")
+      ) {
+        requireThat(
+          request.auth?.uid === data.expectedActorUid,
+          "permission-denied",
+          "Your sign-in changed. Retry from the current account.",
+        );
+        const { expectedActorUid, ...commandData } = data;
+        data = commandData;
+      }
+      return await service[name](request.auth?.uid, data);
     } catch (error) {
       if (error instanceof ClinicError)
         throw new HttpsError(error.code, error.message);
