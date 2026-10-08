@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { isDeepStrictEqual } from "node:util";
 
 export const CLINIC_ZONE = "Africa/Cairo";
 export const DURATION_MINUTES = 30;
@@ -208,4 +209,255 @@ export function lifecycleTargets(actor, visit, now) {
   )
     result.push("no_show");
   return result;
+}
+
+export function requireAdmin(actor) {
+  requireThat(
+    actor?.isActive === true && actor.role === "admin",
+    "permission-denied",
+    "Administrator account required.",
+  );
+}
+export function boolean(value, label) {
+  requireThat(
+    typeof value === "boolean",
+    "invalid-argument",
+    `Invalid ${label}.`,
+  );
+  return value;
+}
+export function nullableText(value, max, label) {
+  return value == null ? null : text(value, 0, max, label) || null;
+}
+export function contact(input) {
+  fields(input, ["fullName", "phone", "isActive"], ["address"]);
+  return {
+    fullName: text(input.fullName, 3, 100, "name"),
+    phone: phone(input.phone),
+    address: nullableText(input.address, 500, "address"),
+    isActive: boolean(input.isActive, "account activity"),
+  };
+}
+export function doctorProfile(input) {
+  fields(
+    input,
+    [
+      "fullName",
+      "email",
+      "phone",
+      "specialty",
+      "consultationFee",
+      "experienceYears",
+      "availability",
+      "isAvailable",
+    ],
+    ["bio"],
+  );
+  const email = text(input.email, 3, 254, "email").toLowerCase();
+  requireThat(
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email !== "demo@mediflow.com",
+    "invalid-argument",
+    "Invalid doctor email.",
+  );
+  requireThat(
+    [
+      "general_practice",
+      "cardiology",
+      "dermatology",
+      "neurology",
+      "orthopedics",
+      "pediatrics",
+      "ophthalmology",
+      "dentistry",
+      "gynecology",
+      "urology",
+      "ent",
+      "psychiatry",
+      "radiology",
+      "laboratory",
+    ].includes(input.specialty),
+    "invalid-argument",
+    "Invalid specialty.",
+  );
+  cents(input.consultationFee);
+  requireThat(
+    Number.isInteger(input.experienceYears) &&
+      input.experienceYears >= 0 &&
+      input.experienceYears <= 80,
+    "invalid-argument",
+    "Invalid experience.",
+  );
+  requireThat(
+    Array.isArray(input.availability) && input.availability.length <= 28,
+    "invalid-argument",
+    "Invalid working periods.",
+  );
+  const availability = input.availability.map((period) => {
+    fields(period, ["day", "startTime", "endTime", "isActive"]);
+    const start = minute(period.startTime),
+      end = minute(period.endTime);
+    requireThat(
+      days.includes(period.day) &&
+        start !== null &&
+        end !== null &&
+        end - start >= DURATION_MINUTES,
+      "invalid-argument",
+      "Each working period must allow a same-day 30-minute visit.",
+    );
+    return {
+      day: period.day,
+      startTime: period.startTime,
+      endTime: period.endTime,
+      isActive: boolean(period.isActive, "working period"),
+    };
+  });
+  for (const day of days) {
+    const periods = availability
+      .filter((period) => period.day === day && period.isActive)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    requireThat(
+      periods.every(
+        (period, index) =>
+          index === 0 || period.startTime >= periods[index - 1].endTime,
+      ),
+      "invalid-argument",
+      "Active working periods must not overlap.",
+    );
+  }
+  const isAvailable = boolean(input.isAvailable, "booking availability");
+  requireThat(
+    !isAvailable || availability.some((period) => period.isActive),
+    "invalid-argument",
+    "Add an active working period before enabling booking.",
+  );
+  return {
+    fullName: text(input.fullName, 3, 100, "name"),
+    email,
+    phone: phone(input.phone),
+    specialty: input.specialty,
+    consultationFee: input.consultationFee,
+    experienceYears: input.experienceYears,
+    availability,
+    isAvailable,
+    bio: nullableText(input.bio, 2000, "biography"),
+  };
+}
+export const patientEditable = [
+  "id",
+  "fullName",
+  "phone",
+  "address",
+  "isActive",
+];
+export const doctorEditable = [
+  "id",
+  "userId",
+  "fullName",
+  "email",
+  "phone",
+  "bio",
+  "specialty",
+  "consultationFee",
+  "experienceYears",
+  "isAvailable",
+  "availability",
+];
+export function sameEditable(current, expected, keys) {
+  fields(
+    expected,
+    keys.filter((key) => !["address", "bio"].includes(key)),
+    keys.filter((key) => ["address", "bio"].includes(key)),
+  );
+  return keys.every((key) =>
+    isDeepStrictEqual(current[key] ?? null, expected[key] ?? null),
+  );
+}
+export function validateInvoice(invoice, now) {
+  const subtotal = cents(invoice.subtotal),
+    total = cents(invoice.total),
+    tax = cents(invoice.tax),
+    discount = cents(invoice.discount);
+  requireThat(
+    Array.isArray(invoice.items) && invoice.items.length > 0,
+    "failed-precondition",
+    "Invoice items are invalid.",
+  );
+  let sum = 0;
+  for (const item of invoice.items) {
+    requireThat(
+      typeof item.description === "string" &&
+        item.description.trim().length > 0 &&
+        Number.isSafeInteger(item.quantity) &&
+        item.quantity >= 1 &&
+        cents(item.total) === cents(item.unitPrice) * item.quantity,
+      "failed-precondition",
+      "Invoice items are invalid.",
+    );
+    sum += cents(item.total);
+    requireThat(
+      Number.isSafeInteger(sum),
+      "failed-precondition",
+      "Invoice total is invalid.",
+    );
+  }
+  const issued = millis(invoice.issuedDate);
+  requireThat(
+    Number.isFinite(issued) &&
+      issued <= now &&
+      subtotal === sum &&
+      total === subtotal + tax - discount &&
+      total > 0,
+    "failed-precondition",
+    "Invoice totals or issue date are invalid.",
+  );
+}
+export function paymentTransition(invoice, expected, target, method, now) {
+  requireThat(
+    invoice.paymentStatus === expected,
+    "aborted",
+    "This invoice changed. Refresh and try again.",
+  );
+  validateInvoice(invoice, now);
+  const settle =
+    target === "paid" &&
+    ["unpaid", "partial"].includes(expected) &&
+    ["cash", "card", "bankTransfer"].includes(method);
+  const paid = invoice.paidDate == null ? NaN : millis(invoice.paidDate);
+  const refund =
+    target === "refunded" &&
+    expected === "paid" &&
+    Number.isFinite(paid) &&
+    paid >= millis(invoice.issuedDate) &&
+    paid <= now;
+  requireThat(
+    settle || refund,
+    "failed-precondition",
+    "Only full settlement or full refund can be recorded.",
+  );
+}
+export function retainReservations(
+  current,
+  updated,
+  visits,
+  now,
+  zone = CLINIC_ZONE,
+) {
+  if (isDeepStrictEqual(current.availability, updated.availability)) return;
+  for (const visit of visits.filter(
+    (visit) =>
+      visit.doctorId === current.id &&
+      reserved.has(visit.status) &&
+      millis(visit.dateTime) >= now,
+  )) {
+    const start = millis(visit.dateTime),
+      date = DateTime.fromMillis(start, { zone }).toISODate();
+    requireThat(
+      visit.durationMinutes === DURATION_MINUTES &&
+        workingSlots({ ...updated, isAvailable: true }, date, zone).includes(
+          start,
+        ),
+      "aborted",
+      "Working periods must retain existing future reservations.",
+    );
+  }
 }
