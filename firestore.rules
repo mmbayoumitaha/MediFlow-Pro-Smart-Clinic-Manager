@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function user() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function active() { return signedIn() && user().isActive == true; }
+    function admin() { return active() && user().role == 'admin'; }
+    function patient() { return active() && user().role == 'patient'; }
+    function doctor() { return active() && user().role == 'doctor'; }
+    function ownVisit() {
+      return active() && ((patient() && resource.data.patientId == request.auth.uid)
+        || (doctor() && resource.data.doctorUserId == request.auth.uid));
+    }
+    match /users/{id} {
+      allow get: if (signedIn() && request.auth.uid == id) || admin();
+      allow list: if admin();
+      allow write: if false;
+    }
+    match /doctors/{id} {
+      allow read: if admin() || patient() || (doctor() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+    match /appointments/{id} {
+      allow read: if admin() || ownVisit();
+      allow write: if false;
+    }
+    match /prescriptions/{id} {
+      allow read: if admin() || ownVisit();
+      allow write: if false;
+    }
+    match /invoices/{id} {
+      allow read: if admin() || (patient() && resource.data.patientId == request.auth.uid);
+      allow write: if false;
+    }
+    match /doctorPatients/{doctorUid}/patients/{patientId} {
+      allow read: if admin() || (doctor() && request.auth.uid == doctorUid);
+      allow write: if false;
+    }
+    // Internal locks and all unrecognized paths remain inaccessible to clients.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

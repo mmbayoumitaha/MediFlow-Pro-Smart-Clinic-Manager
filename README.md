@@ -4,6 +4,8 @@ A personal Flutter project for exploring patient, doctor and administrator clini
 
 The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
 
+The first Firebase backend slice now includes tested Firestore rules and server-side registration, availability, reservation and lifecycle commands. It is not yet connected to Flutter. [Backend setup and verification](docs/FIREBASE.md) describes the emulator checks and remaining B6 work.
+
 ## Current functionality
 
 - Patient, doctor and administrator portals with role-checked GoRouter routes and persistent tab navigation.

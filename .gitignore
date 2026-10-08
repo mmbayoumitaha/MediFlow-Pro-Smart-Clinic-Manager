@@ -57,3 +57,18 @@ app.*.map.json
 # macOS
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 **/macos/Flutter/ephemeral
+
+# Firebase development output and private local configuration
+node_modules/
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+config/firebase.local.json
+*service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+functions/.env*
+!functions/.env.example
+functions/.secret.local
+.runtimeconfig.json
