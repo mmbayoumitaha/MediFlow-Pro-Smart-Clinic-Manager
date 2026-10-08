@@ -2,6 +2,7 @@ import '../../clinic/domain/app_enums.dart';
 import '../../clinic/domain/clinic_failure.dart';
 import '../../clinic/domain/entities.dart';
 import 'auth_repository.dart';
+import 'auth_session.dart';
 
 String _email(String input) {
   final email = input.trim().toLowerCase();
@@ -84,4 +85,20 @@ class SignOut {
   final AuthRepository _repository;
   const SignOut(this._repository);
   Future<void> call() => _repository.logout();
+}
+
+class RequestPasswordReset {
+  final AuthRepository repository;
+  const RequestPasswordReset(this.repository);
+  Future<void> call(String email) {
+    final normalized = _email(email);
+    final target = repository;
+    if (target is! PasswordRecovery) {
+      throw const ClinicFailure(
+        FailureCode.unavailable,
+        'Password recovery is available only for Firebase accounts.',
+      );
+    }
+    return (target as PasswordRecovery).resetPassword(normalized);
+  }
 }

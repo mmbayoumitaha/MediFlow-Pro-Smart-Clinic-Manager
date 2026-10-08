@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../clinic/domain/app_enums.dart';
@@ -6,6 +8,7 @@ import '../../clinic/domain/entities.dart';
 import '../../clinic/domain/clinic_snapshot.dart';
 import '../domain/auth_repository.dart';
 import '../domain/auth_use_cases.dart';
+import '../domain/auth_session.dart';
 
 class AuthState {
   final ClinicUser? currentUser;
@@ -21,9 +24,35 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final RegisterUser _register;
   final SignOut _signOut;
   int _operation = 0;
+  StreamSubscription<AuthSession>? _session;
 
-  AuthViewModel(this._signIn, this._register, this._signOut)
-    : super(const AuthState());
+  AuthViewModel(
+    this._signIn,
+    this._register,
+    this._signOut, {
+    AuthSessionSource? sessions,
+  }) : super(AuthState(isLoading: sessions != null)) {
+    _session = sessions?.watchSession().listen(
+      (session) {
+        if (!mounted) return;
+        // A trusted event supersedes any older pending command result, including
+        // role/contact changes under the same UID.
+        _operation++;
+        state = AuthState(
+          currentUser: session.user,
+          isLoading: session.isRestoring,
+          error: session.error,
+        );
+      },
+      onError: (Object _) {
+        if (!mounted) return;
+        _operation++;
+        state = const AuthState(
+          error: 'Clinic authentication is unavailable. Try signing in again.',
+        );
+      },
+    );
+  }
 
   Future<void> login(String email, String password, UserRole role) => _perform(
     () => _signIn(email, password, role),
@@ -127,6 +156,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
   @override
   void dispose() {
     _operation++;
+    if (_session != null) unawaited(_session!.cancel());
     super.dispose();
   }
 }
