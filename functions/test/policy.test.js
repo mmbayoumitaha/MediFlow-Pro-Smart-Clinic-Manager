@@ -10,6 +10,11 @@ import {
   identifier,
   lifecycleTargets,
   workingSlots,
+  doctorProfile,
+  patientEditable,
+  sameEditable,
+  validateInvoice,
+  paymentTransition,
 } from "../src/policy.js";
 
 const epoch = (iso) => DateTime.fromISO(iso, { zone: CLINIC_ZONE }).toMillis();
@@ -218,4 +223,130 @@ test("commands reject extra identity/role fields, unsafe paths and invalid money
   for (const money of [NaN, Infinity, -1, 1.001, Number.MAX_SAFE_INTEGER, "12"])
     assert.throws(() => cents(money), ClinicError);
   assert.equal(cents(12.34), 1234);
+});
+
+test("doctor profile validation rejects overlaps, bad clocks/roles/fees and booking without periods", () => {
+  const input = {
+    fullName: "Test Doctor",
+    email: "doctor@example.test",
+    phone: "+201000000000",
+    specialty: "general_practice",
+    consultationFee: 12.34,
+    experienceYears: 5,
+    availability: doctor.availability,
+    isAvailable: true,
+  };
+  assert.equal(doctorProfile(input).bio, null);
+  for (const mutation of [
+    { role: "admin" },
+    { phone: "++201000000000" },
+    { consultationFee: 1.001 },
+    { experienceYears: 81 },
+    { availability: [] },
+    { isAvailable: "true" },
+    { specialty: "unknown" },
+    {
+      availability: [
+        ...doctor.availability,
+        { ...doctor.availability[0], startTime: "10:00" },
+      ],
+    },
+    { availability: [{ ...doctor.availability[0], startTime: "09:1" }] },
+    { availability: [{ ...doctor.availability[0], endTime: "09:15" }] },
+    { availability: [{ ...doctor.availability[0], day: "unknown" }] },
+  ]) {
+    assert.throws(() => doctorProfile({ ...input, ...mutation }), ClinicError);
+  }
+  assert.equal(
+    doctorProfile({ ...input, isAvailable: false, availability: [] })
+      .availability.length,
+    0,
+  );
+});
+test("stale profile comparison ignores map insertion order and rejects identity/role overrides", () => {
+  const current = {
+    id: "patient",
+    fullName: "Patient Name",
+    phone: "+201000000000",
+    isActive: true,
+  };
+  const expected = {
+    phone: current.phone,
+    isActive: true,
+    fullName: current.fullName,
+    id: current.id,
+    address: null,
+  };
+  assert.ok(sameEditable(current, expected, patientEditable));
+  assert.ok(
+    !sameEditable(
+      current,
+      { ...expected, fullName: "Another Name" },
+      patientEditable,
+    ),
+  );
+  assert.throws(
+    () =>
+      sameEditable(current, { ...expected, role: "admin" }, patientEditable),
+    ClinicError,
+  );
+});
+test("invoice policy enforces arithmetic, finite money, quantities and chronological settlement/refund", () => {
+  const now = epoch("2026-10-12T10:00"),
+    issuedDate = "2026-10-11T10:00:00Z";
+  const invoice = {
+    subtotal: 20.5,
+    tax: 1,
+    discount: 0.5,
+    total: 21,
+    paymentStatus: "unpaid",
+    issuedDate,
+    items: [
+      {
+        description: "Consultation",
+        unitPrice: 10.25,
+        quantity: 2,
+        total: 20.5,
+      },
+    ],
+  };
+  validateInvoice(invoice, now);
+  paymentTransition(invoice, "unpaid", "paid", "cash", now);
+  for (const mutation of [
+    { items: [] },
+    { total: 1 },
+    { tax: NaN },
+    { issuedDate: "invalid" },
+    { items: [{ ...invoice.items[0], quantity: 1.5 }] },
+  ])
+    assert.throws(
+      () => validateInvoice({ ...invoice, ...mutation }, now),
+      ClinicError,
+    );
+  const paid = {
+    ...invoice,
+    paymentStatus: "paid",
+    paidDate: "2026-10-12T06:00:00Z",
+  };
+  paymentTransition(paid, "paid", "refunded", null, now);
+  for (const paidDate of [
+    null,
+    "invalid",
+    "2026-10-10T10:00:00Z",
+    "2026-10-13T10:00:00Z",
+  ]) {
+    assert.throws(
+      () =>
+        paymentTransition({ ...paid, paidDate }, "paid", "refunded", null, now),
+      ClinicError,
+    );
+  }
+  assert.throws(
+    () => paymentTransition(invoice, "unpaid", "paid", "unknown", now),
+    ClinicError,
+  );
+  assert.throws(
+    () => paymentTransition(paid, "unpaid", "paid", "cash", now),
+    ClinicError,
+  );
 });
