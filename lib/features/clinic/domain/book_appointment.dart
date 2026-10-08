@@ -1,5 +1,6 @@
 import 'app_enums.dart';
 import 'appointment_policy.dart';
+import 'authoritative_reservations.dart';
 import 'clinic_failure.dart';
 import 'clinic_repository.dart';
 import 'entities.dart';
@@ -41,6 +42,10 @@ class BookAppointment {
           FailureCode.conflict,
           'This request ID already belongs to another booking.',
         );
+      }
+      final authority = _repository;
+      if (authority is AuthoritativeReservations) {
+        return (authority as AuthoritativeReservations).reserve(existing);
       }
       await _repository.bookAppointment(
         existing.copyWith(status: AppointmentStatus.pending),
@@ -84,6 +89,10 @@ class BookAppointment {
       createdAt: now,
       updatedAt: now,
     );
+    final authority = _repository;
+    if (authority is AuthoritativeReservations) {
+      return (authority as AuthoritativeReservations).reserve(appointment);
+    }
     AppointmentPolicy.validate(snapshot, appointment, now);
     await _repository.bookAppointment(appointment);
     return appointment;
