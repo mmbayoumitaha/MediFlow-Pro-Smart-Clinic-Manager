@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/app_dependencies.dart';
+import '../../clinic/domain/clinic_failure.dart';
 
 import 'package:intl/intl.dart';
 
@@ -61,6 +63,14 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     if (!mounted) return;
     if (!booked) {
       final error = ref.read(bookingProvider).error;
+      if (!ref.read(isDemoProvider)) {
+        ref.invalidate(
+          remoteBookingSlotsProvider((
+            doctorId: _doctorId!,
+            date: _selectedDate!,
+          )),
+        );
+      }
       await ref.read(clinicViewModelProvider.notifier).refresh();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,14 +96,20 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     final dates = ref.watch(bookingDateOptionsProvider);
     final matches = doctors.where((d) => d.id == _doctorId);
     final selectedDoctor = matches.length == 1 ? matches.single : null;
-    final times = selectedDoctor != null && dates.contains(_selectedDate)
-        ? ref.watch(
-            bookingSlotsProvider((
-              doctorId: selectedDoctor.id,
-              date: _selectedDate!,
-            )),
-          )
-        : const <DateTime>[];
+    final isDemo = ref.watch(isDemoProvider);
+    final selection = selectedDoctor != null && dates.contains(_selectedDate)
+        ? (doctorId: selectedDoctor.id, date: _selectedDate!)
+        : null;
+    final remote = !isDemo && selection != null
+        ? ref.watch(remoteBookingSlotsProvider(selection))
+        : null;
+    final times = selection == null
+        ? const <DateTime>[]
+        : isDemo
+        ? ref.watch(bookingSlotsProvider(selection))
+        : remote!.isLoading || remote.hasError
+        ? const <DateTime>[]
+        : remote.valueOrNull ?? const <DateTime>[];
     final validTime = times.contains(_selectedTime);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -264,10 +280,24 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
 
             // Step 3: Select Time
             Text('Select Time', style: theme.textTheme.titleLarge),
+            if (!isDemo) const Text('All appointment times use Africa/Cairo.'),
             const SizedBox(height: 10),
             if (selectedDoctor == null || _selectedDate == null)
               const Text('Select a doctor and date to see available times.')
-            else if (times.isEmpty)
+            else if (remote?.isLoading == true)
+              const LinearProgressIndicator()
+            else if (remote?.hasError == true) ...[
+              Text(
+                remote!.error is ClinicFailure
+                    ? (remote.error as ClinicFailure).message
+                    : 'Availability could not be loaded.',
+              ),
+              TextButton(
+                onPressed: () =>
+                    ref.invalidate(remoteBookingSlotsProvider(selection!)),
+                child: const Text('Retry availability'),
+              ),
+            ] else if (times.isEmpty)
               const Text(
                 'No available times on this date. Choose another date or doctor.',
               ),

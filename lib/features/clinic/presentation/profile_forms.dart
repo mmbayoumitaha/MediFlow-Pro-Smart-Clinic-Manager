@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/app_dependencies.dart';
 import '../domain/entities.dart';
 import '../domain/app_enums.dart';
 import '../domain/profile_policy.dart';
@@ -19,7 +20,11 @@ Future<void> removeProfile(
   final approved = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete unused demo profile?'),
+      title: Text(
+        ref.read(isDemoProvider)
+            ? 'Delete unused demo profile?'
+            : 'Delete unused clinic profile?',
+      ),
       content: const Text(
         'Deletion is allowed only when no appointments, prescriptions or invoices reference the profile. Historical clinic records are kept.',
       ),
@@ -45,7 +50,9 @@ Future<void> removeProfile(
     SnackBar(
       content: Text(
         ok
-            ? 'Unused demo profile deleted.'
+            ? ref.read(isDemoProvider)
+                  ? 'Unused demo profile deleted.'
+                  : 'Unused clinic profile deleted.'
             : ref.read(profileActionsProvider).error ??
                   'Another update is in progress.',
       ),
@@ -282,7 +289,9 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
     return AlertDialog(
       title: Text(
         widget.doctor == null
-            ? 'Add demo doctor'
+            ? ref.watch(isDemoProvider)
+                  ? 'Add demo doctor'
+                  : 'Add clinic doctor'
             : 'Edit doctor profile & availability',
       ),
       content: SizedBox(
@@ -292,6 +301,12 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (widget.doctor == null && !ref.watch(isDemoProvider)) ...[
+                const Text(
+                  'Use an email address owned by the doctor. After creation, the doctor must use Reset password on the sign-in screen to set their password. Creation does not send an email.',
+                ),
+                const SizedBox(height: 12),
+              ],
               TextField(
                 key: const ValueKey('profile-name'),
                 controller: name,

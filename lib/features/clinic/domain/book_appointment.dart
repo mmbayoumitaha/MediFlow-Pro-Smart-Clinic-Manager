@@ -36,7 +36,7 @@ class BookAppointment {
       final existing = prior.single;
       if (existing.patientId != patient.id ||
           existing.doctorId != doctorId ||
-          existing.dateTime != dateTime ||
+          !existing.dateTime.isAtSameMomentAs(dateTime) ||
           existing.reason != cleanReason) {
         throw const ClinicFailure(
           FailureCode.conflict,

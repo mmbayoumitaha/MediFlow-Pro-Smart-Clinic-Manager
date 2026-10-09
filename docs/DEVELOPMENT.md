@@ -14,10 +14,10 @@ flutter test --no-pub
 flutter build web --no-pub
 ```
 
-Run formatting with `dart format lib test tool`. Verify the committed formatting baseline with:
+Run formatting with `dart format lib test tool integration_test test_driver`. Verify the committed formatting baseline with:
 
 ```bash
-dart format --output=none --set-exit-if-changed lib test tool
+dart format --output=none --set-exit-if-changed lib test tool integration_test test_driver
 ```
 
 No Firebase configuration, external font service or platform plugin is needed for the current demo. New dependencies should be introduced with working features and tests, rather than reserved for speculative functionality.
@@ -34,9 +34,9 @@ Fonts use Flutter's platform defaults. Typography sizes, weights and colors rema
 
 ## Verification limits
 
-- The 128 tests include startup in light/dark modes, immutable entities/storage validation, demo repository behavior, Mockito use-case/view-model tests, auth/logout/refresh/reset races, all 15 portal role/path combinations, cross-account visibility, actual UI registration and role retention, sign-in/logout, reset confirmation/cancellation, working-period/conflict/idempotency checks, lifecycle/category boundaries, doctor-linked booking, patient/doctor/admin status UI, live-clock midnight rollover, loading/error/retry UI, source-derived analytics, reactive/empty charts, safe initials/currency and narrow large-text statistics, invoice/settlement/refund policies, billing races and actual confirmation/payment UI, profile ownership/stale-write rules, account synchronization, management confirmations and doctor availability controls. See [the architecture guide](ARCHITECTURE.md) for mock generation and boundary checks.
+- The Flutter suite includes demo business/UI workflows, Mockito interactions, role guards, profile/management/billing races and confirmation flows, charts and time boundaries. Firebase adapter tests cover trusted sessions, stale credentials/reads, configuration, mapping and cleared access; mode-specific widgets exercise patient-only registration, recovery and asynchronous availability. See [the architecture guide](ARCHITECTURE.md) and [Firebase verification](FIREBASE.md) for separate SDK/emulator evidence.
 - Web builds verify compilation; they do not establish browser interaction, cold offline caching or production readiness.
-- Backend adapters and security-rule/emulator tests remain B6. UI language is intentionally English; unsupported translation/password/notification/upload controls are not advertised.
+- Firebase adapters, rules and callable commands are implemented. Backend/browser integration uses a separate explicit emulator command; a unit/widget run does not execute it. Live deployment is unverified. UI language is intentionally English; Firebase password recovery is available, with no unsupported translation/notification/upload controls advertised.
 - Android, iOS and desktop build/runtime checks have not been run for this baseline. Generated desktop plugin registrants are refreshed by `flutter pub get` when dependencies change.
 
 See [the repair plan](REPAIR_PLAN.md) for batch progress and [the baseline audit](PROJECT_AUDIT.md) for starting-state evidence.

@@ -116,21 +116,22 @@ void main() {
     expect(commands.calls.single.uid, patient.id);
     sessions.publish(other);
     await flush();
-    expect(model.state.valueOrNull!.patients, isEmpty);
+    expect(model.state.isLoading, isTrue);
+    expect(model.state.valueOrNull?.patients ?? [], isEmpty);
     records.stream(patient.id).add(scoped);
     read.complete(scoped);
     write.complete({'zone': ClinicClock.zone, 'startMillis': []});
     await readExpectation;
     await writeExpectation;
     await flush();
-    expect(model.state.valueOrNull!.patients, isEmpty);
+    expect(model.state.valueOrNull?.patients ?? [], isEmpty);
     final next = ClinicSnapshot(patients: [other]);
     records.stream(other.id).add(next);
     await flush();
     expect(model.state.valueOrNull!.patients.single.id, other.id);
     sessions.publish(null);
     await flush();
-    expect(model.state.valueOrNull!.patients, isEmpty);
+    expect(model.state.valueOrNull?.patients ?? [], isEmpty);
     await expectLater(repository.load(), throwsA(isA<ClinicFailure>()));
   });
   test('same-account contact changes preserve reads; role changes start a new scope', () async {
@@ -142,14 +143,14 @@ void main() {
       UserRole.patient,
       UserRole.doctor,
     ]);
-    expect(model.state.valueOrNull!.patients, isEmpty);
+    expect(model.state.valueOrNull?.patients ?? [], isEmpty);
     expect(records.stream(patient.id).hasListener, isTrue);
   });
   test('query errors remove previously visible records and refresh restarts subscriptions', () async {
     records.stream(patient.id).addError(StateError('private database details'));
     await flush();
     expect(model.state.hasError, isTrue);
-    expect(model.state.valueOrNull!.patients, isEmpty);
+    expect(model.state.valueOrNull?.patients ?? [], isEmpty);
     expect(
       model.state.error.toString(),
       isNot(contains('private database details')),
@@ -157,7 +158,7 @@ void main() {
     final later = ClinicViewModel(repository);
     await flush();
     expect(later.state.hasError, isTrue);
-    expect(later.state.valueOrNull!.patients, isEmpty);
+    expect(later.state.valueOrNull?.patients ?? [], isEmpty);
     later.dispose();
     await model.refresh();
     expect(records.actors, hasLength(2));
@@ -173,13 +174,13 @@ void main() {
       await model.refresh();
       await flush();
       expect(model.state.hasError, isTrue);
-      expect(model.state.valueOrNull!.patients, isEmpty);
+      expect(model.state.valueOrNull?.patients ?? [], isEmpty);
       records.stream(patient.id).add(scoped);
       await flush();
       sessions.events.addError(StateError('identity stream failed'));
       await flush();
       expect(model.state.hasError, isTrue);
-      expect(model.state.valueOrNull!.patients, isEmpty);
+      expect(model.state.valueOrNull?.patients ?? [], isEmpty);
       await expectLater(
         repository.availableSlots(doctorId: doctor.id, date: now),
         throwsA(isA<ClinicFailure>()),
@@ -256,7 +257,7 @@ void main() {
     );
     expect(result.patientName, 'Trusted Server Name');
     expect(result.status, AppointmentStatus.confirmed);
-    records.snapshot = scoped.copyWith(appointments: [canonical]);
+    records.snapshot = scoped.copyWith(appointments: [result]);
     expect(
       (await book(
         patient: patient,

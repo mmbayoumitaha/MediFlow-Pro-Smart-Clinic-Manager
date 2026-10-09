@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/formatters/clinic_formatters.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/app_dependencies.dart';
 import '../../clinic/domain/app_enums.dart';
 import '../../clinic/domain/billing_policy.dart';
 import '../../clinic/domain/entities.dart';
@@ -19,7 +20,11 @@ class BillingScreen extends ConsumerWidget {
     final approved = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Issue demo invoice?'),
+        title: Text(
+          ref.read(isDemoProvider)
+              ? 'Issue demo invoice?'
+              : 'Issue clinic invoice?',
+        ),
         content: Text(
           'Consultation only: ${ClinicFormatters.money(visit.fee)}. No tax or discount is added. No payment is collected.',
         ),
@@ -53,8 +58,12 @@ class BillingScreen extends ConsumerWidget {
         builder: (context, setState) => AlertDialog(
           title: Text(
             refund
-                ? 'Record full demo refund?'
-                : 'Record full demo settlement?',
+                ? ref.read(isDemoProvider)
+                      ? 'Record full demo refund?'
+                      : 'Record full refund?'
+                : ref.read(isDemoProvider)
+                ? 'Record full demo settlement?'
+                : 'Record full settlement?',
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -64,8 +73,10 @@ class BillingScreen extends ConsumerWidget {
                 '${ClinicFormatters.money(invoice.total)} • ${invoice.patientName}',
               ),
               const SizedBox(height: 12),
-              const Text(
-                'This updates fictional records only. No money is charged or refunded.',
+              Text(
+                ref.read(isDemoProvider)
+                    ? 'This updates fictional records only. No money is charged or refunded.'
+                    : 'Record an already completed payment or refund. This action does not charge or refund money.',
               ),
               if (!refund)
                 DropdownButtonFormField<DemoPaymentMethod>(
@@ -112,7 +123,9 @@ class BillingScreen extends ConsumerWidget {
       SnackBar(
         content: Text(
           ok
-              ? 'Demo billing updated.'
+              ? ref.read(isDemoProvider)
+                    ? 'Demo billing updated.'
+                    : 'Clinic billing updated.'
               : ref.read(billingActionsProvider).error ??
                     'Another billing update is in progress.',
         ),
@@ -154,8 +167,10 @@ class BillingScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Demo settlements and full refunds only. No real payment processing. Partial balances are not tracked; an imported partial invoice can be marked fully settled.',
+          Text(
+            ref.watch(isDemoProvider)
+                ? 'Demo settlements and full refunds only. No real payment processing. Partial balances are not tracked; an imported partial invoice can be marked fully settled.'
+                : 'Record full settlements and refunds of payments completed outside this app. No payment processing or partial balance ledger.',
           ),
           const SizedBox(height: 16),
           Text(

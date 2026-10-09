@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/domain/auth_use_cases.dart';
+import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/auth_view_model.dart';
+import '../../features/auth/presentation/password_recovery_view_model.dart';
 import '../../features/clinic/domain/app_enums.dart';
 import '../../features/clinic/domain/book_appointment.dart';
+import '../../features/clinic/domain/authoritative_reservations.dart';
+import '../../features/clinic/domain/clinic_failure.dart';
 import '../../features/clinic/domain/appointment_policy.dart';
 import '../../features/clinic/domain/change_appointment_status.dart';
 import '../../features/clinic/domain/clinic_access.dart';
@@ -26,25 +30,48 @@ export '../../features/clinic/presentation/enum_labels.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
 
-final authProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  final model = AuthViewModel(
-    SignIn(repository),
-    RegisterUser(repository),
-    SignOut(repository),
-  );
-  ref.listen(clinicViewModelProvider, (previous, next) {
-    if (!next.isLoading && !next.hasError && next.valueOrNull != null) {
-      model.syncProfile(next.valueOrNull!);
-    }
-  });
-  return model;
-});
+final passwordRecoveryProvider =
+    StateNotifierProvider.autoDispose<
+      PasswordRecoveryViewModel,
+      PasswordRecoveryState
+    >(
+      (ref) => PasswordRecoveryViewModel(
+        RequestPasswordReset(ref.watch(authRepositoryProvider)),
+      ),
+    );
+
+final StateNotifierProvider<AuthViewModel, AuthState> authProvider =
+    StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+      final repository = ref.watch(authRepositoryProvider);
+      final model = AuthViewModel(
+        SignIn(repository),
+        RegisterUser(repository),
+        SignOut(repository),
+        sessions: repository is AuthSessionSource
+            ? repository as AuthSessionSource
+            : null,
+      );
+      if (ref.watch(isDemoProvider)) {
+        ref.listen(clinicViewModelProvider, (previous, next) {
+          if (!next.isLoading && !next.hasError && next.valueOrNull != null) {
+            model.syncProfile(next.valueOrNull!);
+          }
+        });
+      }
+      return model;
+    });
 
 final clinicViewModelProvider =
-    StateNotifierProvider<ClinicViewModel, AsyncValue<ClinicSnapshot>>(
-      (ref) => ClinicViewModel(ref.watch(clinicRepositoryProvider)),
-    );
+    StateNotifierProvider<ClinicViewModel, AsyncValue<ClinicSnapshot>>((ref) {
+      if (!ref.watch(isDemoProvider)) {
+        ref.watch(
+          authProvider.select(
+            (state) => (state.currentUser?.id, state.currentUser?.role),
+          ),
+        );
+      }
+      return ClinicViewModel(ref.watch(clinicRepositoryProvider));
+    });
 
 final clinicSnapshotProvider = Provider<ClinicSnapshot>(
   (ref) => ClinicAccess.scope(
@@ -101,16 +128,24 @@ final pastAppointmentsProvider = Provider<List<Appointment>>(
 final clinicMetricsProvider = Provider<ClinicMetrics>(
   (ref) => ClinicMetrics(
     ref.watch(clinicSnapshotProvider),
-    ref.watch(clinicTimeProvider),
+    ref.watch(analyticsTimeProvider),
   ),
 );
 
 final clinicAnalyticsProvider = Provider<ClinicAnalytics>(
   (ref) => ClinicAnalytics(
     ref.watch(clinicSnapshotProvider),
-    ref.watch(clinicTimeProvider),
+    ref.watch(analyticsTimeProvider),
   ),
 );
+
+// Re-evaluate at the actual clock time when new records arrive, as well as on
+// periodic ticks. A newly paid invoice must not look future-dated for 30 seconds.
+final analyticsTimeProvider = Provider<DateTime>((ref) {
+  ref.watch(clinicTimeProvider);
+  ref.watch(clinicSnapshotProvider);
+  return ref.watch(clockProvider)();
+});
 
 final bookingProvider =
     StateNotifierProvider.autoDispose<BookingViewModel, BookingState>((ref) {
@@ -195,10 +230,41 @@ final bookingSlotsProvider =
       );
     });
 
+final remoteBookingSlotsProvider = FutureProvider.autoDispose
+    .family<List<DateTime>, ({String doctorId, DateTime date})>((
+      ref,
+      selection,
+    ) {
+      ref.watch(
+        authProvider.select(
+          (state) => (state.currentUser?.id, state.currentUser?.role),
+        ),
+      );
+      ref.watch(clinicViewModelProvider);
+      ref.watch(clinicTimeProvider);
+      final repository = ref.watch(clinicRepositoryProvider);
+      if (repository is! AuthoritativeReservations) {
+        throw const ClinicFailure(
+          FailureCode.unavailable,
+          'Remote availability is unavailable.',
+        );
+      }
+      return (repository as AuthoritativeReservations).availableSlots(
+        doctorId: selection.doctorId,
+        date: selection.date,
+      );
+    });
+
 /// Reset the whole synthetic clinic, including registered identities and pending
 /// view-model operations. Logout alone preserves records for role switching.
 final resetDemoProvider = Provider<void Function()>(
   (ref) => () {
+    if (!ref.read(isDemoProvider)) {
+      throw const ClinicFailure(
+        FailureCode.unauthorized,
+        'Reset is available only in the offline demo.',
+      );
+    }
     ref.invalidate(authProvider);
     ref.invalidate(authRepositoryProvider);
     ref.invalidate(clinicRepositoryProvider);

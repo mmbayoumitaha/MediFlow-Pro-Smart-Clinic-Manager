@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/app_dependencies.dart';
+import '../presentation/demo_notice.dart';
 
 import 'package:mediflow/features/clinic/domain/app_enums.dart';
 
@@ -50,6 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final isDemo = ref.watch(isDemoProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -70,55 +73,68 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Create Account', style: theme.textTheme.displaySmall),
                 const SizedBox(height: 4),
                 Text(
-                  'Create a temporary demo account',
+                  isDemo
+                      ? 'Create a temporary demo account'
+                      : 'Create a patient account',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.slate500,
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Use fictional details and a dummy password. Passwords are '
-                  'not checked or stored. Accounts last until demo reset or '
-                  'app restart; signing out keeps them.',
-                ),
-                const SizedBox(height: 16),
-                // Role
-                Row(
-                  children: [UserRole.patient, UserRole.doctor].map((r) {
-                    final sel = _role == r;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _role = r),
-                        child: Container(
-                          margin: EdgeInsets.only(
-                            right: r == UserRole.patient ? 8 : 0,
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: sel ? AppColors.primary : Colors.transparent,
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.radiusMd,
+                if (isDemo) ...[
+                  const Text(
+                    'Use fictional details and a dummy password. Passwords are '
+                    'not checked or stored. Accounts last until demo reset or '
+                    'app restart; signing out keeps them.',
+                  ),
+                  const SizedBox(height: 16),
+                  // Role
+                  Row(
+                    children: [UserRole.patient, UserRole.doctor].map((r) {
+                      final sel = _role == r;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _role = r),
+                          child: Container(
+                            margin: EdgeInsets.only(
+                              right: r == UserRole.patient ? 8 : 0,
                             ),
-                            border: Border.all(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
                               color: sel
                                   ? AppColors.primary
-                                  : AppColors.slate300,
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(
+                                AppSizes.radiusMd,
+                              ),
+                              border: Border.all(
+                                color: sel
+                                    ? AppColors.primary
+                                    : AppColors.slate300,
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            r.labelEn,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: sel ? Colors.white : AppColors.slate500,
+                            child: Text(
+                              r.labelEn,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: sel ? Colors.white : AppColors.slate500,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 20),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                ] else ...[
+                  const DemoNotice(),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Patient registration only. Contact the clinic for a doctor or administrator account.',
+                  ),
+                  const SizedBox(height: 20),
+                ],
                 TextFormField(
                   controller: _nameCtrl,
                   decoration: const InputDecoration(
@@ -156,7 +172,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _passCtrl,
                   obscureText: _obscure,
                   decoration: InputDecoration(
-                    labelText: 'Dummy password (6+ characters)',
+                    labelText: isDemo
+                        ? 'Dummy password (6+ characters)'
+                        : 'Password (6+ characters)',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(

@@ -76,7 +76,7 @@ class PatientProfileScreen extends ConsumerWidget {
                 applicationVersion: '1.0.0',
                 children: [
                   const Text(
-                    'A personal project with fictional, session-only clinic data. Demo payments never charge money.',
+                    'MediFlow Pro is a personal clinic-management project with an offline demo and an optional connected backend. Billing actions record payments; they do not charge or refund money.',
                   ),
                 ],
               ),

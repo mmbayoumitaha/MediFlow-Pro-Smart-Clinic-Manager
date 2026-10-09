@@ -1,4 +1,4 @@
-# Architecture after batch B5
+# Architecture
 
 The application uses a domain/data/presentation split with Riverpod view models. Each domain is independent of Flutter, Riverpod, storage formats and Firebase. Display labels, emoji and colors are presentation extensions on domain enums.
 
@@ -7,7 +7,7 @@ flowchart LR
   View[Role screens] --> VM[Auth / clinic / booking / appointment / billing / profile view models]
   VM --> UC[Domain use cases and queries]
   UC --> Contract[Repository contracts]
-  Adapter[Demo repositories] --> Contract
+  Adapter[Demo / Firebase repositories] --> Contract
   Adapter --> Entity[Domain entities and snapshots]
   Root[Core composition root] --> Adapter
   Root --> VM
@@ -20,18 +20,18 @@ Arrows show source dependencies, rather than runtime network requests. Use cases
 | Layer | Location | Responsibility |
 | --- | --- | --- |
 | Domain | `features/auth/domain`, `features/clinic/domain` | Entities, immutable snapshots, failures, repository contracts, authentication/registration/booking/lifecycle use cases and policies, sorting/filtering, role-scoped visibility and shared metrics |
-| Data | `features/auth/data`, `features/clinic/data` | Isolated demo fixtures, auth/profile linkage, atomic in-memory mutations, snapshot streams, storage-schema mapping |
+| Data | `features/auth/data`, `features/clinic/data` | Demo fixtures/mutations or Firebase SDK adapters, trusted profile sessions, role-scoped queries, callable commands, snapshot streams and storage mapping |
 | Presentation | `features/*/screens`, `features/auth/presentation`, `features/clinic/presentation` | Render state; collect selections; call view-model actions; show progress, errors and retry; keep display-only labels/colors outside domain |
 | Composition | `core/providers/app_dependencies.dart`, `core/providers/app_providers.dart` | Select/inject repositories, clocks and ID generators; create view models; expose immutable derived state to views |
 | Routing | `routes/app_router.dart` | One owned router per provider container, refreshed by auth changes; shell/tab routing and authenticated role/path policy |
 
 `AuthViewModel` depends on SignIn/RegisterUser/SignOut use cases. `ClinicViewModel` owns a repository subscription and refresh state, and ignores old refresh results if a newer stream event arrives. `BookingViewModel` prevents duplicate submission while awaiting the BookAppointment use case. The booking screen converts the selected display time into a DateTime, then supplies that selection; it no longer builds or inserts appointments.
 
-Clinic repository reads and writes are asynchronous, so a future Firebase implementation can use the same contracts. All current adapters remain in memory. Async interfaces do not imply that Firebase is already implemented.
+Both repository implementations use the same asynchronous contracts. Demo mutations are atomic in memory. Firebase reads are scoped before downloading; mutations go through trusted callable transactions. `AuthoritativeReservations` is an optional capability because the backend validates conflicts against records the client cannot read. It supplies free instants and returns canonical reservations; the demo validates its full synthetic snapshot locally.
 
 ## Data and lifecycle
 
-- Domain entities contain no serialization methods. `ClinicMapper` owns conversion for the current ISO-string/DateTime schema, rejects malformed records and unknown enum values, and requires an explicit user role. Firestore Timestamp conversion belongs to B6.
+- Domain entities contain no serialization methods. `ClinicMapper` owns the demo ISO-string/DateTime schema. `FirebaseClinicMapper` handles Firestore Timestamp/callable UTC strings, trusted document IDs and strict enums, normalizing actual instants to Africa/Cairo without changing their epoch. Calendar-date selections are transmitted separately.
 - Snapshots and nested entity collections copy and freeze their lists. Sorting produces a derived copy; widgets cannot mutate repository lists.
 - Each demo repository owns a separate fixture snapshot and uses one injected seed time. Registration publishes a new snapshot; a patient appears in patient lists, and a doctor profile uses the new auth user's ID as `userId`.
 - Doctor demo sign-in uses the profile's `userId`, rather than the appointment/profile `id`. Newly registered doctors are unavailable until their availability is configured.
@@ -51,7 +51,7 @@ All collection/metric providers consumed by screens derive from `ClinicAccess.sc
 | Doctor | Own profile linked by `Doctor.userId`, own appointments/prescriptions, patients referenced by own appointments; no invoices |
 | Admin | Complete synthetic clinic snapshot |
 
-Missing or ambiguous doctor linkage returns an empty snapshot. Clinic repositories and the internal stream view model still hold the complete synthetic clinic in local memory. Client-side filtering is a demo visibility boundary, not secure storage authorization. Firebase mode must scope server queries and enforce access in rules (B6), rather than relying on this policy alone.
+Missing or ambiguous doctor linkage returns an empty snapshot. Only the demo repositories hold the complete synthetic clinic. Client-side filtering is a demo visibility boundary. Firebase mode also scopes server queries and enforces reads in maintained rules; direct writes are denied to every client role. Callable commands derive identity/role from Firebase Auth and trusted user documents.
 
 The login/registration screens explicitly describe simulated passwords and temporary identities; each portal carries a demo notice and a reset control. The shared demo email selects a seed role, while known emails retain their registered identity/role. No automatic session restoration or durable persistence is implemented for demo accounts.
 
@@ -82,7 +82,7 @@ Tests cover storage round trips/validation, immutable copies, repository isolati
 
 ## Remaining work
 
-B5 implements source-derived charts, demo billing and profile/availability management. Browser offline startup, responsive/platform sign-off, onboarding policy and CI remain B7. Firebase adapters and security rules remain B6. The interface is intentionally English-only; no real payment gateway or medical-record upload flow is claimed.
+B5 implements source-derived charts, billing and profile/availability management; B6 connects the optional Firebase implementation. Browser offline startup, responsive/platform sign-off, branding and CI remain B7. The interface is intentionally English-only; no real payment gateway or medical-record upload flow is claimed.
 
 This architecture establishes dependency boundaries and tested state handling; it does not mark these remaining clinic workflows as complete.
 
@@ -98,4 +98,8 @@ This architecture establishes dependency boundaries and tested state handling; i
 
 `ManageProfiles` supplies patient/doctor save and safe-delete use cases. `ProfilePolicy` validates contacts, cent-precision fees, experience and non-overlapping same-day working periods. Owners edit their profile; active admins add doctors, edit/deactivate patients, and delete only profiles with no clinic record references. Edits compare the original editable fields against current values, protecting concurrent forms even with a fixed clock. Identity/email and stored appointment/invoice names/fees stay unchanged. Availability edits must retain future reserved slots; disabling new bookings does not cancel visits.
 
-`ProfileViewModel` owns submission/error/disposal handling; forms only collect input and invoke it. The demo auth adapter reads current clinic records rather than cached registrations. The composition root listens to successful clinic snapshots to update a running identity or remove a deleted/inactive account session. A Firebase implementation must supply equivalent trusted, scoped auth/profile events.
+`ProfileViewModel` owns submission/error/disposal handling; forms collect input and invoke it. The demo auth adapter reads current clinic records; its composition listens to successful clinic snapshots to update or revoke a session. Firebase instead owns an independent server-confirmed user-document subscription, so restoring auth does not depend on loading protected clinic records. Identity/role changes clear the clinic scope and reject pending results; read failures clear visible data before safe error feedback. Refresh restarts failed subscriptions.
+
+The composition root explicitly selects the mode. The default does not initialize Firebase. Invalid explicit Firebase configuration renders a startup error; there is no silent demo fallback. Backend login has no role selector and registration creates patients only. Password recovery uses a use case and presentation view model. Portals have no entry/exit animation, preventing duplicate navigator keys when a trusted session restores before an old transition ends. Branch navigation retains its own stacks.
+
+Firestore watches combine separately authorized queries into one view snapshot. Their events can arrive separately after a server transaction, so the client snapshot is an eventual view rather than a database-wide transaction read. Billing commands still update invoice/visit records atomically on the server. Analytics reevaluate the current clock when a record arrives, retaining its normalized clinic month rather than converting it to the device timezone.
