@@ -33,20 +33,21 @@ class ClinicAnalytics {
   );
 
   factory ClinicAnalytics(ClinicSnapshot snapshot, DateTime now) {
-    final localNow = now.toLocal();
+    // Adapters normalize backend dates to clinic time; the demo supplies local
+    // dates. Converting again would replace the clinic calendar with the device's.
     final dates = List.generate(
       6,
-      (i) => DateTime(localNow.year, localNow.month - 5 + i),
+      (i) => DateTime(now.year, now.month - 5 + i),
     );
     final totals = List<int>.filled(6, 0);
     var paidCents = 0;
     var excluded = 0;
     for (final invoice in snapshot.invoices) {
       if (invoice.paymentStatus != PaymentStatus.paid) continue;
-      final paid = invoice.paidDate?.toLocal();
+      final paid = invoice.paidDate;
       if (paid == null ||
-          paid.isAfter(localNow) ||
-          paid.isBefore(invoice.issuedDate.toLocal()) ||
+          paid.isAfter(now) ||
+          paid.isBefore(invoice.issuedDate) ||
           !invoice.total.isFinite ||
           invoice.total < 0 ||
           invoice.total * 100 > 9007199254740991) {

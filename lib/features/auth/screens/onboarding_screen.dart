@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/providers/app_dependencies.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _currentPage = 0;
 
@@ -20,29 +22,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  final _pages = const [
+  List<_OnboardingPage> pages(bool isDemo) => [
     _OnboardingPage(
       icon: Icons.calendar_month_rounded,
       title: 'Book Appointments',
-      subtitle: 'Explore appointment booking with fictional doctors and patients in an offline demo.',
+      subtitle: isDemo
+          ? 'Explore appointment booking with fictional doctors and patients in an offline demo.'
+          : 'Book available clinic appointments. All appointment times use Africa/Cairo.',
       color: AppColors.primary,
     ),
     _OnboardingPage(
       icon: Icons.medical_information_rounded,
-      title: 'Sample Prescriptions',
-      subtitle: 'Browse sample prescriptions in the patient portal. Demo changes last until reset or restart.',
+      title: isDemo ? 'Sample Prescriptions' : 'Your Prescriptions',
+      subtitle: isDemo
+          ? 'Browse sample prescriptions in the patient portal. Demo changes last until reset or restart.'
+          : 'View your recorded prescriptions in the patient portal.',
       color: AppColors.secondary,
     ),
     _OnboardingPage(
       icon: Icons.analytics_rounded,
       title: 'Smart Analytics',
-      subtitle: 'Explore clinic dashboards with fictional data. Charts reflect recorded invoices and appointments.',
+      subtitle: isDemo
+          ? 'Explore clinic dashboards with fictional data. Charts reflect recorded invoices and appointments.'
+          : 'Clinic dashboards show recorded invoices and appointments according to your account role.',
       color: AppColors.accent,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final items = pages(ref.watch(isDemoProvider));
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -57,9 +66,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _pages.length,
+                itemCount: items.length,
                 onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (ctx, i) => _pages[i],
+                itemBuilder: (ctx, i) => items[i],
               ),
             ),
             Padding(

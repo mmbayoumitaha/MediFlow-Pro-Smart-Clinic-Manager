@@ -37,7 +37,7 @@ class AppointmentActionCard extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: Text('${label(target)}?'),
         content: Text(
-          'Change this demo appointment to ${target.labelEn}? '
+          'Change this appointment to ${target.labelEn}? '
           'Payments and invoices are unchanged.',
         ),
         actions: [

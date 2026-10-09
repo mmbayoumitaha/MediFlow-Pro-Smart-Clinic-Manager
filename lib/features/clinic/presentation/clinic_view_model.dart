@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/clinic_repository.dart';
+import '../domain/clinic_readiness.dart';
 import '../domain/clinic_snapshot.dart';
 
 class ClinicViewModel extends StateNotifier<AsyncValue<ClinicSnapshot>> {
@@ -16,7 +17,11 @@ class ClinicViewModel extends StateNotifier<AsyncValue<ClinicSnapshot>> {
       (snapshot) {
         if (!mounted) return;
         _revision++;
-        state = AsyncData(snapshot);
+        final source = _repository;
+        state =
+            source is ClinicReadiness && !(source as ClinicReadiness).isReady
+            ? const AsyncLoading()
+            : AsyncData(snapshot);
       },
       onError: (Object error, StackTrace stack) {
         if (!mounted) return;

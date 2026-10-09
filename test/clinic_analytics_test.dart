@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mediflow/core/firebase/clinic_clock.dart';
 import 'package:mediflow/features/clinic/data/demo_fixtures.dart';
 import 'package:mediflow/features/clinic/domain/app_enums.dart';
 import 'package:mediflow/features/clinic/domain/clinic_analytics.dart';
@@ -90,6 +91,23 @@ void main() {
       );
       expect(a.excludedPaidInvoices, 7);
       expect(a.paidInvoiceTotal, 0);
+    },
+  );
+
+  test(
+    'payment-month grouping preserves the clinic calendar across UTC midnight',
+    () {
+      final clock = ClinicClock();
+      final paid = clock.inClinic(DateTime.utc(2026, 1, 31, 22, 30));
+      final evaluated = clock.inClinic(DateTime.utc(2026, 2, 5, 7));
+      expect(paid.month, 2);
+      final analytics = ClinicAnalytics(
+        ClinicSnapshot(invoices: [invoice('clinic-midnight', 80.25, paid)]),
+        evaluated,
+      );
+      expect(analytics.months.last.month.month, 2);
+      expect(analytics.months.last.total, 80.25);
+      expect(analytics.months[4].total, 0);
     },
   );
 

@@ -1,6 +1,6 @@
-# Firebase backend: B6 in progress
+# Firebase backend
 
-The Flutter app still uses the in-memory demo. Backend authorization, reservations, billing and profile management are now implemented; Flutter integration is the next B6 slice. Firebase is **not** enabled in the app yet, and the Firebase CV claim remains incomplete. No live project has been configured or deployed.
+The default Flutter app opens the in-memory demo. Explicit Firebase mode connects the implemented Auth/Firestore adapters and callable registration, reservation, lifecycle, billing and profile commands. Browser verification is recorded below; no live project has been created, configured or deployed.
 
 ## Reproduce the backend checks
 
@@ -17,7 +17,7 @@ firebase emulators:exec --only auth,firestore,functions --project demo-mediflow 
 
 The emulator configuration binds to localhost: Auth `19099`, Firestore `18080`, Functions `15001`. The first run downloads emulator binaries. The tests require emulator environment variables and use only the fictitious `demo-mediflow` project; the callable suite also verifies its project environment. They erase **this project's emulator documents** and create synthetic accounts, never a live database. Do not reuse an emulator session whose data you need to keep.
 
-Observed verification on 2026-10-09: Node 22.23.3, Java 27, CLI 15.25.1, Firestore emulator 1.22.0. Twelve policy tests, 17 rule tests and 19 service/emulator tests passed. The service suite sends real Firebase SDK callable requests authenticated through the Auth emulator, including simultaneous competing bookings, profile changes and invoice/payment mutations. Additional scenarios invoke the same service with an injected clock or Auth failure to exercise lifecycle boundaries and interrupted provisioning deterministically. No Flutter-to-emulator or live Firebase runtime check is claimed yet.
+Observed backend verification on 2026-10-09: Node 22.23.3, Java 27, CLI 15.25.1, Firestore emulator 1.22.0. Twelve policy tests, 17 rule tests and 19 service/emulator tests passed. The service suite sends real Firebase SDK callable requests authenticated through the Auth emulator, including simultaneous competing bookings, profile changes and invoice/payment mutations. Additional scenarios invoke the same service with an injected clock or Auth failure to exercise lifecycle boundaries and interrupted provisioning deterministically. The separate Flutter browser verification appears below; live Firebase remains unverified.
 
 The lockfile is committed. Overrides keep Firebase App/Compat on the Firebase 12 SDK versions (`0.16.2` / `0.5.18`) so Node 22 has one compatible component registry; unconstrained peers otherwise pull Node 24 packages alongside a second App instance. gRPC is constrained to a patched `1.14.6` or newer compatible release. Dependency installation reported zero known vulnerabilities after these changes; this is a point-in-time check.
 
@@ -75,11 +75,11 @@ node functions/tool/provision_admin.js --project YOUR_PROJECT_ID --uid AUTH_UID 
 
 This command has not been run against a live project. It participates in the same revision transaction and refuses patient/doctor/removed identity promotion. Emulator usage requires both Auth and Firestore emulator environment variables and a `demo-` project. Never commit Admin SDK credentials. See [Firebase Admin setup](https://firebase.google.com/docs/admin/setup) for operator authentication.
 
-Remaining B6 work: optional Flutter Firebase configuration/adapters, Auth session/profile events, role-scoped streams, Timestamp/clinic-time mapping, asynchronous free-slot/reset-password UI, platform networking and an actual Flutter-to-emulator workflow. B6 remains open until those behaviors and the no-configuration demo are verified.
+Native networking/build/runtime checks and live deployment remain separate verification limits. The Android main manifest now declares Internet access; native emulator localhost routing and release platform configuration have not been exercised.
 
 ## Flutter configuration and mapping foundation
 
-The Flutter SDK packages and typed initialization/configuration helpers are now present, with a separate Firestore/callable mapper. They are not wired into `main` or the app's repositories yet: running the app still opens the demo, regardless of these proposed backend flags. App-mode activation is the next slice.
+The foundation slice introduced SDK packages, validated initialization/configuration and a separate Firestore/callable mapper. The application-mode slice below wires them into `main` and the composition root.
 
 `BACKEND_MODE` defaults to `demo`; Firebase options alone cannot enable a backend. Explicit Firebase configuration requires complete client options. `FIREBASE_EMULATORS=true` requires a `demo-` project; live mode rejects demo project IDs. `config/firebase.emulator.json` contains synthetic localhost options; `config/firebase.example.json` contains placeholders that validation rejects. Real platform-specific options belong in ignored `config/firebase.local.json`. Initialization never silently selects the demo on an invalid Firebase configuration. It disables Firestore disk persistence and uses session-only Auth persistence on web.
 
@@ -95,10 +95,36 @@ Credential operations are serialized, with generation checks around awaits. Logo
 
 Callable requests may include `expectedActorUid`. The server checks it against the actual authenticated UID before executing the command. The Flutter command adapter always includes it, so a request prepared under a previous account cannot accidentally execute under the next account. This is a session binding, not a source of permissions.
 
-Eight adapter/view-model tests passed with controlled identity/profile gateways, including logout/sign-in races, deactivation, errors/disposal, interrupted registration and same-UID role updates. The full Flutter suite passed **143** tests; analysis, the 19-file domain architecture check and formatting passed. All 17 rule and 19 service/emulator tests passed with the callable binding. The app still uses demo composition: backend repository/UI wiring and actual Flutter SDK-to-emulator integration remain open.
+At the authentication slice, eight adapter/view-model tests passed with controlled identity/profile gateways, including logout/sign-in races, deactivation, errors/disposal, interrupted registration and same-UID role updates. The full Flutter suite passed **143** tests; analysis, the 19-file domain architecture check and formatting passed. All 17 rule and 19 service/emulator tests passed with the callable binding. App composition and browser integration were completed in the application slice below.
 
 ## Scoped Flutter clinic adapter
 
 The Firestore adapter selects queries before downloading data. Patients read their own user document, the professional doctor directory and their appointments/prescriptions/invoices. Doctors read their own profile, private patient projections and their assigned appointments/prescriptions, without invoices. Admins read the clinic collections. Cached snapshots are ignored; explicit reads require the server. Writes use the callable service with expected-actor bindings and canonical returned records. Availability sends calendar dates and receives actual instants in Africa/Cairo; booking leaves private conflict validation to the server.
 
-Account/role changes clear the old scope and invalidate pending reads and command acknowledgements. Query/read errors clear previous data before reporting safe feedback. Refresh restarts failed query subscriptions. Seven new tests cover these behaviors, canonical booking/retries, availability validation and disposal. All **150** Flutter tests, analysis and the 20-file domain boundary check pass. These tests use controlled record/command gateways; actual SDK queries, app composition and browser-to-emulator verification remain open.
+Account/role changes clear the old scope and invalidate pending reads and command acknowledgements. Query/read errors clear previous data before reporting safe feedback. Refresh restarts failed query subscriptions. At the scoped-adapter slice, seven new tests and all **150** Flutter tests, analysis and the 20-file domain boundary check passed with controlled record/command gateways. The application slice adds explicit scope readiness: cleared records remain loading until the current account's server data arrives. Retry matching compares the actual instant, including equivalent UTC/Cairo representations.
+
+## Run Firebase mode locally
+
+Default `flutter run` remains the no-configuration demo. For a populated local clinic, after installing the backend dependencies and required toolchain:
+
+```bash
+firebase emulators:exec --only auth,firestore,functions --project demo-mediflow \
+  'node functions/tool/seed_web_emulator.js && flutter run -d chrome --dart-define-from-file=config/firebase.emulator.json'
+```
+
+This replaces only `demo-mediflow` emulator documents and creates fictional browser fixtures. The patient, doctor and admin emails are respectively `browser-patient@example.test`, `browser-doctor@example.test` and `browser-admin@example.test`, with the emulator-only password `Emulator-only-password1!`. The seed tool requires both emulator hosts and the exact demo project. No cloud console project is created by these commands. Closing emulators without export/import discards their state.
+
+Firebase login uses the trusted account role and has no selectable staff privileges; public registration creates patients only. Asynchronous availability shows loading/error/retry, hides stale slots while loading, revalidates server-side when booking and labels Africa/Cairo. Every portal identifies the selected mode; demo reset is unavailable in backend mode. Explicit initialization failures render a setup error, rather than opening fictional records under a connected-clinic label. Reset password uses generic address feedback; it sends only an emulator link in the local fixture workflow.
+
+For the automated Chromium workflow, install matching Chromium/ChromeDriver versions and run:
+
+```bash
+firebase emulators:exec --only auth,firestore,functions --project demo-mediflow \
+  'bash tool/test_firebase_web.sh'
+```
+
+`CHROME_EXECUTABLE` can select another installed Chrome/Chromium binary. `MEDIFLOW_DRIVER_PORT` defaults to `14444`; the runner starts/stops only its own ChromeDriver process. This is a separate named-platform integration run, not part of ordinary `flutter test`. It calls `main` with the actual SDK composition and drives UI login, booking, profile, lifecycle, invoice/payment/refund, registration and password recovery against the emulators. SDK requests also verify broad-read and direct role-write denials. Session restoration recreates the app adapter while retaining the SDK identity; it is not a full browser-reload persistence check.
+
+Observed on 2026-10-09: this full workflow passed on **Chromium/ChromeDriver 153.0.8010.52** with Flutter 3.47.4 / Dart 3.13.3 and the local emulator toolchain above, with exit code 0. The ordinary Flutter suite passed **160** tests; analysis, the **21-file** domain boundary and **113-file** formatting checks passed. Separate web release builds passed for both default demo (50.0s) and emulator configuration (48.6s); the browser workflow used debug mode, so those builds establish compilation, not release runtime. The workflow reproduced and led to fixes for stale-clock settlement totals, clinic-month conversion, duplicate portal navigator keys during rapid restoration and premature empty-clinic rendering before scoped queries completed. The navigator regression failed before the fix and passes for all three roles. Revenue reevaluates the current clock on record changes rather than waiting for the next 30-second tick.
+
+Live setup requires your own Firebase project, registered client options, enabled email/password Auth, Firestore and deployed rules/functions. Copy `config/firebase.example.json` to ignored `config/firebase.local.json`, replace its public client options, then use `flutter run --dart-define-from-file=config/firebase.local.json`. Provision the first admin with the operator tool above. Live configuration/deployment, production capacity and native runtime are unverified; the demo and localhost tests do not establish those properties.

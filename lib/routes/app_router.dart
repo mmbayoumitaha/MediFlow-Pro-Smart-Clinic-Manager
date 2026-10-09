@@ -57,7 +57,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // ── Patient Shell ──
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) => PatientShell(navigationShell: shell),
+        // Auth restoration can leave and re-enter a portal within one animated
+        // frame. Dispose the old portal immediately so its navigator key cannot
+        // coexist with a newly restored instance (and old records do not linger).
+        pageBuilder: (ctx, state, shell) => NoTransitionPage(
+          key: state.pageKey,
+          child: PatientShell(navigationShell: shell),
+        ),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -108,7 +114,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // ── Doctor Shell ──
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) => DoctorShell(navigationShell: shell),
+        pageBuilder: (ctx, state, shell) => NoTransitionPage(
+          key: state.pageKey,
+          child: DoctorShell(navigationShell: shell),
+        ),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -147,7 +156,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // ── Admin Shell ──
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) => AdminShell(navigationShell: shell),
+        pageBuilder: (ctx, state, shell) => NoTransitionPage(
+          key: state.pageKey,
+          child: AdminShell(navigationShell: shell),
+        ),
         branches: [
           StatefulShellBranch(
             routes: [

@@ -9,6 +9,7 @@ import '../domain/authoritative_reservations.dart';
 import '../domain/billing_policy.dart';
 import '../domain/clinic_failure.dart';
 import '../domain/clinic_repository.dart';
+import '../domain/clinic_readiness.dart';
 import '../domain/clinic_snapshot.dart';
 import '../domain/entities.dart';
 import '../domain/profile_policy.dart';
@@ -17,7 +18,7 @@ import 'firebase_clinic_mapper.dart';
 import 'firebase_clinic_records.dart';
 
 class FirebaseClinicRepository
-    implements ClinicRepository, AuthoritativeReservations {
+    implements ClinicRepository, AuthoritativeReservations, ClinicReadiness {
   final ClinicRecords records;
   final ClinicCommands commands;
   final FirebaseClinicMapper mapper;
@@ -31,6 +32,9 @@ class FirebaseClinicRepository
   StackTrace? _errorStack;
   int _generation = 0;
   bool _closed = false, _hasSnapshot = false, _readFailed = false;
+  @override
+  bool get isReady =>
+      !_closed && _user != null && _hasSnapshot && _error == null;
   FirebaseClinicRepository(
     AuthSessionSource sessions,
     this.records,
