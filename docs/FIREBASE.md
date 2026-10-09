@@ -1,6 +1,16 @@
 # Firebase backend
 
-The default Flutter app opens the in-memory demo. Explicit Firebase mode connects the implemented Auth/Firestore adapters and callable registration, reservation, lifecycle, billing and profile commands. Browser verification is recorded below; no live project has been created, configured or deployed.
+The default Flutter app opens the in-memory demo. Explicit Firebase mode connects the implemented Auth/Firestore adapters and callable registration, reservation, lifecycle, billing and profile commands. Browser verification is recorded below. A live project and web app now exist; cloud services and runtime remain unverified.
+
+## Live Console setup status — 2026-10-09
+
+The owner account now has [MediFlow Pro](https://console.firebase.google.com/project/mediflow-pro-mmbayoumi/overview), project ID `mediflow-pro-mmbayoumi`, with the registered **MediFlow Pro Web** app. Project and app creation succeeded through the authenticated Firebase CLI. The actual web client configuration was downloaded and saved to ignored `config/firebase.local.json`; no service-account key was created or committed.
+
+`.firebaserc` contains explicit `live` and `emulator` aliases without a default project. Continue passing `--project demo-mediflow` for emulator checks. Cloud commands must explicitly target `--project live` or the real project ID.
+
+This setup does not make clinic workflows available online yet. Email/password Auth, the Firestore database/location, rules/indexes, functions and the initial trusted administrator still need setup. No live fixture seed or patient data has been uploaded. Creating the project did not link a billing account. Deploying the callable functions requires the [Blaze plan](https://firebase.google.com/docs/functions/get-started), which links a [Cloud Billing account](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans); that owner decision remains pending. Do not infer cloud verification from the passing emulator workflow.
+
+B7 responsive/offline/branding work is on hold while the owner prioritizes the Console setup.
 
 ## Reproduce the backend checks
 

@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "live": "mediflow-pro-mmbayoumi",
+    "emulator": "demo-mediflow"
+  }
+}
