@@ -59,6 +59,97 @@ class FirebaseClinicRecords implements ClinicRecords {
     );
   }
 
+  _Part _linkedPatients(ClinicUser user) {
+    final links = _query(
+      'links',
+      firestore
+          .collection('doctorPatients')
+          .doc(user.id)
+          .collection('patients'),
+    );
+    return _Part(
+      'patients',
+      () async {
+        final rows = await links.read();
+        final profiles = await Future.wait(
+          rows.map(
+            (row) => firestore
+                .collection('users')
+                .doc(row.id)
+                .get(const GetOptions(source: Source.server)),
+          ),
+        );
+        return profiles
+            .where((doc) => doc.exists)
+            .map((doc) => _Row(doc.id, doc.data()!))
+            .toList();
+      },
+      () => Stream.multi((controller) {
+        final children =
+            <StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>>[];
+        final values = <String, _Row?>{};
+        var revision = 0;
+        var closed = false, failed = false;
+        final subscription = links.watch().listen(
+          (rows) {
+            if (closed || failed) return;
+            final generation = ++revision;
+            for (final child in children) {
+              unawaited(child.cancel());
+            }
+            children.clear();
+            values.clear();
+            if (rows.isEmpty) {
+              controller.add(<_Row>[]);
+              return;
+            }
+            final ids = rows.map((row) => row.id).toSet();
+            for (final id in ids) {
+              children.add(
+                firestore
+                    .collection('users')
+                    .doc(id)
+                    .snapshots(includeMetadataChanges: true)
+                    .where((doc) => !doc.metadata.isFromCache)
+                    .listen(
+                      (doc) {
+                        if (closed || failed || generation != revision) return;
+                        values[id] = doc.exists
+                            ? _Row(doc.id, doc.data()!)
+                            : null;
+                        if (values.length == ids.length) {
+                          controller.add(
+                            values.values.whereType<_Row>().toList(),
+                          );
+                        }
+                      },
+                      onError: (Object error, StackTrace stack) {
+                        if (closed || failed || generation != revision) return;
+                        failed = true;
+                        values.clear();
+                        controller.addError(error, stack);
+                      },
+                    ),
+              );
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            if (closed || failed) return;
+            failed = true;
+            values.clear();
+            controller.addError(error, stack);
+          },
+        );
+        controller.onCancel = () async {
+          closed = true;
+          revision++;
+          await subscription.cancel();
+          await Future.wait(children.map((child) => child.cancel()));
+        };
+      }),
+    );
+  }
+
   List<_Part> _parts(ClinicUser user) {
     if (user.role == UserRole.admin) {
       return [
@@ -91,13 +182,7 @@ class FirebaseClinicRecords implements ClinicRecords {
         'doctors',
         firestore.collection('doctors').where('userId', isEqualTo: user.id),
       ),
-      _query(
-        'patients',
-        firestore
-            .collection('doctorPatients')
-            .doc(user.id)
-            .collection('patients'),
-      ),
+      _linkedPatients(user),
       for (final name in ['appointments', 'prescriptions'])
         _query(
           name,

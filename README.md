@@ -1,12 +1,12 @@
 # MediFlow Pro — Smart Clinic Manager
 
-A personal Flutter project for patient, doctor and administrator clinic workflows. The default offline demo uses fictional, in-memory data and requires no Firebase account or backend configuration. An explicit Firebase mode connects Auth, Firestore and callable clinic commands.
+A personal Flutter project for patient, doctor and administrator clinic workflows. The default offline demo uses fictional, in-memory data and requires no Firebase account or backend configuration. An explicit Firebase mode connects Auth and rules-protected Firestore transactions.
 
 The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
 
-An [Auth + Firestore migration](docs/SPARK_MIGRATION.md) is now in progress to run the live clinic without Cloud Functions or billing. Patient enrollment has been verified with only Auth/Firestore running; the remaining clinic mutations still use the previous Functions transport until their protected transaction replacements are ready.
+The [Auth + Firestore backend](docs/SPARK_MIGRATION.md) supports clinic operations within Spark allowances, without Cloud Functions, Storage or billing. Its client transactions are validated by Security Rules; the complete original clinic journey passed in Chromium with only Auth and Firestore emulators.
 
-The Firebase backend includes maintained Firestore rules, trusted roles, patient registration, reservations, lifecycle, billing and profile management. The Flutter adapters restore trusted sessions, download records according to role, and display backend instants in Africa/Cairo. [Backend setup and verification](docs/FIREBASE.md) records the measured checks and setup steps. The live [MediFlow Pro project](https://console.firebase.google.com/project/mediflow-pro-mmbayoumi/overview) and its web app were created on 2026-10-09. Live Auth/Firestore setup, function deployment and cloud runtime verification remain pending.
+The Firebase backend includes maintained Firestore rules, trusted roles, patient registration, reservations, lifecycle, billing and profile management. The Flutter adapters restore trusted sessions, download records according to role, and display backend instants in Africa/Cairo. [Backend setup and verification](docs/FIREBASE.md) records the measured checks and setup steps. The live [MediFlow Pro project](https://console.firebase.google.com/project/mediflow-pro-mmbayoumi/overview) and its web app were created on 2026-10-09. Email/password Auth and the Standard Firestore database were configured on 2026-10-11 without linking billing. Rule deployment, initial admin and live runtime verification are tracked separately in the repair plan.
 
 ## Current functionality
 
@@ -21,9 +21,9 @@ All demo amounts use **USD**, displayed consistently without currency conversion
 
 Administrators can issue one consultation-only invoice for an unpaid completed visit, record a full demo settlement, and record a full refund. Invoice and appointment payment status update together. These actions never charge or refund real money; partial balances and a transaction ledger are outside the current demo scope.
 
-Administrators can add/edit doctors, edit/deactivate patients and delete unused profiles. Linked profiles cannot be deleted. Patients edit their own contact/address details; doctors edit their own profile and active working periods. Changes retain historical names/fees and must preserve future reservations. Current sessions and subsequent sign-ins follow the updated clinic profile.
+Administrators can add/edit doctors, edit/deactivate patients and delete unused profiles. Linked profiles cannot be deleted. Patients edit their own contact/address details; doctors edit their own profile and active working periods. Changes retain historical names/fees. Firebase working-hour edits require no reserved visits; disabling new bookings preserves existing visits. Current sessions and subsequent sign-ins follow the updated clinic profile.
 
-The interface is **English only**. Unsupported notification, password-change and upload controls have been removed; About, theme and Settings links work. Firebase sign-in offers password recovery; staff accounts cannot self-register. Charts derive from source records. Route guards and scoped reads enforce demo visibility; Firebase rules and trusted callable commands enforce backend authorization. The demo contains fictional records; use fictional details in it.
+The interface is **English only**. Unsupported notification, password-change and upload controls have been removed; About, theme and Settings links work. Firebase sign-in offers password recovery; staff accounts cannot self-register. Charts derive from source records. Route guards and scoped reads enforce demo visibility; Firebase rules validate backend authorization and atomic cross-document writes. The demo contains fictional records; use fictional details in it.
 
 ## Run the demo
 

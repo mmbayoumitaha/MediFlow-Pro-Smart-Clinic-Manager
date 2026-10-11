@@ -31,7 +31,7 @@ class ManageProfiles {
       expected: expected,
       input: input,
       newDoctorId: expected == null ? _newId() : null,
-      newUserId: expected == null ? _newId() : null,
+      newUserId: expected == null ? input.existingUserId ?? _newId() : null,
     );
   }
 

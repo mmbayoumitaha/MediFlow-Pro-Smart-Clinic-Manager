@@ -4,6 +4,7 @@ import '../../../core/firebase/clinic_clock.dart';
 import '../domain/app_enums.dart';
 import '../domain/entities.dart';
 import 'clinic_mapper.dart';
+import 'firestore_schedule.dart';
 
 class FirebaseClinicMapper {
   final ClinicClock clock;
@@ -66,8 +67,11 @@ class FirebaseClinicMapper {
 
   Doctor doctor(String id, Map<String, dynamic> data) {
     final map = _map(id, data);
+    map['availability'] = FirestoreSchedule.fromStorage(
+      map['availability'] ?? [],
+    );
     _enum(map, 'specialty', MedicalSpecialty.values.map((e) => e.value));
-    for (final period in map['availability'] as List<dynamic>? ?? []) {
+    for (final period in map['availability'] ?? []) {
       _enum(
         period as Map<String, dynamic>,
         'day',

@@ -60,20 +60,37 @@ beforeEach(async () => {
       Object.entries({
         "users/p1": {
           id: "p1",
+          email: "p1@example.test",
           role: "patient",
           isActive: true,
           phone: "private-p1",
         },
         "users/p2": {
           id: "p2",
+          email: "p2@example.test",
           role: "patient",
           isActive: true,
           phone: "private-p2",
         },
         "users/disabled": { id: "disabled", role: "patient", isActive: false },
-        "users/d-user1": { id: "d-user1", role: "doctor", isActive: true },
-        "users/d-user2": { id: "d-user2", role: "doctor", isActive: true },
-        "users/admin": { id: "admin", role: "admin", isActive: true },
+        "users/d-user1": {
+          id: "d-user1",
+          email: "d-user1@example.test",
+          role: "doctor",
+          isActive: true,
+        },
+        "users/d-user2": {
+          id: "d-user2",
+          email: "d-user2@example.test",
+          role: "doctor",
+          isActive: true,
+        },
+        "users/admin": {
+          id: "admin",
+          email: "admin@example.test",
+          role: "admin",
+          isActive: true,
+        },
         "doctors/d1": { userId: "d-user1" },
         "doctors/d2": { userId: "d-user2" },
         "appointments/a1": { patientId: "p1", doctorUserId: "d-user1" },
@@ -93,7 +110,9 @@ beforeEach(async () => {
 after(async () => environment?.cleanup());
 const dbFor = (uid) =>
   uid
-    ? environment.authenticatedContext(uid).firestore()
+    ? environment
+        .authenticatedContext(uid, { email: `${uid}@example.test` })
+        .firestore()
     : environment.unauthenticatedContext().firestore();
 
 for (const uid of [null, "missing", "disabled"]) {
@@ -116,6 +135,7 @@ test("patient reads own visits, prescriptions and invoices, plus the doctor dire
     "appointments/a1",
     "prescriptions/r1",
     "invoices/i1",
+    "doctorPatients/d-user1/patients/p1",
   ])
     await assertSucceeds(getDoc(doc(db, path)));
   assert.equal(
@@ -128,7 +148,6 @@ test("patient reads own visits, prescriptions and invoices, plus the doctor dire
     "appointments/a2",
     "prescriptions/r2",
     "invoices/i2",
-    "doctorPatients/d-user1/patients/p1",
   ])
     await assertFails(getDoc(doc(db, path)));
   for (const name of ["appointments", "prescriptions", "invoices"]) {
@@ -149,6 +168,7 @@ test("doctor reads own profile, visits and private patient projections", async (
   const db = dbFor("d-user1");
   for (const path of [
     "users/d-user1",
+    "users/p1",
     "doctors/d1",
     "appointments/a1",
     "prescriptions/r1",
@@ -192,7 +212,6 @@ test("doctor reads own profile, visits and private patient projections", async (
     );
   }
   for (const path of [
-    "users/p1",
     "users/p2",
     "doctors/d2",
     "appointments/a2",

@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node test/policy.test.js",
     "test:emulator": "node test/rules.test.js && node test/emulator.test.js",
-    "test:spark": "node test/spark_registration.test.js && node test/rules.test.js",
+    "test:spark": "node test/spark_registration.test.js && node test/spark_booking.test.js && node test/rules.test.js",
     "check": "node --check src/index.js && node --check src/service.js && node --check src/policy.js && node --check src/provision_admin.js && node --check tool/provision_admin.js",
     "format:check": "prettier --check src test tool package.json ../firebase.json ../firestore.indexes.json"
   },

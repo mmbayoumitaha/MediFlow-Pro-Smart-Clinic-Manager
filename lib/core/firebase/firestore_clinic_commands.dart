@@ -4,14 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../features/clinic/domain/clinic_failure.dart';
 import 'clinic_commands.dart';
 import 'firebase_failure.dart';
+import 'clinic_clock.dart';
+import 'firestore_reservations.dart';
+import 'clinic_calendar.dart';
+import 'firestore_billing.dart';
+import 'firestore_profiles.dart';
 
-/// Migration adapter: patient enrollment now uses rules-protected Firestore.
-/// Remaining commands use the previous transport until their rules are tested.
+/// Clinic writes use SDK transactions enforced by Firestore Security Rules.
 class FirestoreClinicCommands implements ClinicCommands {
   final FirebaseFirestore firestore;
   final FirebaseAuth auth;
-  final ClinicCommands remaining;
-  const FirestoreClinicCommands(this.firestore, this.auth, this.remaining);
+  final ClinicClock? clock;
+  const FirestoreClinicCommands(this.firestore, this.auth, {this.clock});
 
   void _guard(String uid) {
     if (auth.currentUser?.uid != uid) {
@@ -29,8 +33,92 @@ class FirestoreClinicCommands implements ClinicCommands {
     required String expectedUid,
   }) async {
     _guard(expectedUid);
+    if ([
+      'savePatient',
+      'saveDoctor',
+      'removePatient',
+      'removeDoctor',
+    ].contains(name)) {
+      try {
+        return await FirestoreProfiles(
+          firestore,
+          auth,
+        ).call(name, data, expectedUid);
+      } catch (error) {
+        _guard(expectedUid);
+        throw firebaseFailure(error);
+      }
+    }
+    if (['issueAppointmentInvoice', 'recordInvoicePayment'].contains(name)) {
+      try {
+        return await FirestoreBilling(
+          firestore,
+          auth,
+          clock ?? ClinicClock(),
+        ).call(name, data, expectedUid);
+      } catch (error) {
+        _guard(expectedUid);
+        throw firebaseFailure(error);
+      }
+    }
+    if (name == 'prepareClinic') {
+      final clinicClock = clock ?? ClinicClock();
+      final calendar = ClinicCalendar(clinicClock);
+      for (final year in [clinicClock.now().year, clinicClock.now().year + 1]) {
+        final values = calendar
+            .transitions(year)
+            .map((key, value) => MapEntry(key, Timestamp.fromDate(value)));
+        final ref = firestore.doc('clinicTimezones/$year');
+        await firestore.runTransaction((tx) async {
+          _guard(expectedUid);
+          final actor = await tx.get(firestore.doc('users/$expectedUid'));
+          final existing = await tx.get(ref);
+          _guard(expectedUid);
+          if (actor.data()?['role'] != 'admin' ||
+              actor.data()?['isActive'] != true) {
+            throw const ClinicFailure(
+              FailureCode.unauthorized,
+              'Only the clinic administrator can prepare its calendar.',
+            );
+          }
+          if (existing.exists) {
+            for (final key in values.keys) {
+              if (existing.data()![key] != values[key]) {
+                throw const ClinicFailure(
+                  FailureCode.unavailable,
+                  'The clinic timezone configuration needs an operator update.',
+                );
+              }
+            }
+          } else {
+            tx.set(ref, values);
+          }
+        });
+        _guard(expectedUid);
+      }
+      return {};
+    }
+    if ([
+      'availableSlots',
+      'bookAppointment',
+      'changeAppointmentStatus',
+    ].contains(name)) {
+      try {
+        return await FirestoreReservations(
+          firestore,
+          auth,
+          clock ?? ClinicClock(),
+        ).call(name, data, expectedUid);
+      } catch (error) {
+        _guard(expectedUid);
+        throw firebaseFailure(error);
+      }
+    }
     if (name != 'completePatientRegistration') {
-      return remaining.call(name, data, expectedUid: expectedUid);
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Unknown clinic operation.',
+      );
     }
     try {
       final email = auth.currentUser!.email?.trim().toLowerCase();
@@ -64,6 +152,9 @@ class FirestoreClinicCommands implements ClinicCommands {
               FailureCode.unauthorized,
               'This clinic identity cannot be enrolled as a patient.',
             );
+          }
+          if (!reservation.exists) {
+            transaction.set(emailRef, {'userId': expectedUid});
           }
           return;
         }

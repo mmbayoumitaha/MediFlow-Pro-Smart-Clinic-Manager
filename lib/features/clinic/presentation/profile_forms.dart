@@ -207,6 +207,7 @@ class _DoctorForm extends ConsumerStatefulWidget {
 }
 
 class _DoctorFormState extends ConsumerState<_DoctorForm> {
+  final accountId = TextEditingController();
   late final TextEditingController name = TextEditingController(
     text: widget.doctor?.fullName,
   );
@@ -236,7 +237,7 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
   String? error;
   @override
   void dispose() {
-    for (final c in [name, email, phone, bio, fee, experience]) {
+    for (final c in [accountId, name, email, phone, bio, fee, experience]) {
       c.dispose();
     }
     for (final p in [...periods, ...retiredPeriods]) {
@@ -246,6 +247,14 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
   }
 
   Future<void> save() async {
+    final backendCreation = widget.doctor == null && !ref.read(isDemoProvider);
+    if (backendCreation &&
+        !RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(accountId.text.trim())) {
+      setState(
+        () => error = 'Enter the UID of the doctor\'s existing Firebase Authentication account.',
+      );
+      return;
+    }
     final amount = double.tryParse(fee.text.trim());
     final years = int.tryParse(experience.text.trim());
     if (amount == null || years == null) {
@@ -263,6 +272,7 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
             fullName: name.text,
             email: email.text,
             phone: phone.text,
+            existingUserId: backendCreation ? accountId.text.trim() : null,
             bio: bio.text,
             specialty: specialty,
             consultationFee: amount,
@@ -303,9 +313,17 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
             children: [
               if (widget.doctor == null && !ref.watch(isDemoProvider)) ...[
                 const Text(
-                  'Use an email address owned by the doctor. After creation, the doctor must use Reset password on the sign-in screen to set their password. Creation does not send an email.',
+                  'Create the doctor\'s email/password account in Firebase Console first. Copy its UID below and enter the same email. This form grants clinic access to that account; it does not create a password or send an email.',
                 ),
                 const SizedBox(height: 12),
+                TextField(
+                  key: const ValueKey('profile-account-id'),
+                  controller: accountId,
+                  enabled: !busy,
+                  decoration: const InputDecoration(
+                    labelText: 'Existing Auth account UID',
+                  ),
+                ),
               ],
               TextField(
                 key: const ValueKey('profile-name'),
@@ -363,8 +381,10 @@ class _DoctorFormState extends ConsumerState<_DoctorForm> {
                 value: available,
                 onChanged: busy ? null : (v) => setState(() => available = v),
               ),
-              const Text(
-                'Working periods use local HH:mm times on the same day. Existing future reservations must fit the edited periods. Existing fees and records remain unchanged.',
+              Text(
+                ref.watch(isDemoProvider)
+                    ? 'Working periods use local HH:mm times on the same day. Existing future reservations must fit the edited periods. Existing fees and records remain unchanged.'
+                    : 'Working periods use Cairo time and save complete half-hour slots. Finish or cancel reserved visits before changing hours. You can pause new bookings while keeping existing visits.',
               ),
               ...periods.map(
                 (period) => Card(

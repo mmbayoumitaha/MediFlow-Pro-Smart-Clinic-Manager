@@ -7,6 +7,7 @@ import '../../clinic/domain/entities.dart';
 
 abstract interface class FirebaseIdentityGateway {
   String? get currentUid;
+  String? get currentEmail;
   Stream<String?> watchIdentity();
   Future<String> signIn(String email, String password);
   Future<String> createPatientIdentity(String email, String password);
@@ -24,6 +25,8 @@ class FirebaseSdkIdentity implements FirebaseIdentityGateway {
   const FirebaseSdkIdentity(this.auth);
   @override
   String? get currentUid => auth.currentUser?.uid;
+  @override
+  String? get currentEmail => auth.currentUser?.email;
   @override
   Stream<String?> watchIdentity() =>
       auth.userChanges().map((user) => user?.uid).distinct();

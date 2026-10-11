@@ -89,7 +89,11 @@ class FirebaseAuthRepository
   }
 
   ClinicUser _active(ClinicUser? user, String uid) {
-    if (user == null || user.id != uid || !user.isActive) {
+    if (user == null ||
+        user.id != uid ||
+        !user.isActive ||
+        user.email.trim().toLowerCase() !=
+            identity.currentEmail?.trim().toLowerCase()) {
       throw const ClinicFailure(
         FailureCode.unauthorized,
         'Your clinic account is unavailable. Complete patient registration or contact the clinic.',
@@ -102,12 +106,21 @@ class FirebaseAuthRepository
     try {
       final user = await profiles.read(uid);
       _guard(generation, uid);
-      _publish(AuthSession(user: _active(user, uid)));
+      final active = _active(user, uid);
+      await _prepareClinic(active, generation);
+      _publish(AuthSession(user: active));
       _observeProfile(generation, uid);
     } catch (error) {
       if (!_closed && generation == _generation) {
         _invalidate(firebaseFailure(error).message);
       }
+    }
+  }
+
+  Future<void> _prepareClinic(ClinicUser user, int generation) async {
+    if (user.role == UserRole.admin) {
+      await commands.call('prepareClinic', {}, expectedUid: user.id);
+      _guard(generation, user.id);
     }
   }
 
@@ -169,6 +182,7 @@ class FirebaseAuthRepository
         final user = await profiles.read(uid);
         _guard(generation, uid);
         final active = _active(user, uid);
+        await _prepareClinic(active, generation);
         _publish(AuthSession(user: active));
         _observeProfile(generation, uid);
         return active;

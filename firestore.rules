@@ -3,7 +3,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function user() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function active() { return signedIn() && user().isActive == true; }
+    function active() { return signedIn() && user().isActive == true
+      && request.auth.token.email is string && user().email == request.auth.token.email.lower(); }
     function admin() { return active() && user().role == 'admin'; }
     function patient() { return active() && user().role == 'patient'; }
     function doctor() { return active() && user().role == 'doctor'; }
@@ -34,35 +35,317 @@ service cloud.firestore {
       return active() && ((patient() && resource.data.patientId == request.auth.uid)
         || (doctor() && resource.data.doctorUserId == request.auth.uid));
     }
+    function reserves(status) { return status in ['pending','confirmed','in_progress']; }
+    function clinicTime(instant) {
+      let zone = get(/databases/$(database)/documents/clinicTimezones/$(string(instant.year()))).data;
+      return instant + duration.value(instant >= zone.dstStart && instant < zone.dstEnd ? 180 : 120, 'm');
+    }
+    function working(data, profile) {
+      let local = clinicTime(data.dateTime);
+      let end = clinicTime(data.dateTime + duration.value(30, 'm'));
+      let days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+      let index = local.hours() * 2 + (local.minutes() == 30 ? 1 : 0);
+      let bitmap = profile.availability[days[local.dayOfWeek()-1]];
+      let pattern = '[01]{' + string(index) + '}1[01]{' + string(47-index) + '}';
+      let zone = get(/databases/$(database)/documents/clinicTimezones/$(string(data.dateTime.year()))).data;
+      return bitmap.matches(pattern) && local.date() == end.date()
+        && end.hours()*60 + end.minutes() == local.hours()*60 + local.minutes() + 30
+        && !(data.dateTime >= zone.dstEnd - duration.value(1,'h')
+          && data.dateTime < zone.dstEnd + duration.value(1,'h'));
+    }
+    function newBooking(id) {
+      let data = request.resource.data;
+      let profile = get(/databases/$(database)/documents/doctors/$(data.doctorId)).data;
+      let today = clinicTime(request.time).date();
+      let day = clinicTime(data.dateTime).date();
+      return patient() && data.keys().hasOnly(['id','patientId','patientName','doctorId',
+        'doctorUserId','doctorName','specialty','dateTime','durationMinutes','status','notes',
+        'reason','fee','paymentStatus','createdAt','updatedAt','updatedBy','startKey'])
+        && data.id == id && data.patientId == request.auth.uid
+        && data.patientName == user().fullName
+        && profile.isAvailable == true
+        && get(/databases/$(database)/documents/users/$(profile.userId)).data.isActive == true
+        && get(/databases/$(database)/documents/users/$(profile.userId)).data.role == 'doctor'
+        && data.doctorUserId == profile.userId && data.doctorName == profile.fullName
+        && data.specialty == profile.specialty && data.fee == profile.consultationFee
+        && data.status == 'pending' && data.paymentStatus == 'unpaid'
+        && data.notes == null && data.reason is string && data.reason.size() <= 500
+        && data.durationMinutes == 30 && data.dateTime is timestamp
+        && data.dateTime == timestamp.value(data.dateTime.toMillis())
+        && data.dateTime.toMillis() % 1800000 == 0
+        && data.startKey == string(data.dateTime.toMillis())
+        && day > today && day <= today + duration.value(14,'d')
+        && working(data, profile)
+        && data.createdAt == request.time && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid
+        && getAfter(/databases/$(database)/documents/doctorReservations/$(data.doctorId)/slots/$(data.startKey)).data.appointmentId == id
+        && getAfter(/databases/$(database)/documents/patientReservations/$(data.patientId)/slots/$(data.startKey)).data.appointmentId == id
+        && getAfter(/databases/$(database)/documents/doctorPatients/$(data.doctorUserId)/patients/$(data.patientId)).data.patientId == data.patientId
+        && existsAfter(/databases/$(database)/documents/patientHistory/$(data.patientId))
+        && getAfter(/databases/$(database)/documents/bookingGuards/$(data.doctorId)).data.lastAppointmentId == id;
+    }
+    function transition() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let staff = admin() || (doctor() && before.doctorUserId == request.auth.uid);
+      let owner = patient() && before.patientId == request.auth.uid;
+      return after.diff(before).affectedKeys().hasOnly(['status','updatedAt','updatedBy'])
+        && after.updatedAt == request.time && after.updatedBy == request.auth.uid && (
+          (staff && before.status == 'pending' && after.status == 'confirmed' && request.time <= before.dateTime)
+          || (staff && before.status == 'confirmed' && after.status == 'in_progress' && request.time >= before.dateTime)
+          || (staff && before.status == 'in_progress' && after.status == 'completed' && request.time >= before.dateTime)
+          || ((staff || (owner && request.time < before.dateTime))
+            && before.status in ['pending','confirmed'] && after.status == 'cancelled')
+          || (staff && before.status in ['pending','confirmed'] && after.status == 'no_show'
+            && request.time >= before.dateTime + duration.value(30,'m')))
+        && (reserves(after.status) || (
+          !existsAfter(/databases/$(database)/documents/doctorReservations/$(before.doctorId)/slots/$(before.startKey))
+          && !existsAfter(/databases/$(database)/documents/patientReservations/$(before.patientId)/slots/$(before.startKey))
+          && getAfter(/databases/$(database)/documents/bookingGuards/$(before.doctorId)).data.lastAppointmentId == before.id));
+    }
+    function reservationCreate(doctorId, patientId, key) {
+      let data = request.resource.data;
+      let visit = getAfter(/databases/$(database)/documents/appointments/$(data.appointmentId)).data;
+      return patient() && data.keys().hasOnly(['appointmentId','dateTime'])
+        && visit.patientId == request.auth.uid && visit.patientId == patientId
+        && visit.doctorId == doctorId && visit.startKey == key
+        && visit.dateTime == data.dateTime && visit.createdAt == request.time
+        && visit.status == 'pending';
+    }
+    function reservationDelete() {
+      let visit = getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data;
+      return (admin() || (doctor() && visit.doctorUserId == request.auth.uid)
+          || (patient() && visit.patientId == request.auth.uid))
+        && !reserves(visit.status) && visit.updatedAt == request.time;
+    }
+    function invoiceCreate(id) {
+      let data = request.resource.data;
+      let visit = get(/databases/$(database)/documents/appointments/$(data.appointmentId)).data;
+      return admin() && data.keys().hasOnly(['id','patientId','patientName','appointmentId','items',
+        'subtotal','tax','discount','total','paymentStatus','paymentMethod','issuedDate','paidDate',
+        'createdAt','updatedAt','updatedBy'])
+        && data.id == id && data.patientId == visit.patientId && data.patientName == visit.patientName
+        && visit.status == 'completed' && visit.paymentStatus == 'unpaid' && visit.fee > 0
+        && data.items is list && data.items.size() == 1
+        && data.items[0] == {'description':'Consultation with ' + visit.doctorName,
+          'quantity':1,'unitPrice':visit.fee,'total':visit.fee}
+        && data.subtotal == visit.fee && data.total == visit.fee && data.tax == 0 && data.discount == 0
+        && data.paymentStatus == 'unpaid' && data.paymentMethod == null && data.paidDate == null
+        && data.issuedDate == request.time && data.createdAt == request.time
+        && data.updatedAt == request.time && data.updatedBy == request.auth.uid
+        && getAfter(/databases/$(database)/documents/billingLinks/$(data.appointmentId)).data.invoiceId == id;
+    }
+    function invoicePayment() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let visit = getAfter(/databases/$(database)/documents/appointments/$(before.appointmentId)).data;
+      return admin() && after.diff(before).affectedKeys().hasOnly(['paymentStatus','paymentMethod','paidDate','updatedAt','updatedBy'])
+        && after.updatedAt == request.time && after.updatedBy == request.auth.uid
+        && before.issuedDate <= request.time && before.total > 0
+        && after.total == before.subtotal + before.tax - before.discount
+        && ((before.paymentStatus in ['unpaid','partial'] && after.paymentStatus == 'paid'
+          && after.paymentMethod in ['cash','card','bankTransfer'] && after.paidDate == request.time)
+          || (before.paymentStatus == 'paid' && after.paymentStatus == 'refunded'
+            && before.paidDate >= before.issuedDate && before.paidDate <= request.time
+            && after.paidDate == before.paidDate && after.paymentMethod == before.paymentMethod))
+        && get(/databases/$(database)/documents/billingLinks/$(before.appointmentId)).data.invoiceId == before.id
+        && visit.patientId == before.patientId && visit.paymentStatus == after.paymentStatus
+        && visit.updatedAt == request.time && visit.updatedBy == request.auth.uid;
+    }
+    function visitPayment() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let link = get(/databases/$(database)/documents/billingLinks/$(before.id)).data;
+      let invoice = get(/databases/$(database)/documents/invoices/$(link.invoiceId)).data;
+      let paid = getAfter(/databases/$(database)/documents/invoices/$(link.invoiceId)).data;
+      return admin() && after.diff(before).affectedKeys().hasOnly(['paymentStatus','updatedAt','updatedBy'])
+        && before.status == 'completed' && after.updatedAt == request.time
+        && after.updatedBy == request.auth.uid && invoice.appointmentId == before.id
+        && invoice.patientId == before.patientId && invoice.paymentStatus == before.paymentStatus
+        && paid.paymentStatus == after.paymentStatus && paid.paymentStatus != invoice.paymentStatus
+        && paid.updatedAt == request.time && paid.updatedBy == request.auth.uid;
+    }
+    function validUser(data, id) {
+      return data.id == id && data.email is string && data.email == data.email.lower()
+        && data.email.matches('[^/@ ]+@[^/@ ]+\\.[^/@ ]+') && validContact(data)
+        && data.isActive is bool && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+    function staffEnrollment(id) {
+      let data = request.resource.data;
+      let profile = getAfter(/databases/$(database)/documents/doctors/$(data.doctorId)).data;
+      return admin() && data.keys().hasOnly(['id','email','fullName','phone','role','avatarUrl','gender',
+        'dateOfBirth','address','isActive','createdAt','updatedAt','updatedBy','doctorId'])
+        && validUser(data,id) && data.role == 'doctor' && data.isActive == true
+        && data.createdAt == request.time && data.updatedAt == request.time && data.updatedBy == request.auth.uid
+        && data.avatarUrl == null && data.gender == null && data.dateOfBirth == null && data.address == null
+        && profile.userId == id && profile.email == data.email && profile.fullName == data.fullName && profile.phone == data.phone
+        && !exists(/databases/$(database)/documents/revokedUsers/$(id))
+        && getAfter(/databases/$(database)/documents/accountEmails/$(data.email)).data.userId == id;
+    }
+    function userUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return validUser(after,before.id) && after.updatedAt == request.time && after.updatedBy == request.auth.uid && (
+        (before.role == 'patient' && (admin() || (patient() && request.auth.uid == before.id))
+          && after.diff(before).affectedKeys().hasOnly(['fullName','phone','address','isActive','updatedAt','updatedBy'])
+          && (after.address == null || (after.address is string && after.address.size() <= 500))
+          && (admin() || after.isActive == before.isActive))
+        || (before.role == 'doctor' && (admin() || (doctor() && request.auth.uid == before.id))
+          && after.diff(before).affectedKeys().hasOnly(['fullName','phone','updatedAt','updatedBy'])
+          && getAfter(/databases/$(database)/documents/doctors/$(before.doctorId)).data.fullName == after.fullName
+          && getAfter(/databases/$(database)/documents/doctors/$(before.doctorId)).data.phone == after.phone));
+    }
+    function validSchedule(week) {
+      return week is map && week.keys().hasAll(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'])
+        && week.keys().hasOnly(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'])
+        && week.monday.matches('[01]{47}0') && week.tuesday.matches('[01]{47}0')
+        && week.wednesday.matches('[01]{47}0') && week.thursday.matches('[01]{47}0')
+        && week.friday.matches('[01]{47}0') && week.saturday.matches('[01]{47}0') && week.sunday.matches('[01]{47}0');
+    }
+    function hasHours(week) {
+      return week.monday.matches('.*1.*') || week.tuesday.matches('.*1.*')
+        || week.wednesday.matches('.*1.*') || week.thursday.matches('.*1.*')
+        || week.friday.matches('.*1.*') || week.saturday.matches('.*1.*') || week.sunday.matches('.*1.*');
+    }
+    function doctorProfile(data) {
+      return validContact(data) && data.specialty in ['general_practice','cardiology','dermatology',
+        'neurology','orthopedics','pediatrics','psychiatry','ophthalmology','ent','dentistry',
+        'gynecology','urology','radiology','laboratory']
+        && (data.bio == null || (data.bio is string && data.bio.size() <= 1000))
+        && data.consultationFee is number && data.consultationFee >= 0 && data.consultationFee * 100 <= 9007199254740991
+        && math.abs(data.consultationFee * 100 - math.round(data.consultationFee * 100)) <= 0.000001
+        && data.experienceYears is int && data.experienceYears >= 0 && data.experienceYears <= 80
+        && data.isAvailable is bool && validSchedule(data.availability)
+        && (!data.isAvailable || hasHours(data.availability));
+    }
+    function createDoctor(id) {
+      let data = request.resource.data;
+      let staff = getAfter(/databases/$(database)/documents/users/$(data.userId)).data;
+      return admin() && data.keys().hasOnly(['id','userId','fullName','email','phone','avatarUrl','specialty','bio',
+        'consultationFee','experienceYears','rating','totalReviews','availability','isAvailable','createdAt','updatedAt','updatedBy'])
+        && data.id == id && doctorProfile(data) && data.email == staff.email
+        && staff.doctorId == id && staff.role == 'doctor' && staff.isActive == true
+        && data.fullName == staff.fullName && data.phone == staff.phone && data.avatarUrl == null
+        && data.rating == 0 && data.totalReviews == 0 && data.createdAt == request.time
+        && data.updatedAt == request.time && data.updatedBy == request.auth.uid;
+    }
+    function doctorUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return (admin() || (doctor() && before.userId == request.auth.uid)) && doctorProfile(after)
+        && after.diff(before).affectedKeys().hasOnly(['fullName','phone','bio','specialty','consultationFee',
+          'experienceYears','availability','isAvailable','updatedAt','updatedBy'])
+        && after.updatedAt == request.time && after.updatedBy == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(before.userId)).data.fullName == after.fullName
+        && getAfter(/databases/$(database)/documents/users/$(before.userId)).data.phone == after.phone
+        && (after.availability == before.availability
+          || !exists(/databases/$(database)/documents/bookingGuards/$(before.id))
+          || get(/databases/$(database)/documents/bookingGuards/$(before.id)).data.activeCount == 0);
+    }
     match /users/{id} {
-      allow get: if (signedIn() && request.auth.uid == id) || admin();
+      allow get: if (signedIn() && request.auth.uid == id) || admin()
+        || (doctor() && resource.data.role == 'patient'
+          && exists(/databases/$(database)/documents/doctorPatients/$(request.auth.uid)/patients/$(id)));
       allow list: if admin();
-      allow create: if enrollPatient(id);
-      allow update, delete: if false;
+      allow create: if enrollPatient(id) || staffEnrollment(id);
+      allow update: if userUpdate();
+      allow delete: if admin() && (
+        (resource.data.role == 'patient' && !exists(/databases/$(database)/documents/patientHistory/$(id)))
+        || (resource.data.role == 'doctor' && !exists(/databases/$(database)/documents/bookingGuards/$(resource.data.doctorId))
+          && !existsAfter(/databases/$(database)/documents/doctors/$(resource.data.doctorId))))
+        && getAfter(/databases/$(database)/documents/revokedUsers/$(id)).data.userId == id;
     }
     match /accountEmails/{email} {
       allow get: if admin() || (signedIn() && request.auth.token.email is string
         && email == request.auth.token.email.lower());
       allow list: if admin();
-      allow create: if signedIn() && request.auth.token.email is string
-        && email == request.auth.token.email.lower()
+      allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['userId'])
-        && request.resource.data.userId == request.auth.uid
-        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.email == email
-        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'patient';
+        && getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.email == email
+        && ((request.auth.token.email is string && email == request.auth.token.email.lower()
+          && request.resource.data.userId == request.auth.uid
+          && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'patient')
+          || (admin() && getAfter(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role == 'doctor'));
       allow update, delete: if false;
     }
     match /revokedUsers/{id} {
-      allow get: if signedIn() && request.auth.uid == id;
-      allow list, write: if false;
+      allow get: if admin() || (signedIn() && request.auth.uid == id);
+      allow list: if false;
+      allow create: if admin() && request.resource.data.keys().hasOnly(['userId','role','createdAt'])
+        && request.resource.data.userId == id && request.resource.data.createdAt == request.time
+        && request.resource.data.role == get(/databases/$(database)/documents/users/$(id)).data.role
+        && request.resource.data.role in ['patient','doctor']
+        && !existsAfter(/databases/$(database)/documents/users/$(id));
+      allow update, delete: if false;
     }
     match /doctors/{id} {
       allow read: if admin() || patient() || (doctor() && resource.data.userId == request.auth.uid);
-      allow write: if false;
+      allow create: if createDoctor(id);
+      allow update: if doctorUpdate();
+      allow delete: if admin() && !exists(/databases/$(database)/documents/bookingGuards/$(id))
+        && !existsAfter(/databases/$(database)/documents/users/$(resource.data.userId));
     }
     match /appointments/{id} {
-      allow read: if admin() || ownVisit();
-      allow write: if false;
+      allow get: if admin() || ownVisit() || (patient()
+        && !exists(/databases/$(database)/documents/appointments/$(id)));
+      allow list: if admin() || ownVisit();
+      allow create: if newBooking(id);
+      allow update: if transition() || visitPayment();
+      allow delete: if false;
+    }
+    match /clinicTimezones/{year} {
+      allow read: if active();
+      allow create: if admin() && request.resource.data.keys().hasOnly(['dstStart','dstEnd'])
+        && request.resource.data.dstStart is timestamp && request.resource.data.dstEnd is timestamp
+        && request.resource.data.dstStart.year() == int(year)
+        && request.resource.data.dstEnd.year() == int(year)
+        && request.resource.data.dstStart < request.resource.data.dstEnd;
+      allow update, delete: if false;
+    }
+    match /doctorReservations/{doctorId}/slots/{key} {
+      allow read: if active();
+      allow create: if reservationCreate(doctorId, request.auth.uid, key);
+      allow update: if false;
+      allow delete: if reservationDelete();
+    }
+    match /patientReservations/{patientId}/slots/{key} {
+      allow read: if admin() || (patient() && patientId == request.auth.uid);
+      allow create: if patientId == request.auth.uid && reservationCreate(
+        getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.doctorId,
+        patientId, key);
+      allow update: if false;
+      allow delete: if reservationDelete();
+    }
+    match /patientHistory/{id} {
+      allow get: if admin() || (patient() && request.auth.uid == id);
+      allow create: if patient() && id == request.auth.uid
+        && request.resource.data.keys().hasOnly(['firstAppointmentId'])
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.firstAppointmentId)).data.patientId == id
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.firstAppointmentId)).data.createdAt == request.time;
+      allow list, update, delete: if false;
+    }
+    match /bookingGuards/{doctorId} {
+      allow get: if active();
+      allow list: if admin();
+      function validGuard() {
+        let data = request.resource.data;
+        let visit = getAfter(/databases/$(database)/documents/appointments/$(data.lastAppointmentId)).data;
+        return active() && data.keys().hasOnly(['activeCount','lastAppointmentId'])
+          && data.activeCount is int && data.activeCount >= 0
+          && visit.doctorId == doctorId && visit.updatedAt == request.time
+          && visit.updatedBy == request.auth.uid;
+      }
+      allow create: if validGuard() && request.resource.data.activeCount == 1
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId)).data.createdAt == request.time;
+      allow update: if validGuard() && (
+        (!exists(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId))
+          && request.resource.data.activeCount == resource.data.activeCount + 1
+          && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId)).data.status == 'pending')
+        || (exists(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId))
+          && reserves(get(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId)).data.status)
+          && !reserves(getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.lastAppointmentId)).data.status)
+          && request.resource.data.activeCount == resource.data.activeCount - 1));
+      allow delete: if false;
     }
     match /prescriptions/{id} {
       allow read: if admin() || ownVisit();
@@ -70,11 +353,28 @@ service cloud.firestore {
     }
     match /invoices/{id} {
       allow read: if admin() || (patient() && resource.data.patientId == request.auth.uid);
-      allow write: if false;
+      allow create: if invoiceCreate(id);
+      allow update: if invoicePayment();
+      allow delete: if false;
+    }
+    match /billingLinks/{appointmentId} {
+      allow read: if admin();
+      allow create: if admin() && request.resource.data.keys().hasOnly(['invoiceId'])
+        && getAfter(/databases/$(database)/documents/invoices/$(request.resource.data.invoiceId)).data.appointmentId == appointmentId
+        && getAfter(/databases/$(database)/documents/invoices/$(request.resource.data.invoiceId)).data.createdAt == request.time;
+      allow update, delete: if false;
     }
     match /doctorPatients/{doctorUid}/patients/{patientId} {
-      allow read: if admin() || (doctor() && request.auth.uid == doctorUid);
-      allow write: if false;
+      allow get: if admin() || (doctor() && request.auth.uid == doctorUid)
+        || (patient() && request.auth.uid == patientId);
+      allow list: if admin() || (doctor() && request.auth.uid == doctorUid);
+      allow create: if patient() && patientId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['patientId','appointmentId'])
+        && request.resource.data.patientId == patientId
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.patientId == patientId
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.doctorUserId == doctorUid
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.createdAt == request.time;
+      allow update, delete: if false;
     }
     // Internal locks and all unrecognized paths remain inaccessible to clients.
     match /{document=**} { allow read, write: if false; }

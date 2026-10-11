@@ -14,7 +14,6 @@ import '../../features/clinic/data/firebase_clinic_records.dart';
 import '../../features/clinic/data/firebase_clinic_repository.dart';
 import '../../features/clinic/domain/clinic_repository.dart';
 import '../config/backend_configuration.dart';
-import '../firebase/clinic_commands.dart';
 import '../firebase/firebase_runtime.dart';
 import '../firebase/firestore_clinic_commands.dart';
 
@@ -63,7 +62,11 @@ final clinicRepositoryProvider = Provider<ClinicRepository>((ref) {
     final repository = FirebaseClinicRepository(
       ref.watch(authRepositoryProvider) as AuthSessionSource,
       FirebaseClinicRecords(runtime.firestore, mapper),
-      FirebaseClinicCommands(runtime.functions),
+      FirestoreClinicCommands(
+        runtime.firestore,
+        runtime.auth,
+        clock: runtime.clock,
+      ),
       mapper,
       runtime.clock,
     );
@@ -86,11 +89,7 @@ final Provider<AuthRepository> authRepositoryProvider =
             runtime.firestore,
             FirebaseClinicMapper(runtime.clock),
           ),
-          FirestoreClinicCommands(
-            runtime.firestore,
-            runtime.auth,
-            FirebaseClinicCommands(runtime.functions),
-          ),
+          FirestoreClinicCommands(runtime.firestore, runtime.auth),
         );
         ref.onDispose(repository.dispose);
         return repository;

@@ -1,22 +1,33 @@
 # Auth + Firestore migration
 
-Owner decision, **2026-10-11**: run the live clinic within Firebase's Spark allowances, without Cloud Functions, Storage or a billing account. Keep the existing default demo, trusted roles, scoped reads and domain/presentation architecture. This migration is in progress; the application is not yet a complete Functions-free backend.
+Owner decision, **2026-10-11**: use Firebase Auth and Standard Firestore within Spark allowances, without Cloud Functions, Storage or a billing account. Default offline demo behavior and the domain/presentation boundaries are preserved.
 
-## Verified first slice: patient enrollment
+## Protected SDK transactions
 
-The Flutter Auth adapter now enrolls patients using a Firestore transaction. Its email is obtained from the actual Firebase Auth identity, not form metadata. The transaction checks the current UID on every retry and after completion, preserves an existing patient profile on same-owner retries, rejects inactive/staff/revoked identities, and atomically reserves the email with the user record. Creation timestamps use server transforms.
+All reachable clinic commands now use the Firebase client SDK. Firestore Security Rules authorize the actual Auth UID and email against an active trusted `users/{uid}` record. Patient enrollment has a strict field allowlist, canonical token email, server timestamps, immutable email reservation and removed-identity protection. Staff cannot self-register or change roles/emails. Session guards reject delayed writes after an account switch.
 
-Security rules permit only self-owned, active patient enrollment with a strict field allowlist, canonical token email, validated contacts, server timestamps and a matching `accountEmails/{email}` reservation. Email reservations are immutable; `revokedUsers/{uid}` is readable only by that identity for enrollment checks and never writable by it. All other record writes retain their previous denial until their replacement policy is implemented and tested. No live rules have been deployed by this slice.
+Booking uses a fixed 30-minute Cairo grid over the next 14 dates, excluding today. A transaction writes the canonical appointment, doctor and patient reservation locks, a doctor reservation counter, immutable patient history and the associated doctor's minimal care link. Rules check all required documents through `getAfter`; competing patients cannot reserve the same doctor, or book the same patient with different doctors at the same instant. Public occupancy contains only an instant and random appointment ID. Identical request retries acknowledge the original appointment. Terminal lifecycle transitions release both locks and decrement the counter atomically.
 
-Observed on 2026-10-11: 15 new enrollment rule tests plus the existing 17 access-rule tests passed against the Firestore emulator. Twenty-one focused Flutter auth/configuration/mode tests passed; analysis passed. A separate Chromium/ChromeDriver browser journey passed with **only Auth and Firestore emulators running**: UI registration, canonical patient role despite admin login input, server timestamps, denied role escalation, logout/login and same-owner re-enrollment without changing the saved profile. Functions were not running in that journey.
+Weekly availability stores seven 48-bit strings, one per weekday, rather than repeatedly validating nested periods against Firestore's expression budget. The data adapter exposes actual bookable HH:mm periods to domain and presentation; saving 09:15–17:45 normalizes to 09:30–17:30. Overnight slots are excluded. Trusted immutable yearly calendar documents specify Cairo DST transitions; an admin login prepares this year and the next. Missing/mismatched calendar data fails closed. A timezone-law change requires an operator update and verification, not a patient-supplied offset.
 
-## Remaining implementation slices
+Billing uses an immutable appointment-to-invoice link, exactly one canonical consultation line and strict arithmetic. Settlement/refund changes the invoice and appointment payment status in one transaction with server timestamps. These actions record clinic payment status; they do not charge/refund money.
 
-1. Replace availability/booking/lifecycle calls with SDK transactions and rules-validated doctor/patient reservation documents. Availability must expose occupancy without another patient's details; booking must bind both reservations atomically. Validate Cairo calendar/working-hour boundaries using trusted timezone configuration and server request time. Use one fixed 30-minute grid in Firebase mode so cross-doctor conflicts have deterministic reservation keys; keep demo behavior explicit.
-2. Replace billing calls with a unique appointment-to-invoice link, strict invoice arithmetic and atomic invoice/appointment payment transitions. Keep administrative recordkeeping; no payment gateway is involved.
-3. Replace profile and management calls. Patients retain ownership of their contact data; staff cannot change their own role/email. Protect historical references and removed identities. Preserve doctor reservations during schedule changes.
-4. Free staff setup: create the email/password identity in Firebase Console, then let the clinic admin bind the actual Auth UID when creating the doctor profile. Avoid a secondary SDK account, inaccessible generated passwords or self-assigned staff roles. Bootstrap the first admin with a trusted operator, never a public enrollment path.
-5. Remove the Functions transport/package/runtime/deployment configuration after all reachable commands have replacements. Run the complete browser journey with Functions absent, plus adversarial rule tests, required Flutter checks and both web builds. Update current setup documentation while preserving historical verification records.
-6. Configure live email/password Auth and Firestore, deploy the tested rules/indexes and verify the live project remains without billing. Complete initial admin setup with the owner's chosen account; never upload emulator fixtures to the live project.
+Patient contact edits update their own authoritative profile. Associated doctors watch the minimal care index and fetch only linked patient documents, so contact updates require no fan-out. Doctor edits atomically update their professional and trusted user records. Availability changes require no reserved visits; contacts, fees and the new-booking switch remain editable. Historical appointment names/fees remain unchanged.
 
-The migration adapter deliberately delegates the remaining clinic commands to the previous transport until their coherent replacement slices pass. The existence of a live Console project and a working registration slice must not be presented as a fully working cloud clinic.
+Unused-profile deletion requires an immutable tombstone. Booking history prevents patient and doctor deletion, even after every visit becomes terminal. Auth identities and email reservations remain, preventing re-enrollment under a removed UID. Trusted operators must maintain history/counter/link invariants when importing clinical records; no live clinical import is performed by this migration. Prescription reads remain role-scoped; prescription issuing and file uploads are not implemented.
+
+## Staff and owner setup
+
+Create a doctor's email/password identity in Firebase Console. The clinic admin enters its actual UID and matching email in the Add Doctor form. The identity gets clinic access only after that privileged binding and only when its Auth email matches. No generated inaccessible password, secondary sign-in or outgoing provisioning email is used. Correcting an erroneous binding is an owner operation.
+
+The initial administrator requires a trusted operator binding an existing Auth identity, not public registration. See [Firebase setup](FIREBASE.md). Passwords must never be shared with the coding agent or committed.
+
+## Verification and cloud state
+
+The first enrollment slice (`5b38001`) passed 15 enrollment and 17 access-rule cases, 21 focused Flutter tests, analysis, and Chromium UI registration/login/retry with Auth/Firestore only.
+
+The complete original browser journey also passed with Functions absent: scoped portals, booking, contact update, session restoration, lifecycle, invoice issuance, settlement/refund, analytics, registration and emulator password recovery. Expanded staff management and final migration checks are recorded in the repair plan when completed.
+
+The live project is `mediflow-pro-mmbayoumi`; email/password Auth is enabled and the `(default)` Standard Firestore database exists in `europe-west3`. Billing inspection reported `billingEnabled: false` with no billing account linked. Live rules deployment, first administrator and live clinic journeys are tracked separately from emulator evidence.
+
+Spark quotas apply to transactions, listeners and rule-dependent reads too. This is a small-clinic implementation, not an unlimited-capacity service. Monitor [Firestore usage and free quotas](https://firebase.google.com/docs/firestore/quotas). Historical Functions implementation/verification remains available in Git history; it is not the current deployment design.

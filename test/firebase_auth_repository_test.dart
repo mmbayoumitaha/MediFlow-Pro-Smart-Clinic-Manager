@@ -38,6 +38,8 @@ class IdentityFake implements FirebaseIdentityGateway {
   @override
   String? get currentUid => uid;
   @override
+  String? get currentEmail => uid == null ? null : '$uid@example.test';
+  @override
   Stream<String?> watchIdentity() => Stream.multi((controller) {
     controller.add(uid);
     final sub = events.stream.listen(controller.add);
@@ -172,6 +174,7 @@ void main() {
         null,
         person('patient', active: false),
         person('foreign'),
+        person('patient').copyWith(email: 'foreign@example.test'),
       ]) {
         profiles.records['patient'] = profile;
         await expectLater(

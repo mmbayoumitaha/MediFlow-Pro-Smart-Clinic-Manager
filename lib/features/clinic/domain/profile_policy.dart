@@ -18,6 +18,7 @@ class ContactInput {
 
 class DoctorInput {
   final String fullName, email, phone;
+  final String? existingUserId;
   final String? bio;
   final MedicalSpecialty specialty;
   final double consultationFee;
@@ -28,6 +29,7 @@ class DoctorInput {
     required this.fullName,
     required this.email,
     required this.phone,
+    this.existingUserId,
     this.bio,
     required this.specialty,
     required this.consultationFee,

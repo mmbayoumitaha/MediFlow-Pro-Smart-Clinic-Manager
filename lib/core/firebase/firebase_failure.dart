@@ -1,4 +1,3 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import '../../features/clinic/domain/clinic_failure.dart';
@@ -23,11 +22,6 @@ ClinicFailure firebaseFailure(Object error) {
       'not-found' => FailureCode.notFound,
       _ => FailureCode.unavailable,
     };
-    if (error is FirebaseFunctionsException &&
-        code != FailureCode.unavailable &&
-        error.message?.isNotEmpty == true) {
-      return ClinicFailure(code, error.message!);
-    }
     final message = switch (code) {
       FailureCode.unauthorized =>
         'Sign-in or clinic access failed. Check your account and try again.',
