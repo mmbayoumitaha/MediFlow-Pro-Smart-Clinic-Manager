@@ -6,6 +6,13 @@ class ClinicCalendar {
   final ClinicClock clock;
   const ClinicCalendar(this.clock);
 
+  Set<int> requiredYears(DateTime instant) {
+    final now = clock.inClinic(instant);
+    // Rules choose the calendar by UTC instant year; Cairo can already be in
+    // January while request.time still belongs to the previous UTC year.
+    return {instant.toUtc().year, now.year, now.year + 1};
+  }
+
   Map<String, DateTime> transitions(int year) {
     final first = DateTime.utc(year);
     final end = DateTime.utc(year + 1);

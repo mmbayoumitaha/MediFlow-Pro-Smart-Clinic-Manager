@@ -64,7 +64,7 @@ class FirestoreClinicCommands implements ClinicCommands {
     if (name == 'prepareClinic') {
       final clinicClock = clock ?? ClinicClock();
       final calendar = ClinicCalendar(clinicClock);
-      for (final year in [clinicClock.now().year, clinicClock.now().year + 1]) {
+      for (final year in calendar.requiredYears(clinicClock.now())) {
         final values = calendar
             .transitions(year)
             .map((key, value) => MapEntry(key, Timestamp.fromDate(value)));

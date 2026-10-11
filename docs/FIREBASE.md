@@ -55,7 +55,7 @@ node firebase/tool/provision_admin.js --project mediflow-pro-mmbayoumi --uid AUT
   --name 'Clinic Owner' --phone '+201000000000'
 ```
 
-The owner chooses the display name and can omit the contact number until a real one is available. The operator must verify the actual Auth identity and refuse promotion of patient/doctor/revoked identities. This operation bypasses client rules, so it is never an application signup feature. See [Admin SDK authentication](https://firebase.google.com/docs/admin/setup). Admin login prepares trusted Cairo calendar documents for this year and the next.
+The owner chooses the display name and can omit the contact number until a real one is available. The operator must verify the actual Auth identity and refuse promotion of patient/doctor/revoked identities. This operation bypasses client rules, so it is never an application signup feature. See [Admin SDK authentication](https://firebase.google.com/docs/admin/setup). Admin login prepares trusted calendar documents for the UTC instant year, Cairo year and following year, covering the New Year overlap.
 
 For each doctor, create the email/password account in Auth Console and enter its UID and matching email in the clinic administrator's Add Doctor form. Password setup/transfer stays between the owner and doctor. The form atomically binds the trusted user, professional profile and immutable email reservation. Public self-registration cannot assign staff roles. Deletion removes only unused clinic profiles; Auth identity removal is a separate owner operation.
 
@@ -82,7 +82,7 @@ Prescriptions are read-only in the current product. Payments are administrative 
 ## Observed final migration checks (2026-10-11–12)
 
 - **79** Node/emulator cases passed: seven operator-bootstrap protections, 15 patient-enrollment rules, 40 booking/billing/profile rules and 17 read/access cases. Current tooling passed syntax/Prettier checks; dependency audit reported zero vulnerabilities.
-- **238** Flutter tests passed, including 72 width/text-scale cases and a snackbar-account regression that failed before the scope fix. Analysis, formatting and the 21-file domain boundary check passed. An observed hot reload succeeded.
+- **239** Flutter tests passed, including 72 width/text-scale cases and a snackbar-account regression that failed before the scope fix and the first-owner UTC/Cairo year-boundary case. Analysis, formatting and the 21-file domain boundary check passed. An observed hot reload succeeded.
 - The complete multi-role Chromium/ChromeDriver 153 journey passed with only Auth/Firestore emulators: private booking/retry, contacts, restored SDK sessions, doctor lifecycle, admin issue/settle/refund/analytics, UID-bound doctor creation/login/edit/schedule normalization/deletion, patient registration and local password recovery.
 - The separate staff journey passed with missing calendar fixtures, proving administrator initialization through the actual client SDK/rules, plus refused sign-in after deletion. No synthetic identity or clinic fixture was created in the live project.
 
