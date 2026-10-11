@@ -68,7 +68,7 @@ config/firebase.local.json
 *service-account*.json
 *serviceAccount*.json
 *firebase-adminsdk*.json
-functions/.env*
-!functions/.env.example
-functions/.secret.local
+firebase/.env*
+!firebase/.env.example
+firebase/.secret.local
 .runtimeconfig.json

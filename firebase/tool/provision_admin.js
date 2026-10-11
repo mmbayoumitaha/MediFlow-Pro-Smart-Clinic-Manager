@@ -12,9 +12,9 @@ const { values } = parseArgs({
     phone: { type: "string" },
   },
 });
-if (![values.project, values.uid, values.name, values.phone].every(Boolean)) {
+if (![values.project, values.uid, values.name].every(Boolean)) {
   console.error(
-    "Usage: node functions/tool/provision_admin.js --project PROJECT_ID --uid AUTH_UID --name 'Full Name' --phone '+201000000000'",
+    "Usage: node firebase/tool/provision_admin.js --project PROJECT_ID --uid AUTH_UID --name 'Full Name' [--phone '+201000000000']",
   );
   process.exitCode = 1;
 } else {

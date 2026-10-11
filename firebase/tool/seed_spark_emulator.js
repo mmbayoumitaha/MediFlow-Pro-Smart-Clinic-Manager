@@ -23,7 +23,9 @@ await auth.createUser({
   password: "Emulator-only-password1!",
 });
 const now = DateTime.now().setZone("Africa/Cairo");
-for (const year of [now.year, now.year + 1]) {
+for (const year of process.env.MEDIFLOW_SPARK_TARGET === "staff"
+  ? []
+  : [now.year, now.year + 1]) {
   let offset = DateTime.utc(year).setZone("Africa/Cairo").offset;
   const changes = [];
   for (

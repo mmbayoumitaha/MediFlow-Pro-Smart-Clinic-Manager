@@ -9,14 +9,19 @@ task_target="${MEDIFLOW_SPARK_TARGET:-registration}"
 case "$task_target" in
   registration) task_entrypoint=integration_test/spark_registration_test.dart ;;
   booking)
-    node functions/tool/seed_web_emulator.js
-    node functions/tool/seed_spark_emulator.js
+    node firebase/tool/seed_web_emulator.js
+    node firebase/tool/seed_spark_emulator.js
     task_entrypoint=integration_test/spark_booking_test.dart
     ;;
   workflows)
-    node functions/tool/seed_web_emulator.js
-    node functions/tool/seed_spark_emulator.js
+    node firebase/tool/seed_web_emulator.js
+    node firebase/tool/seed_spark_emulator.js
     task_entrypoint=integration_test/firebase_workflow_test.dart
+    ;;
+  staff)
+    node firebase/tool/seed_web_emulator.js
+    node firebase/tool/seed_spark_emulator.js
+    task_entrypoint=integration_test/spark_staff_test.dart
     ;;
   *) echo 'Unknown Spark integration target.' >&2; exit 1 ;;
 esac

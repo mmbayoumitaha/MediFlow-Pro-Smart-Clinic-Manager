@@ -246,7 +246,7 @@ test("forged role claims cannot bypass the trusted user document", async () => {
 });
 for (const uid of ["p1", "d-user1", "admin"]) {
   for (const operation of ["create", "update", "delete"]) {
-    test(`${uid} cannot ${operation} any protected records directly`, async () => {
+    test(`${uid} cannot ${operation} any malformed or unpaired protected records`, async () => {
       const db = dbFor(uid);
       for (const path of paths) {
         const ref = doc(

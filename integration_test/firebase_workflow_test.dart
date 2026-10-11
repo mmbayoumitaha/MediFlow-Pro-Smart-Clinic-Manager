@@ -7,6 +7,8 @@ import 'package:mediflow/core/config/backend_configuration.dart';
 import 'package:mediflow/core/providers/app_dependencies.dart';
 import 'package:mediflow/core/providers/app_providers.dart';
 import 'package:mediflow/features/clinic/domain/app_enums.dart';
+import 'package:mediflow/features/clinic/domain/entities.dart';
+import 'package:mediflow/features/clinic/domain/profile_policy.dart';
 import 'package:mediflow/main.dart' as app;
 import 'package:mediflow/routes/app_router.dart';
 
@@ -274,7 +276,7 @@ void main() {
         'completed visit',
       );
       debugPrint(
-        'Verified doctor scope, projected contacts and callable lifecycle.',
+        'Verified doctor scope, linked contacts and rules-protected lifecycle.',
       );
       await logout();
 
@@ -322,8 +324,146 @@ void main() {
         'refunded invoice stream',
       );
       expect(container.read(clinicAnalyticsProvider).paidInvoiceTotal, 0);
+      await until(
+        tester,
+        () =>
+            container.read(billingActionsProvider).busyId == null &&
+            find.byType(AlertDialog).evaluate().isEmpty,
+        'refund confirmation finished',
+      );
       debugPrint(
         'Verified admin invoices, atomic payment links and analytics.',
+      );
+      router.go('/admin/doctors');
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/admin/doctors');
+      await until(
+        tester,
+        () => find.text('Manage Doctors').evaluate().isNotEmpty,
+        'doctor management page',
+      );
+      await tap(tester, find.byType(FloatingActionButton));
+      await until(
+        tester,
+        () => find
+            .byKey(const ValueKey('profile-account-id'))
+            .evaluate()
+            .isNotEmpty,
+        'new staff profile form: route=${router.routeInformationProvider.value.uri}; busy=${container.read(profileActionsProvider).isSubmitting}; demo=${container.read(isDemoProvider)}; texts=${tester.widgetList<Text>(find.byType(Text)).map((w) => w.data).join(" | ")}',
+      );
+      expect(find.text('Add clinic doctor'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('profile-account-id')),
+        'browser-newstaff',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('profile-name')),
+        'New Clinic Doctor',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('profile-email')),
+        'browser-newstaff@example.test',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('profile-phone')),
+        '+201000000004',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('profile-fee')),
+        '95.50',
+      );
+      await tap(tester, find.byKey(const ValueKey('profile-save')));
+      await until(
+        tester,
+        () => container.read(doctorsProvider).length == 3,
+        'Auth UID bound by admin form',
+      );
+      await until(
+        tester,
+        () =>
+            !container.read(profileActionsProvider).isSubmitting &&
+            find.byType(AlertDialog).evaluate().isEmpty,
+        'staff form saved and dismissed',
+      );
+      expect(find.byType(AlertDialog), findsNothing);
+      final boundId = container
+          .read(doctorsProvider)
+          .singleWhere((d) => d.userId == 'browser-newstaff')
+          .id;
+      await logout();
+      await login('browser-newstaff', UserRole.doctor);
+      final bound = container.read(doctorsProvider).single;
+      expect(bound.id, boundId);
+      final profileHold = container.listen(profileActionsProvider, (_, _) {});
+      expect(
+        await container
+            .read(profileActionsProvider.notifier)
+            .doctor(
+              bound,
+              DoctorInput(
+                fullName: 'Updated Clinic Doctor',
+                email: bound.email,
+                phone: '+201000000005',
+                specialty: bound.specialty,
+                consultationFee: bound.consultationFee,
+                experienceYears: bound.experienceYears,
+                isAvailable: true,
+                availability: const [
+                  AvailabilitySlot(
+                    day: DayOfWeek.monday,
+                    startTime: '09:15',
+                    endTime: '10:45',
+                  ),
+                ],
+              ),
+            ),
+        isTrue,
+        reason: container.read(profileActionsProvider).error,
+      );
+      await until(
+        tester,
+        () =>
+            container.read(doctorsProvider).single.fullName ==
+            'Updated Clinic Doctor',
+        'doctor self-service stream',
+      );
+      expect(
+        container.read(doctorsProvider).single.availability.single.startTime,
+        '09:30',
+      );
+      expect(
+        container.read(doctorsProvider).single.availability.single.endTime,
+        '10:30',
+      );
+      profileHold.close();
+      await logout();
+      await login('browser-admin', UserRole.admin);
+      router.go('/admin/doctors');
+      await tester.pumpAndSettle();
+      final updated = container
+          .read(doctorsProvider)
+          .singleWhere((d) => d.id == boundId);
+      expect(
+        await container
+            .read(profileActionsProvider.notifier)
+            .removeDoctor(updated),
+        isTrue,
+        reason: container.read(profileActionsProvider).error,
+      );
+      await until(
+        tester,
+        () => container.read(doctorsProvider).length == 2,
+        'unused doctor deletion stream',
+      );
+      expect(
+        (await runtime.firestore
+                .doc('revokedUsers/browser-newstaff')
+                .get(const GetOptions(source: Source.server)))
+            .data()!['role'],
+        'doctor',
+      );
+      debugPrint(
+        'Verified UID-bound staff creation, real staff login, schedule normalization, contact editing and safe deletion.',
       );
       await logout();
 
@@ -341,7 +481,7 @@ void main() {
         () =>
             container.read(authProvider).currentUser?.email ==
             'browser-registration@example.test',
-        'patient Auth enrollment and trusted callable profile',
+        'patient Auth enrollment and rules-protected profile',
       );
       await readScope();
       await tester.pumpAndSettle();
@@ -367,6 +507,6 @@ void main() {
       container.dispose();
       await runtime.app.delete();
     },
-    timeout: const Timeout(Duration(minutes: 4)),
+    timeout: const Timeout(Duration(minutes: 6)),
   );
 }

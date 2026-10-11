@@ -1,0 +1,28 @@
+{
+  "name": "mediflow-firebase-tooling",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node test/provision_admin.test.js && node test/spark_registration.test.js && node test/spark_booking.test.js && node test/rules.test.js",
+    "test:spark": "npm test",
+    "check": "node --check src/provision_admin.js && node --check tool/provision_admin.js && node --check tool/seed_web_emulator.js && node --check tool/seed_spark_emulator.js",
+    "format:check": "prettier --check src test tool package.json ../firebase.json ../firestore.indexes.json"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "luxon": "^3.7.2"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0",
+    "prettier": "^3.9.9"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.6",
+    "@firebase/app": "0.16.2",
+    "@firebase/app-compat": "0.5.18"
+  }
+}

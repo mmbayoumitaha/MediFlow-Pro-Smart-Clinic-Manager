@@ -27,11 +27,11 @@ Arrows show source dependencies, rather than runtime network requests. Use cases
 
 `AuthViewModel` depends on SignIn/RegisterUser/SignOut use cases. `ClinicViewModel` owns a repository subscription and refresh state, and ignores old refresh results if a newer stream event arrives. `BookingViewModel` prevents duplicate submission while awaiting the BookAppointment use case. The booking screen converts the selected display time into a DateTime, then supplies that selection; it no longer builds or inserts appointments.
 
-Both repository implementations use the same asynchronous contracts. Demo mutations are atomic in memory. Firebase reads are scoped before downloading; mutations go through trusted callable transactions. `AuthoritativeReservations` is an optional capability because the backend validates conflicts against records the client cannot read. It supplies free instants and returns canonical reservations; the demo validates its full synthetic snapshot locally.
+Both repository implementations use the same asynchronous contracts. Demo mutations are atomic in memory. Firebase reads are scoped before downloading; mutations go through rules-protected SDK transactions. `AuthoritativeReservations` is an optional capability because the backend validates conflicts against records the client cannot read. It supplies free instants and returns canonical reservations; the demo validates its full synthetic snapshot locally.
 
 ## Data and lifecycle
 
-- Domain entities contain no serialization methods. `ClinicMapper` owns the demo ISO-string/DateTime schema. `FirebaseClinicMapper` handles Firestore Timestamp/callable UTC strings, trusted document IDs and strict enums, normalizing actual instants to Africa/Cairo without changing their epoch. Calendar-date selections are transmitted separately.
+- Domain entities contain no serialization methods. `ClinicMapper` owns the demo ISO-string/DateTime schema. `FirebaseClinicMapper` handles Firestore Timestamps and legacy UTC strings, trusted document IDs and strict enums, normalizing actual instants to Africa/Cairo without changing their epoch. Calendar-date selections are transmitted separately.
 - Snapshots and nested entity collections copy and freeze their lists. Sorting produces a derived copy; widgets cannot mutate repository lists.
 - Each demo repository owns a separate fixture snapshot and uses one injected seed time. Registration publishes a new snapshot; a patient appears in patient lists, and a doctor profile uses the new auth user's ID as `userId`.
 - Doctor demo sign-in uses the profile's `userId`, rather than the appointment/profile `id`. Newly registered doctors are unavailable until their availability is configured.
