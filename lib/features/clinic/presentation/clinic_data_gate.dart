@@ -46,7 +46,10 @@ class ClinicDataGate extends ConsumerWidget {
             content: Text(message),
             actions: [TextButton(onPressed: retry, child: const Text('Retry'))],
           ),
-        Expanded(child: child),
+        // Each portal owns messages for its inner screen scaffolds. The outer
+        // navigation scaffold must not retain another account's messages or
+        // draw them over an inner screen's floating action button.
+        Expanded(child: ScaffoldMessenger(child: child)),
       ],
     );
   }
