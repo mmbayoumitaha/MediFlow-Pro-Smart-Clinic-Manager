@@ -7,6 +7,29 @@ service cloud.firestore {
     function admin() { return active() && user().role == 'admin'; }
     function patient() { return active() && user().role == 'patient'; }
     function doctor() { return active() && user().role == 'doctor'; }
+    function validContact(data) {
+      return data.fullName is string && data.fullName.size() >= 3
+        && data.fullName.size() <= 120 && data.fullName.matches('[^ ].*[^ ]')
+        && data.phone is string && data.phone.size() <= 24
+        && data.phone.matches('^\\+?([ ()-]*[0-9]){8,15}[ ()-]*$');
+    }
+    function enrollPatient(id) {
+      let data = request.resource.data;
+      return signedIn() && request.auth.uid == id
+        && request.auth.token.email is string
+        && data.keys().hasOnly(['id','email','fullName','phone','role','avatarUrl',
+          'gender','dateOfBirth','address','isActive','createdAt','updatedAt'])
+        && data.keys().hasAll(['id','email','fullName','phone','role','avatarUrl',
+          'gender','dateOfBirth','address','isActive','createdAt','updatedAt'])
+        && data.id == id && data.email == request.auth.token.email.lower()
+        && data.role == 'patient' && data.isActive == true
+        && data.avatarUrl == null && data.gender == null
+        && data.dateOfBirth == null && data.address == null
+        && data.createdAt == request.time && data.updatedAt == request.time
+        && validContact(data)
+        && !exists(/databases/$(database)/documents/revokedUsers/$(id))
+        && getAfter(/databases/$(database)/documents/accountEmails/$(data.email)).data.userId == id;
+    }
     function ownVisit() {
       return active() && ((patient() && resource.data.patientId == request.auth.uid)
         || (doctor() && resource.data.doctorUserId == request.auth.uid));
@@ -14,7 +37,24 @@ service cloud.firestore {
     match /users/{id} {
       allow get: if (signedIn() && request.auth.uid == id) || admin();
       allow list: if admin();
-      allow write: if false;
+      allow create: if enrollPatient(id);
+      allow update, delete: if false;
+    }
+    match /accountEmails/{email} {
+      allow get: if admin() || (signedIn() && request.auth.token.email is string
+        && email == request.auth.token.email.lower());
+      allow list: if admin();
+      allow create: if signedIn() && request.auth.token.email is string
+        && email == request.auth.token.email.lower()
+        && request.resource.data.keys().hasOnly(['userId'])
+        && request.resource.data.userId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.email == email
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'patient';
+      allow update, delete: if false;
+    }
+    match /revokedUsers/{id} {
+      allow get: if signedIn() && request.auth.uid == id;
+      allow list, write: if false;
     }
     match /doctors/{id} {
       allow read: if admin() || patient() || (doctor() && resource.data.userId == request.auth.uid);

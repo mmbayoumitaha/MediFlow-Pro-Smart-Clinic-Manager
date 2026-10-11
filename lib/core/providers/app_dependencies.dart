@@ -16,6 +16,7 @@ import '../../features/clinic/domain/clinic_repository.dart';
 import '../config/backend_configuration.dart';
 import '../firebase/clinic_commands.dart';
 import '../firebase/firebase_runtime.dart';
+import '../firebase/firestore_clinic_commands.dart';
 
 /// The composition root is the only place that selects concrete adapters.
 final backendConfigurationProvider = Provider<BackendConfiguration>(
@@ -85,7 +86,11 @@ final Provider<AuthRepository> authRepositoryProvider =
             runtime.firestore,
             FirebaseClinicMapper(runtime.clock),
           ),
-          FirebaseClinicCommands(runtime.functions),
+          FirestoreClinicCommands(
+            runtime.firestore,
+            runtime.auth,
+            FirebaseClinicCommands(runtime.functions),
+          ),
         );
         ref.onDispose(repository.dispose);
         return repository;

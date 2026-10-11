@@ -4,6 +4,8 @@ A personal Flutter project for patient, doctor and administrator clinic workflow
 
 The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
 
+An [Auth + Firestore migration](docs/SPARK_MIGRATION.md) is now in progress to run the live clinic without Cloud Functions or billing. Patient enrollment has been verified with only Auth/Firestore running; the remaining clinic mutations still use the previous Functions transport until their protected transaction replacements are ready.
+
 The Firebase backend includes maintained Firestore rules, trusted roles, patient registration, reservations, lifecycle, billing and profile management. The Flutter adapters restore trusted sessions, download records according to role, and display backend instants in Africa/Cairo. [Backend setup and verification](docs/FIREBASE.md) records the measured checks and setup steps. The live [MediFlow Pro project](https://console.firebase.google.com/project/mediflow-pro-mmbayoumi/overview) and its web app were created on 2026-10-09. Live Auth/Firestore setup, function deployment and cloud runtime verification remain pending.
 
 ## Current functionality
