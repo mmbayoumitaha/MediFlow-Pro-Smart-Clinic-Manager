@@ -174,9 +174,11 @@ class AnalyticsCharts extends StatelessWidget {
                         color: color(s.specialty.index),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        '${s.specialty.labelEn}: ${s.count}',
-                        style: theme.textTheme.bodySmall,
+                      Flexible(
+                        child: Text(
+                          '${s.specialty.labelEn}: ${s.count}',
+                          style: theme.textTheme.bodySmall,
+                        ),
                       ),
                     ],
                   ),

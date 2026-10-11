@@ -141,7 +141,12 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 110,
+              height:
+                  110 *
+                  (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(
+                    1.0,
+                    double.infinity,
+                  ),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: doctors.length,
@@ -210,7 +215,12 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             Text('Select Date', style: theme.textTheme.titleLarge),
             const SizedBox(height: 10),
             SizedBox(
-              height: 80,
+              height:
+                  80 *
+                  (MediaQuery.textScalerOf(context).scale(20) / 20).clamp(
+                    1.0,
+                    double.infinity,
+                  ),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: dates.length,
@@ -227,7 +237,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                           }),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      width: 60,
+                      width:
+                          60 *
+                          (MediaQuery.textScalerOf(context).scale(20) / 20)
+                              .clamp(1.0, double.infinity),
                       margin: const EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
                         color: sel

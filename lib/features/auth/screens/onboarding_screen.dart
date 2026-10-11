@@ -136,34 +136,41 @@ class _OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 56, color: color),
+                ),
+                const SizedBox(height: 40),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.displaySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(color: AppColors.slate500, height: 1.6),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            child: Icon(icon, size: 56, color: color),
           ),
-          const SizedBox(height: 40),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.displaySmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyLarge
-                ?.copyWith(color: AppColors.slate500, height: 1.6),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }

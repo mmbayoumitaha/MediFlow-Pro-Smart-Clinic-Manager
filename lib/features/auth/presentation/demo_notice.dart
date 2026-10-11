@@ -42,23 +42,38 @@ class DemoNotice extends ConsumerWidget {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  config.isDemo
-                      ? 'Offline demo · Fictional data\nChanges last until reset or restart.'
-                      : config.useEmulators
-                      ? 'Local emulator · Fictional data\nClinic time: Africa/Cairo.'
-                      : 'Connected clinic · Clinic time: Africa/Cairo.',
-                ),
-              ),
-              if (config.isDemo)
-                TextButton(
-                  onPressed: () => confirmDemoReset(context, ref),
-                  child: const Text('Reset demo'),
-                ),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final text = Text(
+                config.isDemo
+                    ? 'Offline demo · Fictional data\nChanges last until reset or restart.'
+                    : config.useEmulators
+                    ? 'Local emulator · Fictional data\nClinic time: Africa/Cairo.'
+                    : 'Connected clinic · Clinic time: Africa/Cairo.',
+              );
+              final reset = TextButton(
+                onPressed: () => confirmDemoReset(context, ref),
+                child: const Text('Reset demo'),
+              );
+              if (constraints.maxWidth /
+                      (MediaQuery.textScalerOf(context).scale(16) / 16) <
+                  400) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    text,
+                    if (config.isDemo)
+                      Align(alignment: Alignment.centerRight, child: reset),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: text),
+                  if (config.isDemo) reset,
+                ],
+              );
+            },
           ),
         ),
       ),

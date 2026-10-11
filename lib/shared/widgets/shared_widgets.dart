@@ -169,19 +169,14 @@ class DoctorCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(specialty, style: theme.textTheme.bodySmall),
                   const SizedBox(height: 4),
-                  Row(
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 4,
                     children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        size: 16,
-                        color: AppColors.accent,
-                      ),
-                      const SizedBox(width: 2),
                       Text(
-                        '$rating ($reviews)',
+                        '★ $rating ($reviews)',
                         style: theme.textTheme.labelSmall,
                       ),
-                      const Spacer(),
                       Text(
                         ClinicFormatters.money(fee),
                         style: const TextStyle(
@@ -342,7 +337,12 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: Theme.of(context).textTheme.headlineSmall),
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
           if (actionText != null)
             TextButton(onPressed: onAction, child: Text(actionText!)),
         ],
