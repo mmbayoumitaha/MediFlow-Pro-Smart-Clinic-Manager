@@ -31,7 +31,7 @@ The original findings remain an archival description of the earlier code in [PRO
 | MF-021–MF-024 | Resolved: source-derived analytics and USD semantics, guarded management, correct invoice statuses and atomic settlement/refund workflows |
 | MF-025–MF-028 | Resolved within declared scope: functioning profile/settings/about/recovery, removed unsupported controls, English-only UI, owned onboarding controller, validated names and safe initials; onboarding intentionally repeats on restart |
 | MF-030–MF-031 | Resolved in measured formats: 72 responsive cases, 241 meaningful Flutter tests, Mockito interactions and separate backend/browser tests |
-| MF-032 | Workflow implemented; observed remote outcome is recorded after completion; required merge checks are not configured by the workflow file |
+| MF-032 | Resolved: [remote verification](https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager/actions/runs/38303393645) passed Flutter and Firebase jobs, including all four browser targets; required merge checks are not configured by the workflow file |
 | MF-034 | Source/configuration fixed: IDs, branding, Internet permission and explicit signing; Android debug/Linux release build evidence. Store signing and untested platform runtime remain separate |
 | MF-035 | Resolved: product documentation, MIT license and explicit verification limits |
 
@@ -39,6 +39,6 @@ Linux interactive launch built the debug executable but could not open a display
 
 ## Cloud boundary
 
-Email/password Auth, deployed rules/indexes and an operator-provisioned initial administrator exist in the live project. A registered live web release was observed at its connected login screen; anonymous profile access was rejected. Authenticated live workflows require the owner's private sign-in and have not been observed. The full fictional emulator journeys exercise actual SDK/rules behavior separately. See [Firebase setup](FIREBASE.md).
+Email/password Auth, deployed rules/indexes and an operator-provisioned initial administrator exist in the live project. A registered live web release was observed at its connected login screen; anonymous profile access was rejected. The owner signed in privately and supplied screenshots showing the connected admin dashboard, doctors, patients and billing pages rendering their empty states. This confirms live admin entry and initial reads; authenticated live booking, staff creation and billing mutations have not been observed. The full fictional emulator journeys exercise actual SDK/rules behavior separately. See [Firebase setup](FIREBASE.md).
 
 Connected mode needs a server connection; the demo needs its packaged/local assets and no backend. Cold browser reload while the asset server is unreachable is not supported by a service worker. Native device interactions, native connected Firebase, store releases, clinical deployment, production capacity and payment processing are not established by these checks.

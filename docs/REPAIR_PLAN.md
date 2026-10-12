@@ -154,3 +154,5 @@ When a finding closes, record its test/manual evidence and commit. Keep the base
 - Updated native/web names, application IDs and icon catalogs; selected MIT and documented font licenses and private Android signing. Android debug APK and Linux release bundle built successfully. Linux interactive launch could not open a display in the check environment.
 - Actual Auth/Firestore Chromium workflows and first-admin/staff lifecycle tests passed. All 79 backend cases, syntax/format checks and domain boundaries passed. No owner password or real patient data was used.
 - Maintained GitHub checks run independently on every push/PR. The current product setup and verification limits are in DEVELOPMENT.md, FIREBASE.md and RELEASE_CHECKS.md.
+
+- Remote verification run 38303393645 passed both Flutter and Firebase jobs, including registration, booking, complete workflows and staff browser targets. The owner signed in privately and supplied screenshots confirming the connected admin pages and empty clinic state; no demo fixtures were uploaded.
