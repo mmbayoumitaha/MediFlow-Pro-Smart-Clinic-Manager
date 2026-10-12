@@ -1,15 +1,12 @@
 import '../../clinic/domain/app_enums.dart';
 import '../../clinic/domain/clinic_failure.dart';
 import '../../clinic/domain/entities.dart';
+import '../../clinic/domain/profile_policy.dart';
 import 'auth_repository.dart';
 import 'auth_session.dart';
 
 String _email(String input) {
-  final email = input.trim().toLowerCase();
-  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
-    throw const ClinicFailure(FailureCode.invalidInput, 'Enter a valid email.');
-  }
-  return email;
+  return ProfilePolicy.email(input);
 }
 
 void _password(String input) {
@@ -46,23 +43,9 @@ class RegisterUser {
   Future<ClinicUser> call(RegistrationInput input) async {
     final name = input.fullName.trim();
     final phone = input.phone.trim();
-    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final email = _email(input.email);
     _password(input.password);
-    if (name.length < 3) {
-      throw const ClinicFailure(
-        FailureCode.invalidInput,
-        'Enter your full name.',
-      );
-    }
-    if (digits.length < 8 ||
-        digits.length > 15 ||
-        !RegExp(r'^\+?[0-9 ()-]+$').hasMatch(phone)) {
-      throw const ClinicFailure(
-        FailureCode.invalidInput,
-        'Enter a valid phone number.',
-      );
-    }
+    ProfilePolicy.contact(name, phone);
     if (input.role == UserRole.admin) {
       throw const ClinicFailure(
         FailureCode.unauthorized,

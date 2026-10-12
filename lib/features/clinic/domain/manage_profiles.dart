@@ -12,6 +12,7 @@ class ManageProfiles {
     ContactInput input,
   ) {
     ProfilePolicy.active(actor);
+    ProfilePolicy.patient(input);
     return _repository.savePatient(
       actor: actor!,
       expected: expected,
@@ -26,6 +27,7 @@ class ManageProfiles {
   ) {
     ProfilePolicy.active(actor);
     if (expected == null) ProfilePolicy.admin(actor);
+    ProfilePolicy.doctor(input);
     return _repository.saveDoctor(
       actor: actor!,
       expected: expected,

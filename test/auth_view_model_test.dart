@@ -105,6 +105,30 @@ void main() {
     expect(input.phone, '+201001234567');
   });
 
+  test('unsupported profile fields never create an Auth identity', () async {
+    when(repository.register(any)).thenAnswer((_) async => user);
+    for (final fields in [
+      ('N' * 121, '+201001234567', 'valid@example.com'),
+      ('Valid\nName', '+201001234567', 'valid@example.com'),
+      ('Valid Name', '+20${' ' * 20}1001234567', 'valid@example.com'),
+      ('Valid Name', '+201001234567', 'a/b@example.com'),
+    ]) {
+      await expectLater(
+        RegisterUser(repository)(
+          RegistrationInput(
+            fullName: fields.$1,
+            phone: fields.$2,
+            email: fields.$3,
+            password: 'secret123',
+            role: UserRole.patient,
+          ),
+        ),
+        throwsA(isA<ClinicFailure>()),
+      );
+    }
+    verifyNever(repository.register(any));
+  });
+
   test('view model exposes loading then authenticated state', () async {
     when(repository.login(any, any, any)).thenAnswer((_) async => user);
     final model = createViewModel();

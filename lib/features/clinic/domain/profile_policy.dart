@@ -43,12 +43,38 @@ abstract final class ProfilePolicy {
   static void contact(String name, String phone) {
     final digits = phone.trim().replaceAll(RegExp(r'[^0-9]'), '');
     if (name.trim().length < 3 ||
+        name.trim().length > 120 ||
+        name.contains(RegExp(r'[\r\n]')) ||
+        phone.trim().length > 24 ||
         digits.length < 8 ||
         digits.length > 15 ||
         !RegExp(r'^\+?[0-9 ()-]+$').hasMatch(phone.trim())) {
       throw const ClinicFailure(
         FailureCode.invalidInput,
-        'Enter a full name and a valid phone number.',
+        'Use a name of 3–120 characters and a phone number of at most 24 characters.',
+      );
+    }
+  }
+
+  static String email(String input) {
+    final value = input.trim().toLowerCase();
+    if (value.length > 254 ||
+        value.contains('/') ||
+        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Enter a valid email without slashes.',
+      );
+    }
+    return value;
+  }
+
+  static void patient(ContactInput input) {
+    contact(input.fullName, input.phone);
+    if ((input.address?.trim().length ?? 0) > 500) {
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Use an address of at most 500 characters.',
       );
     }
   }
@@ -73,13 +99,19 @@ abstract final class ProfilePolicy {
 
   static void doctor(DoctorInput input) {
     contact(input.fullName, input.phone);
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(input.email.trim()) ||
-        input.email.trim().toLowerCase() == 'demo@mediflow.com' ||
+    if (email(input.email) == 'demo@mediflow.com' ||
         input.experienceYears < 0 ||
         input.experienceYears > 80) {
       throw const ClinicFailure(
         FailureCode.invalidInput,
         'Enter a valid doctor email and experience (0–80 years).',
+      );
+    }
+    if (input.availability.length > 14 ||
+        (input.bio?.trim().length ?? 0) > 1000) {
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Use at most 14 working periods and a biography of at most 1000 characters.',
       );
     }
     BillingPolicy.cents(input.consultationFee);
