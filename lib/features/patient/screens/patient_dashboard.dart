@@ -34,7 +34,7 @@ class PatientDashboard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-              'Hello',
+                          'Hello',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.slate500,
                           ),
