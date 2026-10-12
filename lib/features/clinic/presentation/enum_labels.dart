@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+
 import '../domain/app_enums.dart';
 
-// Display text, colors and emoji are presentation metadata.
+// Display text, colors and icons are presentation metadata.
 
 extension UserRoleLabels on UserRole {
   String get labelEn => switch (this) {
@@ -80,21 +82,21 @@ extension MedicalSpecialtyLabels on MedicalSpecialty {
     MedicalSpecialty.laboratory => 'مختبر',
   };
 
-  String get emoji => switch (this) {
-    MedicalSpecialty.generalPractice => '🩺',
-    MedicalSpecialty.cardiology => '❤️',
-    MedicalSpecialty.dermatology => '🧴',
-    MedicalSpecialty.neurology => '🧠',
-    MedicalSpecialty.orthopedics => '🦴',
-    MedicalSpecialty.pediatrics => '👶',
-    MedicalSpecialty.ophthalmology => '👁️',
-    MedicalSpecialty.dentistry => '🦷',
-    MedicalSpecialty.gynecology => '🤰',
-    MedicalSpecialty.urology => '🏥',
-    MedicalSpecialty.ent => '👂',
-    MedicalSpecialty.psychiatry => '🧘',
-    MedicalSpecialty.radiology => '📡',
-    MedicalSpecialty.laboratory => '🔬',
+  IconData get icon => switch (this) {
+    MedicalSpecialty.generalPractice => Icons.medical_services_outlined,
+    MedicalSpecialty.cardiology => Icons.favorite_outline,
+    MedicalSpecialty.dermatology => Icons.face_outlined,
+    MedicalSpecialty.neurology => Icons.psychology_outlined,
+    MedicalSpecialty.orthopedics => Icons.accessibility_new,
+    MedicalSpecialty.pediatrics => Icons.child_care,
+    MedicalSpecialty.ophthalmology => Icons.visibility_outlined,
+    MedicalSpecialty.dentistry => Icons.medical_services,
+    MedicalSpecialty.gynecology => Icons.female,
+    MedicalSpecialty.urology => Icons.local_hospital_outlined,
+    MedicalSpecialty.ent => Icons.hearing,
+    MedicalSpecialty.psychiatry => Icons.self_improvement,
+    MedicalSpecialty.radiology => Icons.scanner_outlined,
+    MedicalSpecialty.laboratory => Icons.science_outlined,
   };
 }
 

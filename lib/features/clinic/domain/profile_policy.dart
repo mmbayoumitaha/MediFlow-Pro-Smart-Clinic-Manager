@@ -51,7 +51,7 @@ abstract final class ProfilePolicy {
         !RegExp(r'^\+?[0-9 ()-]+$').hasMatch(phone.trim())) {
       throw const ClinicFailure(
         FailureCode.invalidInput,
-        'Use a name of 3–120 characters and a phone number of at most 24 characters.',
+        'Enter a full name and a valid phone number.',
       );
     }
   }
@@ -63,7 +63,7 @@ abstract final class ProfilePolicy {
         !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
       throw const ClinicFailure(
         FailureCode.invalidInput,
-        'Enter a valid email without slashes.',
+        'Enter a valid email.',
       );
     }
     return value;

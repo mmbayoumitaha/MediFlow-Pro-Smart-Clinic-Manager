@@ -184,9 +184,10 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            doc.specialty.emoji,
-                            style: const TextStyle(fontSize: 28),
+                          Icon(
+                            doc.specialty.icon,
+                            size: 28,
+                            color: AppColors.primary,
                           ),
                           const SizedBox(height: 6),
                           Text(

@@ -25,6 +25,8 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Roboto',
+      fontFamilyFallback: const ['NotoSansArabic'],
       colorScheme: colorScheme,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.lightBackground,
@@ -83,6 +85,8 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Roboto',
+      fontFamilyFallback: const ['NotoSansArabic'],
       colorScheme: colorScheme,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.darkBackground,

@@ -113,7 +113,7 @@ class StatsGrid extends StatelessWidget {
 class DoctorCard extends StatelessWidget {
   final String name;
   final String specialty;
-  final String emoji;
+  final IconData icon;
   final double rating;
   final int reviews;
   final double fee;
@@ -124,7 +124,7 @@ class DoctorCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.specialty,
-    required this.emoji,
+    required this.icon,
     required this.rating,
     required this.reviews,
     required this.fee,
@@ -157,7 +157,7 @@ class DoctorCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSizes.radiusMd),
               ),
               child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 28)),
+                child: Icon(icon, size: 28, color: AppColors.primary),
               ),
             ),
             const SizedBox(width: AppSizes.md),

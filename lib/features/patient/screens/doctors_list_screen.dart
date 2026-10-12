@@ -60,7 +60,8 @@ class DoctorsListScreen extends ConsumerWidget {
                   (s) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
-                      label: Text('${s.emoji} ${s.labelEn}'),
+                      avatar: Icon(s.icon, size: 18),
+                      label: Text(s.labelEn),
                       selected: selectedSpecialty == s,
                       onSelected: (_) =>
                           ref.read(selectedSpecialtyProvider.notifier).state =
@@ -94,7 +95,7 @@ class DoctorsListScreen extends ConsumerWidget {
                             : null,
                         name: doc.fullName,
                         specialty: doc.specialty.labelEn,
-                        emoji: doc.specialty.emoji,
+                        icon: doc.specialty.icon,
                         rating: doc.rating,
                         reviews: doc.totalReviews,
                         fee: doc.consultationFee,
