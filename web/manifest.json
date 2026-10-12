@@ -1,12 +1,12 @@
 {
-    "name": "mediflow",
-    "short_name": "mediflow",
+    "name": "MediFlow Pro",
+    "short_name": "MediFlow",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F8FAFC",
+    "theme_color": "#0D9488",
+    "description": "Patient booking, doctor schedules and clinic administration.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

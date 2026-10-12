@@ -1,4 +1,4 @@
-package com.example.mediflow
+package io.github.mmbayoumitaha.mediflow
 
 import io.flutter.embedding.android.FlutterActivity
 
