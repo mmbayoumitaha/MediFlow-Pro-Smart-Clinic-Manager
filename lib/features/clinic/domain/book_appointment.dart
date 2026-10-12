@@ -28,9 +28,15 @@ class BookAppointment {
         'Sign in as a patient to book.',
       );
     }
-    final snapshot = await _repository.load();
     final normalizedReason = reason?.trim();
     final cleanReason = normalizedReason == '' ? null : normalizedReason;
+    if ((cleanReason?.length ?? 0) > AppointmentPolicy.maxReasonLength) {
+      throw const ClinicFailure(
+        FailureCode.invalidInput,
+        'Use a booking reason of at most 500 characters.',
+      );
+    }
+    final snapshot = await _repository.load();
     final prior = snapshot.appointments.where((a) => a.id == requestId);
     if (requestId != null && prior.isNotEmpty) {
       final existing = prior.single;

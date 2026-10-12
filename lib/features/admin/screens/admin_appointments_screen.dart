@@ -29,7 +29,7 @@ class AdminAppointmentsScreen extends ConsumerWidget {
                 final visit = visits[index];
                 return AppointmentActionCard(
                   appointment: visit,
-                  title: '${visit.patientName} → ${visit.doctorName}',
+                  title: '${visit.patientName} with ${visit.doctorName}',
                 );
               },
             ),

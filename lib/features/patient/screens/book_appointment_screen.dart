@@ -1,6 +1,9 @@
 import '../../../core/formatters/clinic_formatters.dart';
 
 import 'package:flutter/material.dart';
+
+import '../../clinic/domain/appointment_policy.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -344,6 +347,7 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               enabled: !booking.isSubmitting,
               controller: _reasonCtrl,
               maxLines: 3,
+              maxLength: AppointmentPolicy.maxReasonLength,
               decoration: const InputDecoration(
                 hintText: 'Describe your symptoms...',
               ),

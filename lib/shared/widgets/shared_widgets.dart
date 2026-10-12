@@ -173,9 +173,20 @@ class DoctorCard extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 4,
                     children: [
-                      Text(
-                        '★ $rating ($reviews)',
-                        style: theme.textTheme.labelSmall,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$rating ($reviews)',
+                            style: theme.textTheme.labelSmall,
+                          ),
+                        ],
                       ),
                       Text(
                         ClinicFormatters.money(fee),

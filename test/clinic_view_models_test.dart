@@ -39,6 +39,29 @@ void main() {
   );
 
   test(
+    'booking rejects a reason exceeding the Firestore limit before I/O',
+    () async {
+      await expectLater(
+        booking()(
+          patient: snapshot.patients.first,
+          doctorId: snapshot.doctors.first.id,
+          dateTime: DateTime(2026, 10, 6, 13, 30),
+          reason: 'x' * 501,
+        ),
+        throwsA(
+          isA<ClinicFailure>().having(
+            (e) => e.code,
+            'code',
+            FailureCode.invalidInput,
+          ),
+        ),
+      );
+      verifyNever(repository.load());
+      verifyNever(repository.bookAppointment(any));
+    },
+  );
+
+  test(
     'booking uses current doctor data, selected time and injected clock/ID',
     () async {
       final updated = snapshot.copyWith(

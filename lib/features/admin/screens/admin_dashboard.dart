@@ -116,7 +116,7 @@ class AdminDashboard extends ConsumerWidget {
               ...analytics.recentChanges.map(
                 (apt) => AppointmentCard(
                   onTap: () => context.go('/admin/appointments'),
-                  doctorName: '${apt.patientName} → ${apt.doctorName}',
+                  doctorName: '${apt.patientName} with ${apt.doctorName}',
                   specialty: apt.specialty.labelEn,
                   dateStr: '${apt.dateTime.day}/${apt.dateTime.month}',
                   timeStr:

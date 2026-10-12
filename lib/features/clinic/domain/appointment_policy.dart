@@ -6,6 +6,7 @@ import 'entities.dart';
 /// Clinic wall-clock slots: 30 minutes, aligned to each active working period.
 abstract final class AppointmentPolicy {
   static const durationMinutes = 30;
+  static const maxReasonLength = 500;
 
   static bool reservesTime(AppointmentStatus status) =>
       status == AppointmentStatus.pending ||
