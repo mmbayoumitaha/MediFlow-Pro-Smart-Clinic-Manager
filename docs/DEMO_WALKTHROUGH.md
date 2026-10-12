@@ -15,8 +15,11 @@ Install matching Chromium/ChromeDriver, Python 3, ImageMagick and ffmpeg. From t
 ```bash
 flutter build web --release --no-pub
 python3 tool/capture_demo.py --output /tmp/mediflow-showcase
+python3 tool/caption_demo.py /tmp/mediflow-showcase
 ```
 
 The helper serves that build locally, opens an isolated headless browser at phone dimensions, checks that the app is in demo mode, and records actual interactions. It exports an MP4, full-resolution screenshots, chapter timings and browser evidence to the output directory; compact screenshots go to `docs/media`. Renderer/font/backend internet endpoints are blocked during capture. The helper rejects severe browser errors or external requests and never signs into a live clinic.
+
+The optional caption exporter keeps scene labels small and adds a dark padded background behind white text. Mode details and Reset demo are available from the compact Demo badge menu.
 
 The MP4 preserves the observed screen timing, encodes H.264 at 720×1280 / 24 fps, and has no audio. Raw frames are local output and should not be committed. For a connected-clinic walkthrough, use the emulator integration commands rather than this demo capture script.

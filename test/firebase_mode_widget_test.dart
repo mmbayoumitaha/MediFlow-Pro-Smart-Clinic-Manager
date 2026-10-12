@@ -108,12 +108,20 @@ void main() {
       await open(tester, '/login');
       expect(find.text('Demo role'), findsNothing);
       expect(find.text('Reset demo'), findsNothing);
+      expect(find.text('Emulator'), findsOneWidget);
+      await tester.tap(find.byTooltip('Clinic connection'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reset demo'), findsNothing);
+      await tester.tap(find.text('Mode details'));
+      await tester.pumpAndSettle();
       expect(
         find.text(
           'Local emulator · Fictional data\nClinic time: Africa/Cairo.',
         ),
         findsOneWidget,
       );
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
       expect(
         tester
             .widget<TextFormField>(find.byType(TextFormField).first)

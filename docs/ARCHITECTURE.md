@@ -53,7 +53,7 @@ All collection/metric providers consumed by screens derive from `ClinicAccess.sc
 
 Missing or ambiguous doctor linkage returns an empty snapshot. Only the demo repositories hold the complete synthetic clinic. Client-side filtering is a demo visibility boundary. Firebase mode also scopes server queries and enforces reads in maintained rules; client transactions are allowed only when Security Rules validate actual Firebase identity, trusted roles and the required paired records. There is no Functions runtime.
 
-The login/registration screens explicitly describe simulated passwords and temporary identities; each portal carries a demo notice and a reset control. The shared demo email selects a seed role, while known emails retain their registered identity/role. No automatic session restoration or durable persistence is implemented for demo accounts.
+The login/registration screens explicitly describe simulated passwords and temporary identities; each portal carries a compact mode menu with demo details and a confirmed reset action. The shared demo email selects a seed role, while known emails retain their registered identity/role. No automatic session restoration or durable persistence is implemented for demo accounts.
 
 ## Reservation and lifecycle policy
 

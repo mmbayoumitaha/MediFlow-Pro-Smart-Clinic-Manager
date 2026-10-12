@@ -29,19 +29,20 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining('Offline demo · Fictional data'),
-        findsOneWidget,
-      );
+      expect(find.byTooltip('Demo mode'), findsOneWidget);
       final original = container.read(clinicRepositoryProvider);
-      await tester.tap(find.widgetWithText(TextButton, 'Reset demo'));
+      await tester.tap(find.byTooltip('Demo mode'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reset demo'));
       await tester.pumpAndSettle();
       expect(find.text('Reset demo?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(container.read(authProvider).isAuthenticated, isTrue);
       expect(container.read(clinicRepositoryProvider), same(original));
-      await tester.tap(find.widgetWithText(TextButton, 'Reset demo'));
+      await tester.tap(find.byTooltip('Demo mode'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reset demo'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Reset demo'));
       await tester.pumpAndSettle();

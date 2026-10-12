@@ -40,7 +40,7 @@ flutter run -d chrome
 
 Select Patient, Doctor or Admin and use the prefilled `demo@mediflow.com` / `password123`. Demo authentication accepts dummy passwords of at least six characters; use fictional details. Other demo emails retain their recorded role.
 
-Demo data stays in memory across logout, so you can explore the same clinic from different roles. **Reset demo** asks for confirmation and restores the fictional clinic. Restart also clears changes; theme settings last for the running app. The default demo never initializes Firebase. Dependency installation requires internet access; the built application bundles its renderer and fonts. Serving its assets locally permits use without internet. Browser reload while completely disconnected from the asset server requires a separate caching/installation strategy; no service worker is supplied.
+Demo data stays in memory across logout, so you can explore the same clinic from different roles. **Reset demo**, in the small Demo badge menu, asks for confirmation and restores the fictional clinic. Restart also clears changes; theme settings last for the running app. The default demo never initializes Firebase. Dependency installation requires internet access; the built application bundles its renderer and fonts. Serving its assets locally permits use without internet. Browser reload while completely disconnected from the asset server requires a separate caching/installation strategy; no service worker is supplied.
 
 ## Connected clinic
 

@@ -59,10 +59,7 @@ void main() {
       expect(container.read(routerProvider), same(router));
       expect(router.routeInformationProvider.value.uri.path, '/${role.value}');
       expect(container.read(authProvider).isAuthenticated, isTrue);
-      expect(
-        find.textContaining('Offline demo · Fictional data'),
-        findsOneWidget,
-      );
+      expect(find.byTooltip('Demo mode'), findsOneWidget);
       expect(
         container.read(doctorsProvider),
         hasLength(role == UserRole.doctor ? 1 : 6),

@@ -8,7 +8,7 @@ Observed on October 12, 2026. Results describe the checked scope and are not a g
 | Unit/widget suite | 241 passing tests, including 72 width/text-scale cases |
 | Domain boundaries | 21 domain files checked; no framework/data/presentation dependencies |
 | Backend tests | 79 passing Auth/Firestore emulator and operator cases |
-| Web | Release build succeeds; 64-second portrait Chromium walkthrough covers patient booking, doctor schedule and admin screens with external endpoints blocked; zero severe errors and zero external requests |
+| Web | Release build succeeds; Portrait Chromium walkthrough covers patient booking, doctor schedule and admin screens with external endpoints blocked; zero severe errors and zero external requests |
 | Android | Debug APK builds with updated application ID and icons; release distribution signing remains an owner prerequisite |
 | Linux | Release demo bundle builds |
 | iOS/macOS/Windows | Branding updated; builds and runtime unverified on this Linux host |
@@ -42,3 +42,7 @@ Linux interactive launch built the debug executable but could not open a display
 Email/password Auth, deployed rules/indexes and an operator-provisioned initial administrator exist in the live project. A registered live web release was observed at its connected login screen; anonymous profile access was rejected. The owner signed in privately and supplied screenshots showing the connected admin dashboard, doctors, patients and billing pages rendering their empty states. This confirms live admin entry and initial reads; authenticated live booking, staff creation and billing mutations have not been observed. The full fictional emulator journeys exercise actual SDK/rules behavior separately. See [Firebase setup](FIREBASE.md).
 
 Connected mode needs a server connection; the demo needs its packaged/local assets and no backend. Cold browser reload while the asset server is unreachable is not supported by a service worker. Native device interactions, native connected Firebase, store releases, clinical deployment, production capacity and payment processing are not established by these checks.
+
+## Compact mode controls and video captions
+
+The full-width mode banner is replaced by a small badge menu. Demo details and confirmed reset remain available; connected mode does not expose a demo reset. All 241 Flutter tests passed after the change, including the 72 width/text-scale cases and the menu/reset flows. Both demo and connected web release builds passed; hot reload succeeded with no runtime errors. Refreshed walkthroughs reported zero severe browser errors and zero external requests. Caption exports keep the 25-pixel text size and add a dark padded background behind white text.

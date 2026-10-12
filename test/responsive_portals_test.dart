@@ -69,7 +69,7 @@ void main() {
           );
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          expect(find.text('Reset demo'), findsOneWidget);
+          expect(find.byTooltip('Demo mode'), findsOneWidget);
           await tester.pumpWidget(const SizedBox.shrink());
           container.dispose();
           await tester.pump();
