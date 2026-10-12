@@ -1,65 +1,77 @@
-# MediFlow Pro — Smart Clinic Manager
+# MediFlow Pro
 
-A personal Flutter project for patient, doctor and administrator clinic workflows. The default offline demo uses fictional, in-memory data and requires no Firebase account or backend configuration. An explicit Firebase mode connects Auth and rules-protected Firestore transactions.
+[![Clinic checks](https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager/actions/workflows/verify.yml/badge.svg)](https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager/actions/workflows/verify.yml)
 
-The project is being repaired in tested batches. [The repair plan](docs/REPAIR_PLAN.md) tracks completed changes; [the baseline audit](docs/PROJECT_AUDIT.md) records the original findings.
+A Flutter clinic manager connecting patient booking, doctor schedules and clinic administration. Explore all three roles with the built-in fictional clinic, or configure Firebase Auth and Firestore for a connected clinic.
 
-The [Auth + Firestore backend](docs/SPARK_MIGRATION.md) supports clinic operations within Spark allowances, without Cloud Functions, Storage or billing. Its client transactions are validated by Security Rules; the complete clinic and staff-management journeys passed in Chromium with only Auth and Firestore emulators.
+## Clinic workflows
 
-The Firebase backend includes maintained Firestore rules, trusted roles, patient registration, reservations, lifecycle, billing and profile management. The Flutter adapters restore trusted sessions, download records according to role, and display backend instants in Africa/Cairo. [Backend setup and verification](docs/FIREBASE.md) records the measured checks and setup steps. The live [MediFlow Pro project](https://console.firebase.google.com/project/mediflow-pro-mmbayoumi/overview) and its web app were created on 2026-10-09. Email/password Auth and the Standard Firestore database were configured on 2026-10-11 without linking billing. Rules/indexes are deployed and the owner account is provisioned as admin. The live release login screen was checked; authenticated cloud workflows remain a separate verification step.
+| Patient | Doctor | Administrator |
+| --- | --- | --- |
+| Search doctors and specialties | View schedule and associated patients | Manage doctors and patient profiles |
+| Book available 30-minute visits | Confirm, start and complete visits | Manage appointments and unused accounts |
+| Cancel upcoming visits | Edit profile and working periods | Issue consultation invoices |
+| View personal appointments, prescriptions and invoices | Control availability for new bookings | Record settlements/refunds and view analytics |
 
-## Current functionality
+Role-aware GoRouter navigation and scoped data keep each account in its own portal. Riverpod view models coordinate immutable state, errors, retries and account changes. The domain, data and presentation layers use repository contracts and injected clocks; [architecture](docs/ARCHITECTURE.md) explains the boundaries.
 
-- Patient, doctor and administrator portals with role-checked GoRouter routes and persistent tab navigation.
-- Doctor directory with search/specialty filters and doctor links into booking. Future 30-minute slots follow active working periods and exclude doctor/patient conflicts; repeated booking requests are idempotent within the demo session.
-- Patient-owned appointment/prescription/invoice reads; doctors see their own schedule and associated patients. New demo registrations add linked patient/doctor profiles.
-- Appointment cancellation, confirmation, check-in, completion and no-show actions with role/time validation; administrator appointment management, overview, billing lists and fl_chart visualizations.
-- Working admin doctor/patient management, self-service profile editing and doctor availability validation.
-- Material 3 light/dark themes using Flutter's default fonts; the app no longer downloads Inter through Google Fonts.
+The interface uses Material 3, light/dark themes, bundled fonts and local specialty icons. UI copy is English. Charts use `fl_chart` and derive from clinic records.
 
-All demo amounts use **USD**, displayed consistently without currency conversion. Paid-invoice totals count only fully paid, non-refunded invoices with valid dates and amounts. The six-month chart groups by payment date; the dashboard card covers all time. These snapshot totals are not a cash-flow ledger. Doctor completed-visit fees are explicitly separate from collected payments. Specialty distribution includes every recorded appointment status.
+## Screens
 
-Administrators can issue one consultation-only invoice for an unpaid completed visit, record a full demo settlement, and record a full refund. Invoice and appointment payment status update together. These actions never charge or refund real money; partial balances and a transaction ledger are outside the current demo scope.
+<table><tr>
+<td><img src="docs/media/patient.png" width="230" alt="Patient dashboard with upcoming appointments"></td>
+<td><img src="docs/media/doctor.png" width="230" alt="Doctor dashboard"></td>
+<td><img src="docs/media/analytics.png" width="230" alt="Clinic analytics derived from records"></td>
+</tr></table>
 
-Administrators can add/edit doctors, edit/deactivate patients and delete unused profiles. Linked profiles cannot be deleted. Patients edit their own contact/address details; doctors edit their own profile and active working periods. Changes retain historical names/fees. Firebase working-hour edits require no reserved visits; disabling new bookings preserves existing visits. Current sessions and subsequent sign-ins follow the updated clinic profile.
+See the [demo walkthrough](docs/DEMO_WALKTHROUGH.md) for the booking and management sequence.
 
-The interface is **English only**. Unsupported notification, password-change and upload controls have been removed; About, theme and Settings links work. Firebase sign-in offers password recovery; staff accounts cannot self-register. Charts derive from source records. Route guards and scoped reads enforce demo visibility; Firebase rules validate backend authorization and atomic cross-document writes. The demo contains fictional records; use fictional details in it.
+## Try the demo
 
-## Run the demo
-
-Verified toolchain: **Flutter 3.47.4 stable / Dart 3.13.3**. Use this version to reproduce the development checks. The SDK minimums are declared in `pubspec.yaml`; dependency versions are recorded in `pubspec.lock`.
+Use **Flutter 3.47.4 / Dart 3.13.3**:
 
 ```bash
 git clone https://github.com/mmbayoumitaha/MediFlow-Pro-Smart-Clinic-Manager.git
 cd MediFlow-Pro-Smart-Clinic-Manager
-flutter pub get
+flutter pub get --enforce-lockfile
 flutter run -d chrome
 ```
 
-On the login screen, select Patient, Doctor or Admin. The prefilled `demo@mediflow.com` / `password123` values open the selected demo role. Authentication is simulated: any dummy password of at least six characters is accepted. Never enter a real password. The role selector applies only to this shared demo email; seeded and newly registered accounts retain their record’s role.
+Select Patient, Doctor or Admin and use the prefilled `demo@mediflow.com` / `password123`. Demo authentication accepts dummy passwords of at least six characters; use fictional details. Other demo emails retain their recorded role.
 
-Demo registrations and bookings stay in memory across logout/account switches, so you can explore the same clinic from several roles. Logout clears account reads, search and specialty filters. **Reset demo**, available in each portal and on login, restores fixtures and signs out after confirmation; app restart also resets everything. Theme preferences last for the running app and are not changed by clinic reset. Initial dependency installation requires an Internet connection. The running demo uses local fixtures; a cold offline browser launch and browser caching have not been verified.
+Demo data stays in memory across logout, so you can explore the same clinic from different roles. **Reset demo** asks for confirmation and restores the fictional clinic. Restart also clears changes; theme settings last for the running app. The default demo never initializes Firebase. Dependency installation requires internet access; the built application bundles its renderer and fonts. Serving its assets locally permits use without internet. Browser reload while completely disconnected from the asset server requires a separate caching/installation strategy; no service worker is supplied.
 
-## Development checks
+## Connected clinic
+
+Firebase mode uses **email/password Auth + Standard Firestore** with Security Rules and atomic client transactions. It requires no Cloud Functions, Storage or billing upgrade. Spark quotas still apply. See [setup and emulator commands](docs/FIREBASE.md) and [transaction contracts](docs/SPARK_MIGRATION.md).
+
+```bash
+cp config/firebase.example.json config/firebase.local.json
+# Fill in your registered Firebase app's client options.
+flutter run -d chrome --dart-define-from-file=config/firebase.local.json
+```
+
+Patients self-register; trusted administrators bind existing doctor Auth identities. Roles come from server-confirmed profiles. Reservations, lifecycle updates and invoice changes are validated by rules against the actual identity and server time. Firestore disk persistence is disabled, and connected writes require a server connection.
+
+## Development
 
 ```bash
 dart run tool/check_architecture.dart
 dart format --output=none --set-exit-if-changed lib test tool integration_test test_driver
 flutter analyze --no-pub
 flutter test --no-pub
-flutter build web --no-pub
+flutter build web --release --no-pub
 ```
 
-The Flutter suite covers startup, trusted Firebase sessions/auth races, configuration, Timestamp/clinic-time mapping, scoped reads and revoked-access clearing, immutable storage models, demo repositories and Mockito use-case/view-model interactions. Widget tests exercise demo and Firebase-mode presentation, registration/sign-in/logout, role guards, reset/recovery, profile and management edits, availability/retry, booking and appointment actions. Analytics tests cover payment-month boundaries, immediate settlement updates, invalid/empty data, specialties and reactive charts. Backend security-rule and operator-bootstrap checks and the separate browser integration command are documented in [Firebase notes](docs/FIREBASE.md); the ordinary `flutter test` command does not run that browser journey.
+Tests cover business policies, Mockito repository interactions, account isolation, async/disposal races, time boundaries, analytics and responsive layouts. Separate Auth/Firestore emulator tests exercise security rules and Chromium workflows. GitHub Actions runs these checks on pushes and pull requests. [Development instructions](docs/DEVELOPMENT.md), [observed release checks](docs/RELEASE_CHECKS.md) and the [development history](docs/REPAIR_PLAN.md) distinguish compiled platforms from observed runtime journeys.
 
-Web is the current build-verification target. Platform folders exist for Android, iOS and desktop; their build/runtime support is not yet verified.
+## Product conventions
 
-## Architecture and roadmap
+- All amounts are USD. Revenue charts show fully settled, non-refunded invoice totals; completed-visit fees are a separate metric.
+- Payment actions record status and never move real money. Prescription history is read-only. Uploads, notifications, prescription issuing and partial-payment ledgers are outside the current scope.
+- Demo scheduling uses the device wall clock. Connected scheduling uses Africa/Cairo, a fixed half-hour grid and the next 14 dates, excluding today. Overnight periods are unavailable.
+- Availability edits preserve existing visits. Connected working-hour edits require reserved visits to be finished or cancelled first.
+- Deletion is limited to unused profiles. Connected deletion preserves Auth identities and email reservations to prevent re-enrollment under removed identities.
 
-The current code uses Flutter, Riverpod, GoRouter, fl_chart, intl, characters and uuid, plus the bundled Cupertino icon font for adaptive Flutter widgets. Auth and clinic features now separate framework-independent domain entities/use cases/repository contracts, demo data adapters and Riverpod presentation view models. Core providers inject repositories, clocks and ID generators; screens render immutable state and invoke view-model actions. Mockito unit tests verify repository interactions. See [the architecture guide](docs/ARCHITECTURE.md) for responsibilities and dependency boundaries.
-
-The demo uses local device wall-clock times. Firebase mode uses Africa/Cairo and server validation of real instants. Time-dependent presentation updates every 30 seconds; analytics use the current clock again when new records arrive. New slots are revalidated at write time. The horizon is the next 14 dates; overnight working periods are unavailable. Remaining verification is tracked in [repair batches](docs/REPAIR_PLAN.md).
-
-Firebase packages are used by the optional backend adapters; timezone handles clinic dates. Mockito and build_runner generate repository mocks; regenerate them with `dart run build_runner build` after changing a repository signature. The official `integration_test` package runs the separate browser journey. Demo mode continues to work without backend setup.
-
-License selection is pending; no commercial-use license is currently declared.
+Licensed under [MIT](LICENSE). Bundled fonts retain their [Open Font Licenses](THIRD_PARTY_NOTICES.md).

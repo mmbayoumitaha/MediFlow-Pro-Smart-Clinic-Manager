@@ -1,8 +1,8 @@
-# MediFlow Pro: repair batches
+# Development history
 
 Created: 2026-10-04 (Africa/Cairo). Baseline: `5a02453`.
 
-The owner requested an audit first, collaborative scheduling, and small commits pushed after each completed batch, then delegated the scheduling choice. Completion-driven batches are selected: work follows the dependency order below, with no fixed daily deadlines. Implementation scopes are proposed until each batch is undertaken. Actual commits retain their real author/committer timestamps. Progress is recorded through completed changes, check results and GitHub commit links.
+Development milestones follow the dependency order below. This log records implemented behavior, observed checks and the limits of each milestone. Earlier entries describe the code at that point in time; current setup is in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 Findings and evidence: [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
 
@@ -10,14 +10,14 @@ Findings and evidence: [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
 
 | Batch | Scope / audit IDs | Depends on | Required evidence before completion | Status |
 | --- | --- | --- | --- | --- |
-| B0 | Document source audit, feature gaps, baseline failures and this repair plan | — | Evidence-backed issue inventory; documentation diff checked | Complete in the commit introducing this plan |
+| B0 | Document source audit, feature gaps, baseline failures and this development history | — | Evidence-backed issue inventory; documentation diff checked | Complete in the commit introducing this plan |
 | B1 | Restore compilation; align toolchain/lockfile; repair smoke test, trim unused dependencies and analyzer diagnostics. MF-001, MF-031 baseline, MF-033 | B0 | `flutter analyze`, deterministic startup test, `flutter test`, `flutter build web` pass; record exact SDK | Complete; startup `7bd6e71`, formatting in the commit closing B1 |
 | B2 | Introduce actual domain/data/presentation boundaries, repository contracts, injected demo repository, use cases and Riverpod view models; immutable state and model mapping. MF-005, MF-016, MF-017, MF-029 | B1 | Domain imports no Flutter/Firebase; screens use view models; isolated repository/unit/Mockito tests for mapping and state interactions | Complete; domain/mapping `198c73b`, repository and presentation wiring in the commit closing B2 |
 | B3 | Explicit demo mode, stable router, role guards, patient/doctor data scoping, safe auth state and session/reset behavior. MF-002, MF-003, MF-004, MF-006, MF-008, MF-020, MF-036 | B2 | All role/path combinations, auth failure/logout/reset races and cross-user reads tested; exercise actual login/logout/registration/reset UI in widget tests | Complete; route/scoping `e938a39`, explicit demo UI/reset in the commit closing B3; Firebase authorization remains B6 |
 | B4 | Correct booking time, availability/conflicts/retries, appointment lifecycle/categories, working search and deep-link return. MF-009–MF-015 | B3 | Booking and status business rules tested, including midnight/AM-PM/time boundaries and conflicts; patient-to-doctor workflow verified | Complete for demo; reservations `0e15470`, lifecycle/categories `4ec4ee1`; Firebase transactions/timezone remain B6 |
 | B5 | Working doctor/patient admin management, profiles/availability, billing, truthful analytics and correct activity/revenue semantics. MF-021–MF-025, MF-028 | B4 | Analytics unit tests with empty/multi-month data; management/payment/view-model tests; charts update after writes | Complete for demo; analytics `1549a58`, billing `1b0f7f3`, management/profiles `3e1a510` |
-| B6 | Implement optional configurable Firebase Auth/Firestore adapters, secure role provisioning, transactions, maintained rules/indexes and emulator tests. MF-007, MF-018, MF-029 Firebase mapping, MF-034 Android networking | B5 | Backend mode exercised against emulators; rules reject escalation/forgery/cross-user access; demo works with no configuration | Complete for verified web/emulators in the application-wiring commit; earlier slices `bff501f`, `7812f92`, `91e3183`, `c234d51`, `2cf4c70`. Android Internet permission added; native runtime/live deployment unverified |
-| B7 | Offline font handling, onboarding/localization decision, layout/branding, CI and release documentation. MF-019, MF-026, MF-027, MF-030, MF-031 full suite, MF-032, MF-034 branding, MF-035 | B6 | Full quality gates; offline demo and representative responsive checks; setup instructions reproduced; CI green; final evidence matrix | Proposed; Inter downloads removed, controller disposal fixed and README corrected in B1; remaining checks still open |
+| B6 | Implement optional configurable Firebase Auth/Firestore adapters, secure role provisioning, transactions, maintained rules/indexes and emulator tests. MF-007, MF-018, MF-029 Firebase mapping, MF-034 Android networking | B5 | Backend mode exercised against emulators; rules reject escalation/forgery/cross-user access; demo works with no configuration | Complete for verified web/emulators in the application-wiring commit; earlier slices `bff501f`, `7812f92`, `91e3183`, `c234d51`, `2cf4c70`. Android Internet permission added; native runtime was unverified at this milestone; see FIREBASE.md for subsequent deployment |
+| B7 | Offline font handling, onboarding/localization decision, layout/branding, CI and release documentation. MF-019, MF-026, MF-027, MF-030, MF-031 full suite, MF-032, MF-034 branding, MF-035 | B6 | Full quality gates; offline demo and representative responsive checks; setup instructions reproduced; CI green; final evidence matrix | Responsive checks completed; final asset, branding, native-build and CI evidence is recorded in RELEASE_CHECKS.md |
 
 Tests accompany each change; B7 completes the overall verification and documentation. P0 authorization issues stay ahead of enabling Firebase. Individual batches may contain several small commits rather than one large commit. Keep the application runnable after B1, and include tests with the corresponding behavior change.
 
@@ -42,36 +42,6 @@ lib/
 ```
 
 The exact folder split can follow implementation needs. The requirement is dependency direction and actual separation: domain owns business policies and contracts; data implements them; views render state and invoke presentation actions. Moving files alone does not complete B2.
-
-## Commit and push policy
-
-1. Make a focused, reviewable change. Add useful regression tests for logic and permissions; do not create empty/activity-only commits.
-2. Run the checks relevant to the change. App batches must pass analysis/tests, with builds when configuration or platform behavior changes. Documentation batches require review and `git diff --check`.
-3. Stage only that change and inspect the staged diff. Commit with a descriptive message, for example `fix(appointments): preserve selected slot and reject conflicts`.
-4. Push to the agreed current branch (`main` at baseline) after each verified unit of work. Do not force-push or rewrite existing history. If the remote moved, reconcile without discarding others' changes.
-5. Update the progress table with the actual commit, checks and remaining findings. Report a failed push separately from a successful local commit.
-
-B0 records baseline application failures and does not require a green app build. Subsequent completion claims must reference checks that actually ran.
-
-## Scheduling choices
-
-| Option | How progress is scheduled |
-| --- | --- |
-| Completion-driven batches (selected) | Work through the dependencies, with no invented daily dates. Each completed, verified change is committed and pushed. |
-| One intensive week | Tentative sessions: baseline/build, architecture, access, bookings, management/analytics, Firebase, final verification. Split or extend sessions if a gate fails. |
-| Two lighter weeks | Spread the same dependencies over smaller sessions; agree available days before assigning calendar dates. |
-
-These are scheduling options, not time estimates or autonomous future jobs. Sessions require actual work to occur; commits reflect when it happened.
-
-## Decisions to resolve during implementation
-
-- Demo changes (decided B3): in-memory records survive logout for cross-role exploration, confirmed reset/restart restores fixtures; account filters clear on identity changes. Theme preferences last for the running app.
-- Firebase: repository-owned configuration template and emulator setup can be completed locally. A deployed project needs the owner's project/configuration and administrator provisioning. Do not invent credentials or claim live verification without them.
-- Currency (decided B5): USD for all synthetic amounts, with one explicit formatter and no currency conversion.
-- Language (decided B5): intentionally English-only; removed the unused locale selector and unsupported Arabic locale declaration.
-- Scope: Core clinic workflows come first. Optional notifications, uploads, PDF export and medical records must be implemented, disabled with an explanation, or removed from claims; they are not implied complete by declared packages.
-- License: owner selects the license; remove unsupported commercial-use wording until resolved.
-- Platform claims: web can be checked locally; only claim Android/iOS/desktop verification when the appropriate build/runtime checks actually run.
 
 ## Progress log
 
@@ -176,3 +146,11 @@ When a finding closes, record its test/manual evidence and commit. Keep the base
 - Actual Chromium/ChromeDriver 153.0.8010.52 integration passed against local Auth/Firestore/Functions, exercising trusted roles, direct-read/write denials, server booking, profile projection updates, SDK session restoration, lifecycle, billing/refund/analytics, registration and reset-password links. No live project or email was used. Session restoration checks adapter recreation with the SDK identity, rather than a full browser reload.
 - Browser runs reproduced stale-clock revenue exclusion, duplicate portal navigator keys during fast restoration and an empty snapshot displayed before server reads completed. Fixed current-time analytics on data arrival, retained clinic-month calendars, removed portal entry/exit animations, and added explicit scope readiness. A meaningful navigator regression failed before the fix and now passes for all roles. Equivalent UTC/Cairo retry instants match.
 - All 160 Flutter tests pass, analysis is clean, the 21-file domain boundary and 113-file format checks pass. Both default-demo and emulator-configured web release builds pass. Server source remains covered by the observed 12 policy/17 rules/19 service cases. B6 closes for the measured web/emulator scope; native builds/runtime, live deployment, offline/browser caching, responsive sign-off and CI remain separate work.
+
+## Release verification — October 12, 2026
+
+- Bundled licensed fonts, same-origin CanvasKit bootstrap and specialty icons remove demo CDN dependencies. A fresh Chromium release loaded with external endpoints blocked and no external requests observed.
+- Unified registration/profile input limits reject unsupported fields before creating external identities. A Mockito regression failed against the earlier code and passed after the fix; all 241 Flutter tests passed.
+- Updated native/web names, application IDs and icon catalogs; selected MIT and documented font licenses and private Android signing. Android debug APK and Linux release bundle built successfully. Linux interactive launch could not open a display in the check environment.
+- Actual Auth/Firestore Chromium workflows and first-admin/staff lifecycle tests passed. All 79 backend cases, syntax/format checks and domain boundaries passed. No owner password or real patient data was used.
+- Maintained GitHub checks run independently on every push/PR. The current product setup and verification limits are in DEVELOPMENT.md, FIREBASE.md and RELEASE_CHECKS.md.

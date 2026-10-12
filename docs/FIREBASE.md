@@ -77,7 +77,7 @@ Records use snake-case enums, Firestore Timestamps and immutable document identi
 
 The schema uses `accountEmails`, `revokedUsers`, `clinicTimezones`, `patientHistory`, `bookingGuards`, `doctorReservations`, `patientReservations`, `doctorPatients` and `billingLinks` to enforce cross-document invariants. Client writes must pair all required records in transactions. Direct Console/Admin SDK clinical imports bypass these protections and must maintain every invariant; arbitrary clinical imports are not supported by the fixture tooling.
 
-Prescriptions are read-only in the current product. Payments are administrative records; no payment gateway or file upload is implemented. Native build/runtime, quota-capacity measurement, cold offline browser startup and live clinic journeys remain separate verification targets.
+Prescriptions are read-only in the current product. Payments are administrative records; no payment gateway or file upload is implemented. See [release checks](RELEASE_CHECKS.md) for native build and self-contained demo evidence. Native connected runtime, quota-capacity measurement and authenticated live clinic journeys remain separate verification targets.
 
 ## Observed final migration checks (2026-10-11–12)
 
@@ -86,4 +86,4 @@ Prescriptions are read-only in the current product. Payments are administrative 
 - The complete multi-role Chromium/ChromeDriver 153 journey passed with only Auth/Firestore emulators: private booking/retry, contacts, restored SDK sessions, doctor lifecycle, admin issue/settle/refund/analytics, UID-bound doctor creation/login/edit/schedule normalization/deletion, patient registration and local password recovery.
 - The separate staff journey passed with missing calendar fixtures, proving administrator initialization through the actual client SDK/rules, plus refused sign-in after deletion. No synthetic identity or clinic fixture was created in the live project.
 
-Native runtime, authenticated live journeys, production load/capacity and cold offline browser launch remain unverified. Historical B6 Functions results remain in the repair plan/Git history and are not counted as current backend checks.
+Native runtime, authenticated live journeys and production load/capacity remain unverified. Subsequent demo asset/browser and native build evidence is in [release checks](RELEASE_CHECKS.md). Historical B6 Functions results remain in the development history/Git history and are not counted as current backend checks.

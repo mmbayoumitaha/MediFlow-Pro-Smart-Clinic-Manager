@@ -1,6 +1,6 @@
 # Auth + Firestore migration
 
-Owner decision, **2026-10-11**: use Firebase Auth and Standard Firestore within Spark allowances, without Cloud Functions, Storage or a billing account. Default offline demo behavior and the domain/presentation boundaries are preserved.
+Since **2026-10-11**, the connected backend uses Firebase Auth and Standard Firestore within Spark allowances, without Cloud Functions, Storage or a billing account. Default offline demo behavior and the domain/presentation boundaries are preserved.
 
 ## Protected SDK transactions
 
@@ -26,7 +26,7 @@ The initial administrator requires a trusted operator binding an existing Auth i
 
 The first enrollment slice (`5b38001`) passed 15 enrollment and 17 access-rule cases, 21 focused Flutter tests, analysis, and Chromium UI registration/login/retry with Auth/Firestore only.
 
-The complete original browser journey also passed with Functions absent: scoped portals, booking, contact update, session restoration, lifecycle, invoice issuance, settlement/refund, analytics, registration and emulator password recovery. The expanded complete journey passed including admin UI binding of a new Auth UID, real staff login, profile/hours editing and unused deletion. A separate staff journey also passed first-admin calendar initialization and rejected removed-account login. Final checks passed 79 Node/emulator cases and 239 Flutter tests; details are in the repair plan and Firebase guide.
+The complete original browser journey also passed with Functions absent: scoped portals, booking, contact update, session restoration, lifecycle, invoice issuance, settlement/refund, analytics, registration and emulator password recovery. The expanded complete journey passed including admin UI binding of a new Auth UID, real staff login, profile/hours editing and unused deletion. A separate staff journey also passed first-admin calendar initialization and rejected removed-account login. Final checks passed 79 Node/emulator cases and 239 Flutter tests; details are in the development history and Firebase guide.
 
 The live project is `mediflow-pro-mmbayoumi`; email/password Auth is enabled and the `(default)` Standard Firestore database exists in `europe-west3`. Billing inspection reported `billingEnabled: false` with no billing account linked. Rules/indexes were deployed, the owner-supplied Auth identity was atomically bound as the initial administrator, and read-back verified its active canonical profile. The registered release opened its connected-clinic login in Chromium without severe startup errors; a live anonymous profile read was denied (403). Authenticated live clinic journeys remain separate from emulator evidence.
 

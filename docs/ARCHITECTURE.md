@@ -1,6 +1,6 @@
 # Architecture
 
-The application uses a domain/data/presentation split with Riverpod view models. Each domain is independent of Flutter, Riverpod, storage formats and Firebase. Display labels, emoji and colors are presentation extensions on domain enums.
+The application uses a domain/data/presentation split with Riverpod view models. Each domain is independent of Flutter, Riverpod, storage formats and Firebase. Display labels, icons and colors are presentation extensions on domain enums.
 
 ```mermaid
 flowchart LR
@@ -80,11 +80,9 @@ Mockito mocks are generated from the two repository contracts in `test/mocks/rep
 
 Tests cover storage round trips/validation, immutable copies, repository isolation and updates, registration/profile relationships, use-case/repository interactions, auth loading/failure/stale completions, booking failures/duplicate submission, refresh races and disposal. Widget tests exercise startup, registration and role retention, all portal paths for each role, anonymous redirects, sign-in/logout, reset confirmation/cancellation, actual selected-time booking through the repository, and loading/error/retry UI. The route matrix now includes the admin appointment page (15 portal paths). Provider tests switch several identities against the same underlying clinic and verify scoped records/metrics, cleared reads and stale-result isolation after reset.
 
-## Remaining work
+## Supported scope
 
-B5 implements source-derived charts, billing and profile/availability management; B6 connects the optional Firebase implementation. Browser offline startup, responsive/platform sign-off, branding and CI remain B7. The interface is intentionally English-only; no real payment gateway or medical-record upload flow is claimed.
-
-This architecture establishes dependency boundaries and tested state handling; it does not mark these remaining clinic workflows as complete.
+The interface is English. Prescription history is read-only; payment actions record settlement/refund status without a payment gateway. File uploads, notifications, prescription issuing and partial-payment ledgers are outside the current product scope. See [release checks](RELEASE_CHECKS.md) for actual platform and browser evidence.
 
 ## Analytics and display conventions
 
